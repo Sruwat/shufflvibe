@@ -1,0 +1,7 @@
+export const factors = ['ENRG','AFFIL','CROWD','TALK','ROAM','MOVE','GAMES'] as const;
+export type Factor = typeof factors[number];
+export const factorCopy: Record<Factor, { title:string; subtitle:string; art:string }> = {
+ ENRG:{title:'The room keeps building',subtitle:'Eleven becomes one. Nobody is looking at the door.',art:'arc'}, AFFIL:{title:'The room opens up',subtitle:'A table of your own, or a night that faces outward.',art:'table'}, CROWD:{title:'Full house energy',subtitle:'The fullest room in the city, or three tables and yours.',art:'crowd'}, TALK:{title:'You can hear the story',subtitle:'Mid-sentence at the table, or bass you feel in your chest.',art:'talk'}, ROAM:{title:'One door, then another',subtitle:'Three places in a night, or coats off until close.',art:'roam'}, MOVE:{title:'Somewhere with a floor',subtitle:'People moving together, or the deepest seat in the house.',art:'move'}, GAMES:{title:'Something to play',subtitle:'A turn, a scoreboard, a reason to lean in.',art:'games'}
+};
+export const preferences = ['FOOD','LIVE','POL','SCEN','NOV','HERIT'] as const;
+export const venues = [{name:'Sidecar, GK-2',type:'pub',area:'Greater Kailash II',tag:'Buzzy, easy to settle into',color:'#20DDA9'}, {name:'Sunder Nursery',type:'open ground',area:'Nizamuddin',tag:'Space to roam and reset',color:'#19C8E6'}, {name:'Piano Man Jazz Club',type:'live room',area:'Safdarjung',tag:'A room that knows the next song',color:'#F43C96'}, {name:'Majnu ka Tila Lane',type:'street / market',area:'North Delhi',tag:'Old streets, new corners',color:'#FFAD1F'}];

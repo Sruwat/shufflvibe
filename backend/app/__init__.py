@@ -1,0 +1,1 @@
+"""SHUFFL FastAPI service boundary."""
