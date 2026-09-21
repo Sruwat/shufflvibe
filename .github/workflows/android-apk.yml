@@ -34,7 +34,7 @@ jobs:
 
       - name: Install Android NDK required by React Native
         working-directory: mobile/android
-        run: yes | sdkmanager "ndk;27.1.12297006"
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;27.1.12297006"
 
       - name: Assemble debug APK
         working-directory: mobile/android
