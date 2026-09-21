@@ -12,11 +12,12 @@
     "expo-status-bar": "~3.0.0",
     "expo-secure-store": "~15.0.0",
     "react": "19.1.0",
+    "react-dom": "19.1.0",
     "react-native": "0.81.5",
     "react-native-gesture-handler": "~2.28.0",
     "react-native-reanimated": "~4.1.0",
     "react-hook-form": "^7.65.0",
     "zustand": "^5.0.8"
   },
-  "devDependencies": { "@types/react": "~19.1.10", "jest": "^30.0.0", "typescript": "~5.9.2" }
+  "devDependencies": { "@types/react": "~19.1.10", "typescript": "~5.9.2" }
 }
