@@ -6,6 +6,9 @@ export type ExposureEnd = 'swiped' | 'next' | 'timeout' | 'back';
 export type Exposure = { card: Card; index: number; startedAt: number; endedAt?: number; endedBy?: ExposureEnd; nextCount: number; latency?: number };
 export type Preference = typeof preferences[number];
 export type PreferenceReading = { score: number; importance: number; sense?: 'classy' | 'current' | 'both' };
+export type PreferenceAction = 'WHOLE_POINT' | 'NICE_TO_HAVE' | 'DONT_MIND' | 'DONT_CARE';
+export type PreferenceCard = { id: string; factor: Preference; title: string; subtitle: string };
+export type PreferenceState = { queue: PreferenceCard[]; cursor: number; answers: Record<string, PreferenceAction>; readings: Partial<Record<Preference, PreferenceReading>>; sense?: 'classy' | 'current' | 'both'; stage: 'deck' | 'sense' | 'done' };
 export type AssessmentState = { queue: Card[]; cursor: number; exposures: Exposure[]; answers: Record<string, Action>; scores: Partial<Record<Factor, number>>; forcedChoice?: [Factor, Factor]; paused: boolean; awayPrompt: boolean; completed: boolean };
 
 export const VIBE_CARDS: Card[] = factors.flatMap((factor) => [
@@ -14,6 +17,21 @@ export const VIBE_CARDS: Card[] = factors.flatMap((factor) => [
 ]);
 
 export const SWIPE_SCORE = ACTION_SCORE;
+export const PREFERENCE_SCORE: Record<PreferenceAction, number> = { WHOLE_POINT: 88, NICE_TO_HAVE: 62, DONT_MIND: 38, DONT_CARE: 12 };
+export const PREFERENCE_CARDS: PreferenceCard[] = [
+  { id: 'P-FOOD', factor: 'FOOD', title: 'Something worth eating', subtitle: 'The plate, the kitchen, the thing you would tell someone about tomorrow.' },
+  { id: 'P-LIVE', factor: 'LIVE', title: 'A live act in the room', subtitle: 'A band, a set, or a voice that gives the night its centre.' },
+  { id: 'P-POL', factor: 'POL', title: 'A dressed-up room', subtitle: 'A place where the way you show up feels part of the night.' },
+  { id: 'P-SCEN', factor: 'SCEN', title: 'A beautiful room', subtitle: 'The light, the table, the walls, and the details you notice.' },
+  { id: 'P-NOV', factor: 'NOV', title: 'An unmarked door', subtitle: 'Somewhere new, with a corner you have not found before.' },
+  { id: 'P-HERIT', factor: 'HERIT', title: 'An old building', subtitle: 'A place with a past, materials, and a story in the walls.' },
+];
+export function createPreferences(): PreferenceState { return { queue: PREFERENCE_CARDS, cursor: 0, answers: {}, readings: {}, stage: 'deck' }; }
+export function currentPreference(state: PreferenceState): PreferenceCard | undefined { return state.stage === 'deck' ? state.queue[state.cursor] : undefined; }
+export function answerPreference(state: PreferenceState, action: PreferenceAction): PreferenceState { const card = currentPreference(state); if (!card) return state; const readings = { ...state.readings, [card.factor]: preferenceReading(PREFERENCE_SCORE[action], card.factor === 'POL' ? state.sense : undefined) }; const answers = { ...state.answers, [card.id]: action }; const cursor = state.cursor + 1; return { ...state, answers, readings, cursor, stage: card.factor === 'POL' ? 'sense' : cursor >= state.queue.length ? 'done' : 'deck' }; }
+export function deferPreference(state: PreferenceState): PreferenceState { const card = currentPreference(state); if (!card) return state; const queue = [...state.queue]; queue.splice(state.cursor, 1); queue.push(card); return { ...state, queue, cursor: Math.min(state.cursor, queue.length - 1) }; }
+export function backPreference(state: PreferenceState): PreferenceState { return state.stage === 'deck' && state.cursor > 0 ? { ...state, cursor: state.cursor - 1 } : state; }
+export function choosePreferenceSense(state: PreferenceState, sense: 'classy' | 'current' | 'both'): PreferenceState { const reading = state.readings.POL; const readings = reading ? { ...state.readings, POL: { ...reading, sense } } : state.readings; return { ...state, readings, sense, stage: state.cursor >= state.queue.length ? 'done' : 'deck' }; }
 
 export function createAssessment(): AssessmentState {
   // One opening exposure per factor. Partners are inserted only after a soft answer.
