@@ -1,3 +1,3 @@
 {
-  "expo": { "name": "SHUFFL", "slug": "shuffl-demo", "version": "1.0.0", "orientation": "portrait", "scheme": "shuffl", "userInterfaceStyle": "dark", "plugins": ["expo-router", "expo-secure-store"], "android": { "package": "com.shuffl.demo", "adaptiveIcon": { "backgroundColor": "#070A11" } } }
+  "expo": { "name": "SHUFFL", "slug": "shuffl-demo", "version": "1.0.0", "orientation": "portrait", "scheme": "shuffl", "userInterfaceStyle": "dark", "plugins": ["expo-secure-store"], "android": { "package": "com.shuffl.demo", "adaptiveIcon": { "backgroundColor": "#070A11" } } }
 }
