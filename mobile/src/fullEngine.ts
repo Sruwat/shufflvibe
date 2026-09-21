@@ -108,6 +108,20 @@ export function preferenceReading(score: number, sense?: PreferenceReading['sens
 
 export type Chemistry = { vector: Partial<Record<Factor, number>>; tags: string[]; formation: string; stopCount: number; stopDurations: number[] };
 
+export const VENUE_TYPES: Record<string, Partial<Record<Factor, number>>> = {
+  'table for the night': { ENRG: 25, AFFIL: 85, CROWD: 35, TALK: 90, MOVE: 10, GAMES: 15 },
+  'quiet bar': { ENRG: 35, AFFIL: 75, CROWD: 40, TALK: 85, MOVE: 15, GAMES: 20 },
+  'buzzy restaurant': { ENRG: 55, AFFIL: 70, CROWD: 70, TALK: 65, MOVE: 15, GAMES: 10 },
+  pub: { ENRG: 60, AFFIL: 60, CROWD: 70, TALK: 55, MOVE: 25, GAMES: 45 },
+  'games bar': { ENRG: 65, AFFIL: 65, CROWD: 65, TALK: 45, MOVE: 40, GAMES: 90 },
+  'games pub': { ENRG: 55, AFFIL: 70, CROWD: 60, TALK: 60, MOVE: 20, GAMES: 65 },
+  'live room': { ENRG: 65, AFFIL: 50, CROWD: 70, TALK: 25, MOVE: 45, GAMES: 10 },
+  'lounge / rooftop': { ENRG: 50, AFFIL: 45, CROWD: 60, TALK: 60, MOVE: 20, GAMES: 10 },
+  club: { ENRG: 90, AFFIL: 30, CROWD: 90, TALK: 10, MOVE: 90, GAMES: 5 },
+  'street / market': { ENRG: 60, AFFIL: 55, CROWD: 85, TALK: 60, MOVE: 60, GAMES: 10 },
+  'open ground': { ENRG: 50, AFFIL: 70, CROWD: 40, TALK: 75, MOVE: 70, GAMES: 40 },
+};
+
 export function chemistry(members: Array<Partial<Record<Factor, number>>>, durationHours = 4): Chemistry {
   const vector = Object.fromEntries(factors.map((factor) => [factor, Math.round(members.reduce((sum, member) => sum + (member[factor] ?? 50), 0) / Math.max(1, members.length))])) as Partial<Record<Factor, number>>;
   const energy = vector.ENRG ?? 50; const roam = vector.ROAM ?? 50;
@@ -119,6 +133,33 @@ export function chemistry(members: Array<Partial<Record<Factor, number>>>, durat
   const first = tags.includes('Settle Then Roam') ? 0.55 : 1 / stopCount;
   const stopDurations = stopCount === 1 ? [1] : [first, ...Array.from({ length: stopCount - 1 }, () => (1 - first) / (stopCount - 1))];
   return { vector, tags: tags.slice(0, 1), formation: members.length > 1 ? 'Best of Both' : 'In Sync', stopCount, stopDurations };
+}
+
+export function chemistryV2(members: Array<Partial<Record<Factor, number>>>, durationHours = 4, strangers = false) {
+  const safeMembers = members.length ? members : [Object.fromEntries(factors.map((factor) => [factor, 50])) as Partial<Record<Factor, number>>];
+  const vector = Object.fromEntries(factors.map((factor) => [factor, Math.round(safeMembers.reduce((sum, member) => sum + (member[factor] ?? 50), 0) / safeMembers.length)])) as Partial<Record<Factor, number>>;
+  const strength = (score: number) => score >= 80 || score <= 20 ? 1 : score >= 70 || score <= 30 ? 0.5 : 0;
+  const highs = safeMembers.map((member) => member.ENRG ?? 50).filter((score) => score >= 70 && strength(score));
+  const lows = safeMembers.map((member) => member.ENRG ?? 50).filter((score) => score <= 30 && strength(score));
+  const tags: string[] = [];
+  if (highs.length && highs.reduce((sum, score) => sum + strength(score), 0) > lows.reduce((sum, score) => sum + strength(score), 0)) vector.ENRG = Math.max(...highs);
+  else if (highs.length && lows.length) { const pull = lows.length <= 2 ? 0.6 : lows.length === 3 ? 0.5 : 0.4; vector.ENRG = Math.round(lows.reduce((sum, score) => sum + score, 0) / lows.length + pull * (Math.max(...highs) - Math.min(...lows))); tags.push('Slow Burn'); }
+  const talker = safeMembers.some((member) => (member.TALK ?? 50) >= 70 && strength(member.TALK ?? 50));
+  if (talker) tags.push('Buzz, Not Noise');
+  const affilHigh = safeMembers.some((member) => (member.AFFIL ?? 50) >= 70); const affilLow = safeMembers.some((member) => (member.AFFIL ?? 50) <= 30);
+  if (affilHigh && affilLow) tags.push('Table and Floor'); else if (strangers || safeMembers.every((member) => (member.AFFIL ?? 50) <= 30)) tags.push('Meet the Room');
+  const roam = vector.ROAM ?? 50; const stopCount = roam < 35 ? 1 : roam < 65 ? 2 : 3;
+  return { vector, tags: tags.slice(0, 2), formation: safeMembers.length > 1 ? 'Best of Both' : 'In Sync', stopCount, talkFloor: talker ? 40 : 0, stopDurations: stopCount === 1 ? [1] : Array.from({ length: stopCount }, () => 1 / stopCount) };
+}
+
+export function selectVenueTypes(members: Array<Partial<Record<Factor, number>>>, durationHours = 4, strangers = false) {
+  const room = chemistryV2(members, durationHours, strangers); const target = room.vector;
+  const ranked = Object.entries(VENUE_TYPES).filter(([, scores]) => !room.talkFloor || (scores.TALK ?? 0) >= room.talkFloor).map(([name, scores]) => {
+    let distance = factors.reduce((sum, factor) => sum + Math.abs((scores[factor] ?? 50) - (target[factor] ?? 50)), 0);
+    if (strangers && ['games pub', 'pub', 'street / market', 'open ground'].includes(name)) distance -= 12;
+    return [name, distance] as const;
+  }).sort((a, b) => a[1] - b[1]);
+  return ranked.slice(0, room.stopCount).map(([name]) => name);
 }
 
 export function generatePlan(members: Array<Partial<Record<Factor, number>>>, venues: Array<{ name: string; type: string; scores: Partial<Record<Factor, number>> }>) {

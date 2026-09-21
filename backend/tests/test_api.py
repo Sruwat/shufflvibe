@@ -7,6 +7,6 @@ def test_health():
     assert client.get('/health').json()['status'] == 'ok'
 
 def test_plan_generation():
-    result = client.post('/v1/plans/generate', json={'scores': {'ENRG': 88}})
+    result = client.post('/v1/plans/generate', json={'scores': {'ENRG': 88, 'ROAM': 80}})
     assert result.status_code == 200
     assert result.json()['stops'] == 3
