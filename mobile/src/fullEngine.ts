@@ -122,6 +122,21 @@ export const VENUE_TYPES: Record<string, Partial<Record<Factor, number>>> = {
   'open ground': { ENRG: 50, AFFIL: 70, CROWD: 40, TALK: 75, MOVE: 70, GAMES: 40 },
 };
 
+export const PREFERENCE_WEIGHTS = { FOOD: 20, LIVE: 18, POL: 18, SCEN: 16, NOV: 14, HERIT: 14 } as const;
+
+export function preferenceFit(venue: { name: string; scores?: Partial<Record<keyof typeof PREFERENCE_WEIGHTS, number>> }, members: Array<Partial<Record<keyof typeof PREFERENCE_WEIGHTS, number>>>, visited = new Set<string>()) {
+  return members.reduce((total, member) => total + Object.entries(PREFERENCE_WEIGHTS).reduce((sum, [factor, weight]) => {
+    const preference = member[factor as keyof typeof PREFERENCE_WEIGHTS] ?? 50;
+    const delivery = factor === 'NOV' ? (visited.has(venue.name) ? 20 : 100) : venue.scores?.[factor as keyof typeof PREFERENCE_WEIGHTS] ?? 50;
+    return sum + (preference / 100) * (delivery / 100) * weight;
+  }, 0), 0);
+}
+
+export function fillVenues(types: string[], members: Array<Partial<Record<keyof typeof PREFERENCE_WEIGHTS, number>>>, pool: Array<{ name: string; type: string; scores?: Partial<Record<keyof typeof PREFERENCE_WEIGHTS, number>> }>, visited = new Set<string>()) {
+  const used = new Set<string>();
+  return types.map((type) => pool.filter((venue) => !used.has(venue.name) && venue.type === type).sort((a, b) => preferenceFit(b, members, visited) - preferenceFit(a, members, visited))[0] ?? pool.filter((venue) => !used.has(venue.name)).sort((a, b) => preferenceFit(b, members, visited) - preferenceFit(a, members, visited))[0]).filter((venue) => { if (!venue) return false; used.add(venue.name); return true; });
+}
+
 export function chemistry(members: Array<Partial<Record<Factor, number>>>, durationHours = 4): Chemistry {
   const vector = Object.fromEntries(factors.map((factor) => [factor, Math.round(members.reduce((sum, member) => sum + (member[factor] ?? 50), 0) / Math.max(1, members.length))])) as Partial<Record<Factor, number>>;
   const energy = vector.ENRG ?? 50; const roam = vector.ROAM ?? 50;

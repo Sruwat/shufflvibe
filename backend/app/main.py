@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from typing import Any
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
-from .full_engine import chemistry_v2, select_venue_types
+from .full_engine import DEMO_VENUES, chemistry_v2, fill_venues, select_venue_types
 
 app = FastAPI(title="SHUFFL API", version="0.1.0")
 
@@ -70,7 +70,8 @@ def generate_plan(payload: PlanRequest) -> dict[str, Any]:
     energy = payload.scores.get("ENRG", 62)
     members = [payload.scores] if not payload.members else [payload.scores for _ in payload.members]
     chemistry = chemistry_v2(members)
-    return {"style": "Could Go Late" if energy >= 70 else "Settle Then Roam", "stops": chemistry["stops"], "chemistry": chemistry, "venue_types": select_venue_types(members), "venues": ["Sidecar, GK-2", "Majnu ka Tila Lane", "Sunder Nursery"][:chemistry["stops"]]}
+    venue_types = select_venue_types(members)
+    return {"style": "Could Go Late" if energy >= 70 else "Settle Then Roam", "stops": chemistry["stops"], "chemistry": chemistry, "venue_types": venue_types, "venues": fill_venues(venue_types, members, DEMO_VENUES)}
 
 @app.post("/v1/plans/{plan_id}/lock")
 def lock_plan(plan_id: str) -> dict[str, Any]:

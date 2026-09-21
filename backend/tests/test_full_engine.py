@@ -1,4 +1,4 @@
-from app.full_engine import AssessmentSession, chemistry, chemistry_v2, firmness, rescale, select_venue_types
+from app.full_engine import AssessmentSession, chemistry, chemistry_v2, fill_venues, firmness, rescale, select_venue_types
 
 def test_soft_answer_inserts_partner_after_separation():
     session = AssessmentSession()
@@ -30,3 +30,7 @@ def test_chemistry_v2_energy_is_asymmetric_and_talk_has_floor():
 def test_venue_types_filter_out_non_talkable_club_for_talker():
     types = select_venue_types([{'ENRG': 88, 'TALK': 88, 'ROAM': 80}, {'ENRG': 62, 'TALK': 75, 'ROAM': 70}])
     assert all(name != 'club' for name in types)
+
+def test_preference_fill_prefers_food_for_food_whole_point():
+    selected = fill_venues(['buzzy restaurant'], [{'preferences': {'FOOD': 88, 'SCEN': 38}}])
+    assert selected[0]['name'] == 'Depot 48'

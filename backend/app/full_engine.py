@@ -9,6 +9,7 @@ from typing import Literal
 FACTORS = ("ENRG", "AFFIL", "CROWD", "TALK", "ROAM", "MOVE", "GAMES")
 SWIPE_SCORE = {"LOVE": 88, "UP": 62, "DOWN": 38, "HARD_PASS": 12}
 Action = Literal["LOVE", "UP", "DOWN", "HARD_PASS"]
+PREFERENCE_WEIGHTS = {"FOOD": 20, "LIVE": 18, "POL": 18, "SCEN": 16, "NOV": 14, "HERIT": 14}
 
 VENUE_TYPES = {
     "table for the night": {"ENRG": 25, "AFFIL": 85, "CROWD": 35, "TALK": 90, "MOVE": 10, "GAMES": 15},
@@ -23,6 +24,14 @@ VENUE_TYPES = {
     "street / market": {"ENRG": 60, "AFFIL": 55, "CROWD": 85, "TALK": 60, "MOVE": 60, "GAMES": 10},
     "open ground": {"ENRG": 50, "AFFIL": 70, "CROWD": 40, "TALK": 75, "MOVE": 70, "GAMES": 40},
 }
+
+DEMO_VENUES = [
+    {"name": "Sidecar, GK-2", "type": "pub", "area": "Greater Kailash II", "scores": {"FOOD": 72, "LIVE": 58, "POL": 76, "SCEN": 78, "NOV": 62, "HERIT": 48}, "pol_sense": "current"},
+    {"name": "Depot 48", "type": "buzzy restaurant", "area": "Khan Market", "scores": {"FOOD": 86, "LIVE": 34, "POL": 72, "SCEN": 82, "NOV": 55, "HERIT": 40}, "pol_sense": "both"},
+    {"name": "Piano Man Jazz Club", "type": "live room", "area": "Safdarjung", "scores": {"FOOD": 46, "LIVE": 92, "POL": 84, "SCEN": 79, "NOV": 64, "HERIT": 38}, "pol_sense": "classy"},
+    {"name": "Majnu ka Tila Lane", "type": "street / market", "area": "North Delhi", "scores": {"FOOD": 78, "LIVE": 25, "POL": 52, "SCEN": 88, "NOV": 80, "HERIT": 68}, "pol_sense": "current"},
+    {"name": "Sunder Nursery", "type": "open ground", "area": "Nizamuddin", "scores": {"FOOD": 40, "LIVE": 20, "POL": 48, "SCEN": 91, "NOV": 68, "HERIT": 88}, "pol_sense": "both"},
+]
 
 @dataclass(frozen=True)
 class Card:
@@ -147,3 +156,31 @@ def select_venue_types(members: list[dict[str, float]], duration_hours: float = 
         candidates.append((distance, name))
     candidates.sort()
     return [name for _, name in candidates[:room["stops"]]] or ["pub"]
+
+def preference_fit(venue: dict, members: list[dict], visited: set[str] | None = None) -> float:
+    visited = visited or set()
+    total = 0.0
+    for member in members or [{}]:
+        prefs = member.get("preferences", member)
+        sense = member.get("pol_sense", "both")
+        for factor, weight in PREFERENCE_WEIGHTS.items():
+            if factor == "POL" and sense not in ("both", venue.get("pol_sense", "both")) and venue.get("pol_sense") != "both":
+                continue
+            score = 100 if factor == "NOV" and venue["name"] not in visited else 20 if factor == "NOV" else venue.get("scores", {}).get(factor, 50)
+            total += (prefs.get(factor, 50) / 100) * (score / 100) * weight
+    return total
+
+def fill_venues(types: list[str], members: list[dict], venues: list[dict] | None = None, visited: set[str] | None = None) -> list[dict]:
+    pool = venues or DEMO_VENUES
+    used: set[str] = set()
+    selected: list[dict] = []
+    for venue_type in types:
+        choices = [venue for venue in pool if venue.get("type") == venue_type and venue["name"] not in used]
+        if not choices:
+            choices = [venue for venue in pool if venue["name"] not in used]
+        if not choices:
+            break
+        choice = max(choices, key=lambda venue: preference_fit(venue, members, visited))
+        used.add(choice["name"])
+        selected.append(choice)
+    return selected
