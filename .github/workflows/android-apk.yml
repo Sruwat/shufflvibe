@@ -24,7 +24,7 @@ jobs:
           cache-dependency-path: mobile/package-lock.json
 
       - name: Install JavaScript dependencies
-        run: npm ci --no-audit --no-fund
+        run: npm install --no-audit --no-fund
 
       - name: Align Expo native package versions
         run: npx expo install --fix --npm
