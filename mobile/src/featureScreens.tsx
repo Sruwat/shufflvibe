@@ -1,10 +1,39 @@
 import React, { useEffect, useState } from 'react';
-import { Pressable, SafeAreaView, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Pressable, SafeAreaView, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from './theme';
 import { FeatureMode, useApp } from './store';
 import { factors, preferences as preferenceFactors } from './data';
 import { getService, PrivacySettings } from './services';
+
+const reportReasons = ['Harassment', 'Spam or scam', 'Inappropriate content', 'Safety concern', 'Something else'];
+
+function ReportSafetyScreen() {
+  const { set } = useApp();
+  const service = React.useMemo(() => getService(), []);
+  const [targetId, setTargetId] = useState('demo-user-2');
+  const [reason, setReason] = useState(reportReasons[0]);
+  const [details, setDetails] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState('');
+  const [blocked, setBlocked] = useState(false);
+  useEffect(() => { let mounted = true; service.getBlockedUsers().then(items => { if (mounted) setBlocked(items.includes(targetId.trim())); }).catch(() => undefined); return () => { mounted = false; }; }, [service, targetId]);
+  const submit = async () => {
+    if (!targetId.trim()) { setMessage('Enter the profile ID you want to report.'); return; }
+    setBusy(true); setMessage('');
+    try { const result = await service.submitReport(targetId.trim(), `${reason}${details.trim() ? `: ${details.trim()}` : ''}`); setMessage(`Report received · ${result.id}`); }
+    catch (error) { setMessage(error instanceof Error ? error.message : 'Could not submit report. Try again.'); }
+    finally { setBusy(false); }
+  };
+  const toggleBlock = async () => {
+    if (!targetId.trim()) { setMessage('Enter the profile ID you want to block.'); return; }
+    setBusy(true); setMessage('');
+    try { const result = blocked ? await service.unblockUser(targetId.trim()) : await service.blockUser(targetId.trim()); setBlocked(result.blocked); setMessage(result.blocked ? 'Profile blocked in this SHUFFL account.' : 'Profile unblocked.'); }
+    catch (error) { setMessage(error instanceof Error ? error.message : 'Could not update block state.'); }
+    finally { setBusy(false); }
+  };
+  return <SafeAreaView style={styles.safe}><FeatureHeader label="SAFETY" onBack={() => set({ screen: 'feature', featureMode: 'visitor' })}/><ScrollView contentContainerStyle={styles.content}><Text style={styles.eyebrow}>REPORT & BLOCK</Text><Text style={styles.title}>Your safety comes first</Text><Text style={styles.body}>Reports are recorded for review. Blocking is an account-level demo state; because this build has no sign-in or server authorization, it cannot enforce blocks across real accounts.</Text><Text style={styles.fieldLabel}>PROFILE ID</Text><TextInput accessibilityLabel="Profile ID to report or block" autoCapitalize="none" value={targetId} onChangeText={setTargetId} style={styles.input} placeholder="Profile ID" placeholderTextColor={colors.muted}/><Text style={styles.fieldLabel}>WHY ARE YOU REPORTING?</Text>{reportReasons.map(item => <Pressable key={item} accessibilityRole="radio" accessibilityState={{ selected: reason === item }} onPress={() => setReason(item)} style={[styles.reason, reason === item && styles.reasonSelected]}><Text style={styles.routeText}>{item}</Text><Ionicons name={reason === item ? 'radio-button-on' : 'radio-button-off'} size={20} color={reason === item ? colors.mint : colors.muted}/></Pressable>)}<TextInput accessibilityLabel="Optional report details" value={details} onChangeText={setDetails} style={[styles.input, styles.multiline]} placeholder="Optional details (do not include exact location)" placeholderTextColor={colors.muted} multiline maxLength={1600} textAlignVertical="top"/><FeatureButton label={busy ? 'Submitting…' : 'Submit report'} onPress={submit}/><FeatureButton label={busy ? 'Please wait…' : blocked ? 'Unblock this profile' : 'Block this profile'} onPress={toggleBlock} secondary/>{message ? <Text accessibilityRole="alert" style={styles.notice}>{message}</Text> : null}<Text style={styles.disclaimer}>Only include information needed to understand the safety concern. This demo does not notify or contact an external moderation team.</Text></ScrollView></SafeAreaView>;
+}
 
 const content: Record<FeatureMode, { eyebrow: string; title: string; body: string; action: string; next?: FeatureMode; icon: keyof typeof Ionicons.glyphMap }> = {
   venue:{eyebrow:'VENUE DETAIL',title:'Sidecar, GK-2',body:'Buzzy, easy to settle into · Greater Kailash II. Venue media, review notes, pinboard, and preference fit are kept together here.',action:'Add to plan',next:'activePlan',icon:'location-outline'},
@@ -183,9 +212,10 @@ export function FeatureScreen({ mode }: { mode: FeatureMode }) {
   if (mode === 'joinRequests') return <JoinRequestsScreen/>;
   if (mode === 'capsule') return <CapsuleScreen/>;
   if (mode === 'chat') return <ChatScreen/>;
+  if (mode === 'report') return <ReportSafetyScreen/>;
   const item = content[mode];
   const go = () => item.next ? set({ screen: 'feature', featureMode: item.next }) : set({ screen: 'profileHome' });
   return <SafeAreaView style={styles.safe}><View style={styles.header}><Pressable onPress={() => set({ screen: 'control' })} style={styles.back}><Ionicons name="arrow-back" size={22} color={colors.text}/></Pressable><Text style={styles.headerLabel}>{item.eyebrow}</Text><Ionicons name={item.icon} size={22} color={colors.mint}/></View><ScrollView contentContainerStyle={styles.content}><View style={styles.heroIcon}><Ionicons name={item.icon} size={34} color={colors.mint}/></View><Text style={styles.eyebrow}>{item.eyebrow}</Text><Text style={styles.title}>{item.title}</Text><Text style={styles.body}>{item.body}</Text><Pressable onPress={go} style={styles.primary}><Text style={styles.primaryText}>{item.action}</Text></Pressable>{mode==='settings'&&<View style={styles.routeList}>{(Object.keys(content) as FeatureMode[]).map((route)=><Pressable key={route} onPress={()=>set({screen:'feature',featureMode:route})} style={styles.route}><Text style={styles.routeText}>{content[route].eyebrow}</Text><Ionicons name="chevron-forward" size={18} color={colors.muted}/></Pressable>)}</View>}<Pressable onPress={() => set({ screen: 'feature', featureMode: 'settings' })} style={styles.secondary}><Text style={styles.secondaryText}>Open feature hub</Text></Pressable></ScrollView></SafeAreaView>;
 }
 
-const styles = StyleSheet.create({safe:{flex:1,backgroundColor:colors.bg},header:{height:76,paddingHorizontal:20,flexDirection:'row',alignItems:'center',justifyContent:'space-between'},back:{width:44,height:44,alignItems:'center',justifyContent:'center'},headerLabel:{color:colors.muted,fontSize:12,letterSpacing:1.3},content:{padding:20,paddingBottom:100},heroIcon:{width:72,height:72,borderRadius:24,backgroundColor:'#12332D',alignItems:'center',justifyContent:'center',marginBottom:24},eyebrow:{color:colors.mint,fontSize:11,letterSpacing:1.7,fontWeight:'800',marginBottom:12},title:{color:colors.text,fontSize:34,lineHeight:40,fontWeight:'800',marginBottom:14},body:{color:colors.muted,fontSize:16,lineHeight:24,marginBottom:24},primary:{minHeight:54,borderRadius:16,backgroundColor:colors.mint,alignItems:'center',justifyContent:'center',marginTop:8},primaryText:{color:colors.bg,fontWeight:'800',fontSize:15},routeList:{marginTop:18,borderTopWidth:1,borderTopColor:colors.line},route:{minHeight:50,borderBottomWidth:1,borderBottomColor:colors.line,flexDirection:'row',alignItems:'center',justifyContent:'space-between'},routeText:{color:colors.text,fontSize:13,fontWeight:'700',letterSpacing:.5},secondary:{minHeight:54,borderRadius:16,backgroundColor:colors.raised,borderWidth:1,borderColor:colors.line,alignItems:'center',justifyContent:'center',marginTop:12},secondaryText:{color:colors.text,fontWeight:'700',fontSize:15}});
+const styles = StyleSheet.create({safe:{flex:1,backgroundColor:colors.bg},header:{height:76,paddingHorizontal:20,flexDirection:'row',alignItems:'center',justifyContent:'space-between'},back:{width:44,height:44,alignItems:'center',justifyContent:'center'},headerLabel:{color:colors.muted,fontSize:12,letterSpacing:1.3},content:{padding:20,paddingBottom:100},heroIcon:{width:72,height:72,borderRadius:24,backgroundColor:'#12332D',alignItems:'center',justifyContent:'center',marginBottom:24},eyebrow:{color:colors.mint,fontSize:11,letterSpacing:1.7,fontWeight:'800',marginBottom:12},title:{color:colors.text,fontSize:34,lineHeight:40,fontWeight:'800',marginBottom:14},body:{color:colors.muted,fontSize:16,lineHeight:24,marginBottom:24},primary:{minHeight:54,borderRadius:16,backgroundColor:colors.mint,alignItems:'center',justifyContent:'center',marginTop:8},primaryText:{color:colors.bg,fontWeight:'800',fontSize:15},routeList:{marginTop:18,borderTopWidth:1,borderTopColor:colors.line},route:{minHeight:50,borderBottomWidth:1,borderBottomColor:colors.line,flexDirection:'row',alignItems:'center',justifyContent:'space-between'},fieldLabel:{color:colors.mint,fontSize:11,letterSpacing:1.4,fontWeight:'800',marginTop:18,marginBottom:8},input:{minHeight:50,borderRadius:14,borderWidth:1,borderColor:colors.line,backgroundColor:colors.raised,paddingHorizontal:14,color:colors.text,fontSize:15,marginBottom:8},multiline:{minHeight:104,paddingTop:12},reason:{minHeight:48,flexDirection:'row',alignItems:'center',justifyContent:'space-between',paddingHorizontal:12,borderWidth:1,borderColor:colors.line,borderRadius:12,marginBottom:8},reasonSelected:{borderColor:colors.mint,backgroundColor:'#102923'},notice:{color:colors.mint,fontSize:14,lineHeight:20,marginTop:16},disclaimer:{color:colors.muted,fontSize:12,lineHeight:18,marginTop:16},routeText:{color:colors.text,fontSize:13,fontWeight:'700',letterSpacing:.5},secondary:{minHeight:54,borderRadius:16,backgroundColor:colors.raised,borderWidth:1,borderColor:colors.line,alignItems:'center',justifyContent:'center',marginTop:12},secondaryText:{color:colors.text,fontWeight:'700',fontSize:15}});

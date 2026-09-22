@@ -15,7 +15,7 @@ Status describes the current implementation, not the ambition of the full SHUFFL
 | Plans and arrival consent | API-backed when configured; in-memory demo otherwise | Plan creation/lock and global plus per-plan approximate-presence consent are wired. Feedback is still local; no GPS location is collected. |
 | Rooms, join requests, capsules | Local demo states | Seeded interactions; no real-time collaboration or persistence. |
 | Notifications, inbox, chat | Local demo states | No push transport or chat service. |
-| Privacy & safety | Functional API/demo settings flow | Visibility, discoverability, approximate presence, global location permission, and plan-specific consent are wired. Report/block, authorization, moderation, and audit remain incomplete. |
-| Visitor/profile history/report/support | Mixed demo flows and shells | Routes exist; durable profiles/history, block enforcement, moderation, and complete support actions need implementation. |
+| Privacy & safety | Partial functional demo flow | Visibility, discoverability, approximate presence, global location permission, plan-specific consent, report submission, and block/unblock state have UI/service/API paths and contract tests. State is in-memory; auth, real enforcement, moderation, and audit remain incomplete. |
+| Visitor/profile history/report/support | Mixed demo flows and shells | Report/block screen now supports target, reason, details, report submission, and block/unblock. Durable profiles/history, account-scoped enforcement, moderation, and complete support actions need implementation. |
 | FastAPI boundary | Partial | Endpoints and tests exist; not all mobile screens use backend services and production auth/data integrations are absent. |
 | Android APK | CI build | GitHub Actions assembles a debug APK; packaging success is not a 100% feature-coverage claim. |

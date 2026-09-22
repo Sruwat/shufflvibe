@@ -38,3 +38,20 @@ def test_capsule_approval_privacy_and_notifications_persist():
 def test_missing_resources_return_not_found():
     assert client.post('/v1/plans/not-a-plan/lock').status_code == 404
     assert client.post('/v1/rooms/not-a-room/join-requests', json={'room_id': 'not-a-room'}).status_code == 404
+
+
+def test_report_validation_and_block_lifecycle():
+    target = 'safety-test-user'
+    created = client.post('/v1/blocks', json={'target_id': target})
+    assert created.status_code == 200
+    assert created.json() == {'target_id': target, 'blocked': True}
+    assert target in client.get('/v1/blocks').json()['items']
+    assert client.post('/v1/blocks', json={'target_id': 'demo-user'}).status_code == 422
+    removed = client.delete(f'/v1/blocks/{target}')
+    assert removed.status_code == 200 and removed.json()['blocked'] is False
+    assert target not in client.get('/v1/blocks').json()['items']
+    report = client.post('/v1/reports', json={'target_id': target, 'reason': 'Harassment: repeated unwanted contact'})
+    assert report.status_code == 200 and report.json()['status'] == 'received'
+    assert report.json()['reason'].startswith('Harassment:')
+    assert client.post('/v1/reports', json={'target_id': 'demo-user', 'reason': 'Something else'}).status_code == 422
+    assert client.post('/v1/reports', json={'target_id': target, 'reason': '   '}).status_code == 422

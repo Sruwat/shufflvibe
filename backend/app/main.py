@@ -66,8 +66,12 @@ class MessageRequest(BaseModel):
 
 
 class ReportRequest(BaseModel):
-    target_id: str
+    target_id: str = Field(min_length=1, max_length=200)
     reason: str = Field(min_length=1, max_length=2000)
+
+
+class BlockRequest(BaseModel):
+    target_id: str = Field(min_length=1, max_length=200)
 
 
 class PrivacyUpdate(BaseModel):
@@ -91,6 +95,7 @@ _plans: dict[str, dict[str, Any]] = {}
 _capsules: dict[str, dict[str, Any]] = {}
 _messages: list[dict[str, Any]] = []
 _reports: list[dict[str, Any]] = []
+_blocked_users: set[str] = set()
 _privacy: dict[str, dict[str, Any]] = {}
 _plan_location_consents: dict[str, bool] = {}
 _notifications: list[dict[str, Any]] = [{"id": "n-1", "kind": "room_request", "title": "A room is forming", "read": False}]
@@ -299,9 +304,38 @@ def mark_notification_read(notification_id: str) -> dict[str, Any]:
 
 @app.post("/v1/reports")
 def report(payload: ReportRequest) -> dict[str, Any]:
-    record = {"id": new_id("report"), "target_id": payload.target_id, "reason": payload.reason, "status": "received", "created_at": datetime.now(timezone.utc).isoformat()}
+    target_id = payload.target_id.strip()
+    reason = payload.reason.strip()
+    if not target_id or not reason:
+        raise HTTPException(status_code=422, detail="target_id and reason cannot be blank")
+    if target_id == "demo-user":
+        raise HTTPException(status_code=422, detail="You cannot report your own account")
+    record = {"id": new_id("report"), "target_id": target_id, "reason": reason, "status": "received", "created_at": datetime.now(timezone.utc).isoformat()}
     _reports.append(record)
     return record
+
+
+@app.get("/v1/blocks")
+def blocked_users() -> dict[str, list[str]]:
+    return {"items": sorted(_blocked_users)}
+
+
+@app.post("/v1/blocks")
+def block_user(payload: BlockRequest) -> dict[str, Any]:
+    target_id = payload.target_id.strip()
+    if not target_id:
+        raise HTTPException(status_code=422, detail="target_id cannot be blank")
+    if target_id == "demo-user":
+        raise HTTPException(status_code=422, detail="You cannot block your own account")
+    _blocked_users.add(target_id)
+    return {"target_id": target_id, "blocked": True}
+
+
+@app.delete("/v1/blocks/{target_id}")
+def unblock_user(target_id: str) -> dict[str, Any]:
+    target_id = target_id.strip()
+    _blocked_users.discard(target_id)
+    return {"target_id": target_id, "blocked": False}
 
 
 @app.get("/v1/plans/{plan_id}/location-consent")

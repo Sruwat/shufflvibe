@@ -3,9 +3,13 @@ import { chemistryV2, fillVenues, selectVenueTypes } from './fullEngine';
 
 export type PrivacySettings = { location_sharing: boolean; approximate_presence: boolean; discoverability: boolean; visibility: Record<string, 'everyone' | 'friends' | 'nobody'> };
 export type PlanLocationConsent = { approved: boolean };
+export type SafetyAction = { blocked: boolean };
+export type SafetyReport = { id: string; status: string };
 const defaultPrivacy: PrivacySettings = { location_sharing: false, approximate_presence: true, discoverability: true, visibility: { profile: 'friends', vibe: 'friends', plans: 'friends' } };
 let demoPrivacy: PrivacySettings = { ...defaultPrivacy, visibility: { ...defaultPrivacy.visibility } };
 const demoPlanConsents: Record<string, boolean> = {};
+const demoBlockedUsers = new Set<string>();
+let demoReportSequence = 0;
 
 export type ServiceMode = 'demo' | 'api';
 export type PlanInput = {
@@ -29,6 +33,10 @@ export type Service = {
   savePrivacy: (settings: PrivacySettings) => Promise<PrivacySettings>;
   getPlanLocationConsent: (planId: string) => Promise<PlanLocationConsent>;
   savePlanLocationConsent: (planId: string, approved: boolean) => Promise<PlanLocationConsent>;
+  submitReport: (targetId: string, reason: string) => Promise<SafetyReport>;
+  blockUser: (targetId: string) => Promise<SafetyAction>;
+  unblockUser: (targetId: string) => Promise<SafetyAction>;
+  getBlockedUsers: () => Promise<string[]>;
 };
 
 export const DemoService: Service = {
@@ -53,6 +61,10 @@ export const DemoService: Service = {
   savePrivacy: async (settings) => { demoPrivacy = { ...settings, visibility: { ...settings.visibility } }; if (!settings.location_sharing) Object.keys(demoPlanConsents).forEach((key) => { demoPlanConsents[key] = false; }); return { ...demoPrivacy, visibility: { ...demoPrivacy.visibility } }; },
   getPlanLocationConsent: async (planId) => ({ approved: demoPrivacy.location_sharing && Boolean(demoPlanConsents[planId]) }),
   savePlanLocationConsent: async (planId, approved) => { if (approved && !demoPrivacy.location_sharing) throw new Error("Enable per-plan location sharing in privacy settings first"); demoPlanConsents[planId] = approved; return { approved }; },
+  submitReport: async (_targetId, _reason) => ({ id: `demo-report-${++demoReportSequence}`, status: 'received' }),
+  blockUser: async (targetId) => { demoBlockedUsers.add(targetId); return { blocked: true }; },
+  unblockUser: async (targetId) => { demoBlockedUsers.delete(targetId); return { blocked: false }; },
+  getBlockedUsers: async () => [...demoBlockedUsers].sort(),
 };
 
 export function createApiService(baseUrl: string): Service {
@@ -115,6 +127,10 @@ export function createApiService(baseUrl: string): Service {
       "/v1/plans/" + encodeURIComponent(planId) + "/location-consent",
       { method: "POST", body: JSON.stringify({ approved }) },
     ) as PlanLocationConsent,
+    submitReport: async (targetId, reason) => await request('/v1/reports', { method: 'POST', body: JSON.stringify({ target_id: targetId, reason }) }) as SafetyReport,
+    blockUser: async (targetId) => await request('/v1/blocks', { method: 'POST', body: JSON.stringify({ target_id: targetId }) }) as SafetyAction,
+    unblockUser: async (targetId) => await request('/v1/blocks/' + encodeURIComponent(targetId), { method: 'DELETE' }) as SafetyAction,
+    getBlockedUsers: async () => (await request('/v1/blocks')).items as string[],
   };
 }
 
