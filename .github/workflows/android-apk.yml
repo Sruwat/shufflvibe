@@ -29,6 +29,9 @@ jobs:
       - name: Align Expo native package versions
         run: npx expo install --fix --npm
 
+      - name: Type-check mobile application
+        run: npm run typecheck
+
       - name: Generate native Android project
         run: npx expo prebuild --platform android --no-install --non-interactive
 
