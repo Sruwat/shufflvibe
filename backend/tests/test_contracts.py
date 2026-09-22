@@ -16,11 +16,18 @@ def test_room_host_freezes_plan_and_join_request_is_resolved():
     assert hosted.status_code == 200
     assert hosted.json()['status'] == 'hosted'
     assert hosted.json()['plan_id'] == plan['id']
-    request = client.post('/v1/rooms/join-requests', json={'room_id': room['id'], 'note': 'Joining solo'}).json()
+    request = client.post('/v1/rooms/join-requests', json={'room_id': room['id'], 'member_id': 'joiner-17', 'note': 'Joining solo'}).json()
+    assert request['member_id'] == 'joiner-17'
+    assert client.get(f"/v1/rooms/{room['id']}/join-requests").json()['items'][0]['id'] == request['id']
+    listed = client.get('/v1/rooms?status=hosted').json()['items']
+    assert all('join_requests' not in item for item in listed)
+    assert client.post('/v1/rooms/join-requests', json={'room_id': room['id'], 'member_id': 'joiner-17'}).json()['id'] == request['id']
     result = client.post(f"/v1/rooms/{room['id']}/join-requests/{request['id']}/decision", json={'status': 'accepted'})
     assert result.status_code == 200
     assert result.json()['request']['status'] == 'accepted'
     assert result.json()['plan_frozen'] is True
+    assert 'joiner-17' in result.json()['room']['members']
+    assert client.get(f"/v1/rooms/{room['id']}/join-requests").json()['items'] == []
 
 def test_capsule_approval_privacy_and_notifications_persist():
     room = client.post('/v1/rooms', json={'title': 'Capsule room'}).json()
@@ -37,7 +44,7 @@ def test_capsule_approval_privacy_and_notifications_persist():
 
 def test_missing_resources_return_not_found():
     assert client.post('/v1/plans/not-a-plan/lock').status_code == 404
-    assert client.post('/v1/rooms/not-a-room/join-requests', json={'room_id': 'not-a-room'}).status_code == 404
+    assert client.post('/v1/rooms/join-requests', json={'room_id': 'not-a-room', 'member_id': 'missing-room-joiner'}).status_code == 404
 
 
 def test_report_validation_and_block_lifecycle():
@@ -55,3 +62,10 @@ def test_report_validation_and_block_lifecycle():
     assert report.json()['reason'].startswith('Harassment:')
     assert client.post('/v1/reports', json={'target_id': 'demo-user', 'reason': 'Something else'}).status_code == 422
     assert client.post('/v1/reports', json={'target_id': target, 'reason': '   '}).status_code == 422
+
+
+def test_join_request_contract_rejects_invalid_members_and_requires_hosted_room():
+    room = client.post('/v1/rooms', json={'title': 'Not hosted yet'}).json()
+    assert client.post('/v1/rooms/join-requests', json={'room_id': room['id'], 'member_id': 'joiner'}).status_code == 409
+    assert client.post('/v1/rooms/join-requests', json={'room_id': 'room-demo', 'member_id': '   '}).status_code == 422
+    assert client.get('/v1/rooms/missing/join-requests').status_code == 404

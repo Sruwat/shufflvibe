@@ -43,7 +43,8 @@ class RoomUpdate(BaseModel):
 
 class JoinRequest(BaseModel):
     room_id: str
-    note: str = ""
+    member_id: str = Field(default="demo-joiner", min_length=1, max_length=200)
+    note: str = Field(default="", max_length=1000)
 
 
 class JoinDecision(BaseModel):
@@ -191,7 +192,8 @@ def rooms(status: str | None = None, visibility: str | None = None) -> dict[str,
         items = [room for room in items if room["status"] == status]
     if visibility:
         items = [room for room in items if room["visibility"] == visibility]
-    return {"items": items}
+    public_items = [{key: value for key, value in room.items() if key != "join_requests"} for room in items]
+    return {"items": public_items}
 
 
 @app.patch("/v1/rooms/{room_id}")
@@ -232,9 +234,26 @@ def join_room(payload: JoinRequest) -> dict[str, Any]:
     room = find_room(payload.room_id)
     if room["status"] != "hosted":
         raise HTTPException(status_code=409, detail="Room is not accepting requests")
-    request = {"id": new_id("join"), "room_id": payload.room_id, "status": "pending", "note": payload.note, "created_at": datetime.now(timezone.utc).isoformat()}
+    member_id = payload.member_id.strip()
+    if not member_id:
+        raise HTTPException(status_code=422, detail="member_id cannot be blank")
+    if member_id in room["members"]:
+        raise HTTPException(status_code=409, detail="Member is already in this room")
+    existing = next((item for item in room["join_requests"] if item["member_id"] == member_id and item["status"] == "pending"), None)
+    if existing:
+        return existing
+    request = {"id": new_id("join"), "room_id": payload.room_id, "member_id": member_id, "status": "pending", "note": payload.note.strip(), "created_at": datetime.now(timezone.utc).isoformat()}
     room["join_requests"].append(request)
     return request
+
+
+@app.get("/v1/rooms/{room_id}/join-requests")
+def get_join_requests(room_id: str, status: str = "pending") -> dict[str, Any]:
+    room = find_room(room_id)
+    if status not in {"pending", "accepted", "declined", "all"}:
+        raise HTTPException(status_code=422, detail="invalid join request status")
+    items = room["join_requests"] if status == "all" else [item for item in room["join_requests"] if item["status"] == status]
+    return {"items": items}
 
 
 @app.post("/v1/rooms/{room_id}/join-requests/{request_id}/decision")
@@ -249,7 +268,8 @@ def decide_join(room_id: str, request_id: str, payload: JoinDecision) -> dict[st
         raise HTTPException(status_code=409, detail="Join request already resolved")
     request["status"] = payload.status
     if payload.status == "accepted":
-        room["members"].append(request_id)
+        if request["member_id"] not in room["members"]:
+            room["members"].append(request["member_id"])
     return {"request": request, "room": room, "plan_frozen": True}
 
 

@@ -8,6 +8,7 @@ require.extensions['.ts'] = (module, filename) => {
 };
 const { createAssessment, currentCard, beginExposure, deferCard, resolveAway, resumeAssessment, isRequiredAnswerExposure, backCard, answerCard, latencyFirmness, chemistryV2, selectVenueTypes } = require('../src/fullEngine.ts');
 const { vibeName } = require('../src/algorithms.ts');
+const { DemoService } = require('../src/services.ts');
 
 function testAwayPromptDiscardsTimeoutsAndResumesInPlace() {
   let state = createAssessment();
@@ -137,5 +138,18 @@ function testVibeNameV4UsesTheChosenTopAndFactorWeightForSecondTie() {
   assert.equal(vibeName({ ENRG: 88, AFFIL: 50, CROWD: 50, TALK: 50, ROAM: 50, MOVE: 50, GAMES: 50 }), 'Night Climber');
 }
 
+async function testDemoRoomJoinRequestEndToEnd() {
+  const room = (await DemoService.listHostedRooms()).find(item => item.id === 'room-demo');
+  assert.ok(room);
+  const created = await DemoService.requestToJoin(room.id, 'mobile-test-joiner', 'Joining for dinner');
+  assert.equal(created.status, 'pending');
+  assert.equal((await DemoService.requestToJoin(room.id, 'mobile-test-joiner')).id, created.id);
+  assert.equal((await DemoService.getJoinRequests(room.id)).length, 1);
+  const decision = await DemoService.decideJoinRequest(room.id, created.id, 'accepted');
+  assert.equal(decision.plan_frozen, true);
+  assert.deepEqual(decision.room.members, ['demo-user', 'mobile-test-joiner']);
+  assert.equal((await DemoService.getJoinRequests(room.id)).length, 0);
+}
+
 for (const test of [testOneTimeoutDoesNotOpenAwayPrompt, testDeferredPartnerIsPulledForwardOnCollision, testAwayPromptDiscardsTimeoutsAndResumesInPlace, testAwayChoiceResetsToFirstTimedOutCard, testUnansweredPauseRequiresExplicitResume, testThirdExposureCannotBeDeferred, testBackRecordsExposureAndReturnsToPreviousCard, testBackAfterAnsweredCardReturnsToTheCurrentCard, testVibeNameV4UsesTheChosenTopAndFactorWeightForSecondTie, testLatencyFirmnessUsesPostWarmupAnsweredCards, testRoamBendConsensusAndDurationCap, testVenueTypesUseMaximinTopFactorSatisfaction]) test();
-console.log('12 mobile assessment, naming, and plan-chemistry tests passed');
+testDemoRoomJoinRequestEndToEnd().then(() => console.log('13 mobile assessment, naming, plan-chemistry, and room-flow tests passed')).catch(error => { console.error(error); process.exitCode = 1; });
