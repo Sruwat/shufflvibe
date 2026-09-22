@@ -124,7 +124,7 @@ def answer(payload: Answer) -> dict[str, Any]:
 
 @app.post("/v1/plans/generate")
 def generate_plan(payload: PlanRequest) -> dict[str, Any]:
-    members = payload.member_scores or ([payload.scores] if not payload.members else [payload.scores for _ in payload.members])
+    members = payload.member_scores or [payload.scores]
     chemistry = chemistry_v2(members, payload.duration_hours, payload.strangers)
     venue_types = select_venue_types(members, payload.duration_hours, payload.strangers)
     venue_preferences = [{"preferences": payload.preferences, "pol_sense": payload.pol_sense}]

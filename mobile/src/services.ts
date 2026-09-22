@@ -18,6 +18,7 @@ export type Service = {
   generatePlan: (input: PlanInput) => Promise<GeneratedPlan>;
   createRoom: (title: string, members?: string[]) => Promise<RoomRecord>;
   hostRoom: (roomId: string, planId: string) => Promise<RoomRecord>;
+  lockPlan: (planId: string) => Promise<void>;
 };
 
 export const DemoService: Service = {
@@ -37,6 +38,7 @@ export const DemoService: Service = {
   },
   createRoom: async (title) => ({ id: `demo-room-${Date.now()}`, title, status: 'draft' }),
   hostRoom: async (roomId) => ({ id: roomId, title: 'Demo room', status: 'hosted' }),
+  lockPlan: async () => undefined,
 };
 
 export function createApiService(baseUrl: string): Service {
@@ -80,6 +82,9 @@ export function createApiService(baseUrl: string): Service {
       const path = `/v1/rooms/${encodeURIComponent(roomId)}/host?plan_id=${encodeURIComponent(planId)}`;
       const result = await request(path, { method: 'POST' });
       return { id: String(result.id), title: String(result.title), status: String(result.status) };
+    },
+    lockPlan: async (planId) => {
+      await request(`/v1/plans/${encodeURIComponent(planId)}/lock`, { method: 'POST' });
     },
   };
 }
