@@ -1,21 +1,20 @@
-# Screen coverage
+# Screen and spec coverage
 
-| Area | Demo | Notes |
-|---|---:|---|
-| Onboarding and demo login | ✅ | Local, no credentials |
-| Profile and preferences | ✅ | Seeded profile badges |
-| Adaptive daily vibe | ✅ | Seven factors, no fixed total, four actions |
-| Vibe reveal | ✅ | V4-style generated name |
-| Discovery locked/unlocked | ✅ | Toggle in Control Centre |
-| Search and filters | ✅ | Navigable shell |
-| Venue and heatmap preview | ✅ | Privacy-safe approximate state |
-| Plans and rooms | ✅ | Seeded Delhi NCR flows |
-| Capsules and profile history | ✅ | Demo states/shells |
-| Venue detail and preference fit | ✅ | Reachable from feature hub |
-| Active plan, arrival, end-plan feedback | ✅ | Reachable demo states |
-| Host room, join requests, capsules | ✅ | Reachable demo states |
-| Notifications, inbox, group chat | ✅ | Local seeded states |
-| Visitor, edit profile, history | ✅ | Privacy-safe demo states |
-| Privacy, settings, report/block, support | ✅ | Feature hub routes |
-| Backend boundary | ✅ | FastAPI endpoints |
-| Production auth, maps, media, chat | ⏳ | Requires credentials/providers |
+Status describes the current implementation, not the ambition of the full SHUFFL spec. “Demo flow” means the screen is reachable and its primary interactions use local or seeded state; it does not imply production integrations or complete backend contracts.
+
+| Area | Current status | Evidence / gap |
+|---|---|---|
+| Onboarding and demo sign-in | Demo flow | Local identity only; no authentication provider. |
+| Profile and preference assessment | Partial demo flow | Preference deck and badges exist; persistence and full profile editing are incomplete. |
+| Daily vibe assessment | Core logic implemented; visual/demo flow | Seven-factor adaptive cards, four scores, deferral, timeout/away handling, Back, forced choice, latency ranking. Full spec parity and durable session storage still need audit. |
+| Vibe naming | Core rules implemented | V4 pole words, strongest-factor choice, tie override, second-factor thresholds, latency and weight fallbacks. Name freezing/persistence needs backend integration. |
+| Discovery lock/unlock | Local demo flow | Control Centre toggle; not connected to production eligibility. |
+| Search and filters | Partial / shell | Navigable screen; provider-backed search and complete filter behavior are not implemented. |
+| Venue detail and preference fit | Local demo flow | Seeded venue attributes; no live inventory, routing, booking, or real maps. |
+| Plan/chemistry algorithms | Partial | Prototype chemistry and venue ranking exist. Repository’s full two-stage shape/fill, bend/fairness, venue constraints, and feedback loop are not fully implemented or parity-tested. |
+| Plans, arrival, feedback | Local demo states | Some screens are reachable; durable plan lifecycle and external services are not connected. |
+| Rooms, join requests, capsules | Local demo states | Seeded interactions; no real-time collaboration or persistence. |
+| Notifications, inbox, chat | Local demo states | No push transport or chat service. |
+| Visitor/profile history/privacy/report/support | Mixed demo flows and shells | Routes exist; authorization, moderation, audit, and complete content/actions need verification. |
+| FastAPI boundary | Partial | Endpoints and tests exist; not all mobile screens use backend services and production auth/data integrations are absent. |
+| Android APK | CI build | GitHub Actions assembles a debug APK; packaging success is not a 100% feature-coverage claim. |

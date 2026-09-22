@@ -1,3 +1,5 @@
 # Known limitations
 
-This is a first-demo implementation: abstract artwork, seeded Delhi venues, local state, no real authentication, payments, push notifications, maps, venue media, chat transport, PostGIS persistence, or production chemistry service. The app remains fully navigable offline and clearly labels demo states. The APK build is blocked by missing Android SDK tooling in the supplied environment.
+This is a runnable demo, not a production-complete implementation of the full repository specification. The app includes local-only state and seeded Delhi NCR data, abstract placeholder artwork, and simulated social activity. Production authentication, durable per-user persistence, provider-backed venue inventory and maps, media delivery, push notifications, chat transport, payment flows, and production chemistry/outing-plan services are not complete. Some destinations are functional local demo journeys; others are navigation shells or seeded previews.
+
+Android builds are produced by the GitHub Actions workflow at .github/workflows/android-apk.yml. A successful CI APK proves packaging and configured checks only; it does not mean every spec requirement or screen is implemented. The supported, installable debug APK is delivered as a CI artifact and can also be copied locally to artifacts/shuffl-demo-v1.apk.
