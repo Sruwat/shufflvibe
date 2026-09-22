@@ -106,6 +106,33 @@ def pole_strength(score: float, fast: bool = False) -> float:
         return 0.75 if fast else 0.5
     return 0.0
 
+def _bend_and_firmness(member: dict, factor: str) -> tuple[bool, float]:
+    score = member.get(factor, 50)
+    latency = member.get("latency_firmness", {}).get(factor, 0.0)
+    extreme = score <= 20 or score >= 80
+    band = 20 < score < 30 or 70 < score < 80
+    firm = extreme or (band and latency >= 0.60)
+    bend = 25.0 if extreme else 28.0 if band and firm else abs(score - 50) + 5.0
+    return firm, bend
+
+def _roam_consensus(members: list[dict]) -> tuple[float, bool]:
+    firm = [(member, _bend_and_firmness(member, "ROAM")) for member in members]
+    firm = [(member, bend) for member, (is_firm, bend) in firm if is_firm]
+    if firm:
+        poles = {"high" if member.get("ROAM", 50) >= 50 else "low" for member, _ in firm}
+        weights = [1.0 / bend for _, bend in firm]
+        return sum(member.get("ROAM", 50) * weight for (member, _), weight in zip(firm, weights)) / sum(weights), len(poles) > 1
+    wants = [(member, abs(member.get("ROAM", 50) - 50) / 50.0) for member in members if abs(member.get("ROAM", 50) - 50) >= 25]
+    if not wants:
+        return 50.0, False
+    weight = sum(value for _, value in wants)
+    return sum(member.get("ROAM", 50) * value for member, value in wants) / weight, False
+
+def _stop_count(roam: float, duration_hours: float) -> int:
+    by_roam = 1 if roam < 35 else 2 if roam < 65 else 3
+    by_time = max(1, min(3, int(duration_hours // 1.75)))
+    return min(by_roam, by_time)
+
 def chemistry_v2(members: list[dict[str, float]], duration_hours: float = 4, strangers: bool = False) -> dict:
     """Apply the current asymmetric axis rules from CHEMISTRY_V2."""
     if not members:
@@ -137,9 +164,12 @@ def chemistry_v2(members: list[dict[str, float]], duration_hours: float = 4, str
         tags.append("Meet the Room")
     if sum(member.get("GAMES", 50) >= 70 for member in members) > len(members) / 2:
         tags.append("Common Ground")
-    roam = vector["ROAM"]
-    stops = 1 if roam < 35 else 2 if roam < 65 else 3
-    return {"vector": vector, "tags": tags[:2], "formation": "Best of Both" if len(members) > 1 else "In Sync", "stops": stops, "talk_floor": 40 if talker else 0}
+    roam, roam_split = _roam_consensus(members)
+    stops = _stop_count(roam, duration_hours)
+    if roam_split:
+        tags.append("Settle Then Roam")
+    durations = [0.55, *([0.45 / (stops - 1)] * (stops - 1))] if roam_split and stops > 1 else [1.0 / stops] * stops
+    return {"vector": vector, "tags": tags[:2], "formation": "Best of Both" if len(members) > 1 else "In Sync", "stops": stops, "roam": round(roam), "stop_durations": durations, "talk_floor": 40 if talker else 0}
 
 def select_venue_types(members: list[dict[str, float]], duration_hours: float = 4, strangers: bool = False) -> list[str]:
     room = chemistry_v2(members, duration_hours, strangers)

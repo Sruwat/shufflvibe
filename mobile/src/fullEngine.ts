@@ -241,7 +241,41 @@ export function chemistry(members: Partial<Record<Factor, number>>[], durationHo
   return { vector, tags: tags.slice(0, 1), formation: members.length > 1 ? 'Best of Both' : 'In Sync', stopCount, stopDurations };
 }
 
-export function chemistryV2(members: Partial<Record<Factor, number>>[], durationHours = 4, strangers = false) {
+type ChemistryMember = Partial<Record<Factor, number>> & { latency_firmness?: Partial<Record<Factor, number>> };
+
+function planBend(member: ChemistryMember, factor: Factor): { firm: boolean; bend: number } {
+  const score = member[factor] ?? 50;
+  const latency = member.latency_firmness?.[factor] ?? 0;
+  const extreme = score <= 20 || score >= 80;
+  const band = (score > 20 && score < 30) || (score > 70 && score < 80);
+  const firm = extreme || (band && latency >= 0.6);
+  return { firm, bend: extreme ? 25 : band && firm ? 28 : Math.abs(score - 50) + 5 };
+}
+
+function roamConsensus(members: ChemistryMember[]) {
+  const firm = members.flatMap((member) => {
+    const { firm: isFirm, bend } = planBend(member, 'ROAM');
+    return isFirm ? [{ score: member.ROAM ?? 50, bend }] : [];
+  });
+  const poles = new Set(firm.map(({ score }) => score >= 50 ? 'high' : 'low'));
+  if (firm.length) {
+    const weights = firm.map(({ bend }) => 1 / bend);
+    return { value: firm.reduce((sum, item, index) => sum + item.score * weights[index], 0) / weights.reduce((sum, weight) => sum + weight, 0), split: poles.size > 1 };
+  }
+  const wants = members.flatMap((member) => {
+    const score = member.ROAM ?? 50;
+    return Math.abs(score - 50) >= 25 ? [{ score, weight: Math.abs(score - 50) / 50 }] : [];
+  });
+  const weight = wants.reduce((sum, item) => sum + item.weight, 0);
+  return { value: weight ? wants.reduce((sum, item) => sum + item.score * item.weight, 0) / weight : 50, split: false };
+}
+
+function planStopCount(roam: number, durationHours: number) {
+  const roamStops = roam < 35 ? 1 : roam < 65 ? 2 : 3;
+  return Math.min(roamStops, Math.max(1, Math.min(3, Math.floor(durationHours / 1.75))));
+}
+
+export function chemistryV2(members: ChemistryMember[], durationHours = 4, strangers = false) {
   const safeMembers = members.length ? members : [Object.fromEntries(factors.map((factor) => [factor, 50])) as Partial<Record<Factor, number>>];
   const vector = Object.fromEntries(factors.map((factor) => [factor, Math.round(safeMembers.reduce((sum, member) => sum + (member[factor] ?? 50), 0) / safeMembers.length)])) as Partial<Record<Factor, number>>;
   const strength = (score: number) => score >= 80 || score <= 20 ? 1 : score >= 70 || score <= 30 ? 0.5 : 0;
@@ -254,8 +288,9 @@ export function chemistryV2(members: Partial<Record<Factor, number>>[], duration
   if (talker) tags.push('Buzz, Not Noise');
   const affilHigh = safeMembers.some((member) => (member.AFFIL ?? 50) >= 70); const affilLow = safeMembers.some((member) => (member.AFFIL ?? 50) <= 30);
   if (affilHigh && affilLow) tags.push('Table and Floor'); else if (strangers || safeMembers.every((member) => (member.AFFIL ?? 50) <= 30)) tags.push('Meet the Room');
-  const roam = vector.ROAM ?? 50; const stopCount = roam < 35 ? 1 : roam < 65 ? 2 : 3;
-  return { vector, tags: tags.slice(0, 2), formation: safeMembers.length > 1 ? 'Best of Both' : 'In Sync', stopCount, talkFloor: talker ? 40 : 0, stopDurations: stopCount === 1 ? [1] : Array.from({ length: stopCount }, () => 1 / stopCount) };
+  const roam = roamConsensus(safeMembers); const stopCount = planStopCount(roam.value, durationHours);
+  const stopDurations = roam.split && stopCount > 1 ? [0.55, ...Array.from({ length: stopCount - 1 }, () => 0.45 / (stopCount - 1))] : Array.from({ length: stopCount }, () => 1 / stopCount);
+  return { vector, tags: tags.slice(0, 2), formation: safeMembers.length > 1 ? 'Best of Both' : 'In Sync', stopCount, roam: Math.round(roam.value), roamSplit: roam.split, talkFloor: talker ? 40 : 0, stopDurations };
 }
 
 export function selectVenueTypes(members: Partial<Record<Factor, number>>[], durationHours = 4, strangers = false) {

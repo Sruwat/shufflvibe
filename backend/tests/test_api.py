@@ -9,4 +9,4 @@ def test_health():
 def test_plan_generation():
     result = client.post('/v1/plans/generate', json={'scores': {'ENRG': 88, 'ROAM': 80}})
     assert result.status_code == 200
-    assert result.json()['stops'] == 3
+    assert result.json()['stops'] == 2  # four-hour plans are capped by the 1.75h-per-stop rule

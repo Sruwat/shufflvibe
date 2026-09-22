@@ -27,6 +27,23 @@ def test_chemistry_v2_energy_is_asymmetric_and_talk_has_floor():
     assert result['talk_floor'] == 40
     assert 'Buzz, Not Noise' in result['tags']
 
+def test_roam_uses_firm_bend_weighting_and_duration_cap():
+    flexible_low = chemistry_v2([{"ROAM": 92}, {"ROAM": 30}], duration_hours=6)
+    assert flexible_low["roam"] == 92
+    assert flexible_low["stops"] == 3
+
+    fast_band_opposition = chemistry_v2([
+        {"ROAM": 92},
+        {"ROAM": 25, "latency_firmness": {"ROAM": 0.9}},
+    ], duration_hours=6)
+    assert fast_band_opposition["roam"] == 60
+    assert fast_band_opposition["stops"] == 2
+    assert fast_band_opposition["stop_durations"] == [0.55, 0.45]
+
+    short_night = chemistry_v2([{"ROAM": 92}], duration_hours=3)
+    assert short_night["stops"] == 1
+
+
 def test_venue_types_filter_out_non_talkable_club_for_talker():
     types = select_venue_types([{'ENRG': 88, 'TALK': 88, 'ROAM': 80}, {'ENRG': 62, 'TALK': 75, 'ROAM': 70}])
     assert all(name != 'club' for name in types)
