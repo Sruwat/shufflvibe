@@ -24,6 +24,8 @@ class PlanRequest(BaseModel):
     scores: dict[str, float]
     members: list[str] = Field(default_factory=list)
     member_scores: list[dict[str, float]] = Field(default_factory=list)
+    preferences: dict[str, float] = Field(default_factory=dict)
+    pol_sense: str = "both"
     duration_hours: float = Field(default=4, gt=0, le=16)
     strangers: bool = False
 
@@ -125,7 +127,8 @@ def generate_plan(payload: PlanRequest) -> dict[str, Any]:
     members = payload.member_scores or ([payload.scores] if not payload.members else [payload.scores for _ in payload.members])
     chemistry = chemistry_v2(members, payload.duration_hours, payload.strangers)
     venue_types = select_venue_types(members, payload.duration_hours, payload.strangers)
-    venues = fill_venues(venue_types, members, DEMO_VENUES)
+    venue_preferences = [{"preferences": payload.preferences, "pol_sense": payload.pol_sense}]
+    venues = fill_venues(venue_types, venue_preferences, DEMO_VENUES)
     plan = {"id": new_id("plan"), "style": "Could Go Late" if chemistry["vector"].get("ENRG", 50) >= 70 else "Settle Then Roam", "stops": chemistry["stops"], "chemistry": chemistry, "venue_types": venue_types, "venues": venues, "member_ids": payload.members, "status": "draft", "locked": False, "created_at": datetime.now(timezone.utc).isoformat()}
     _plans[plan["id"]] = plan
     return plan
