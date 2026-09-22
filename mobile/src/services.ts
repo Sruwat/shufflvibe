@@ -31,7 +31,7 @@ export const DemoService: Service = {
     return {
       id: `demo-plan-${Date.now()}`,
       style: chemistry.tags[0] ?? 'Settle Then Roam',
-      stops: selected.map((venue) => `${venue.name} · ${venue.area}`),
+      stops: selected.map((venue) => venue.name),
       chemistry,
     };
   },
