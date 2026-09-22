@@ -9,7 +9,7 @@ export type PreferenceReading = { score: number; importance: number; sense?: 'cl
 export type PreferenceAction = 'WHOLE_POINT' | 'NICE_TO_HAVE' | 'DONT_MIND' | 'DONT_CARE';
 export type PreferenceCard = { id: string; factor: Preference; title: string; subtitle: string };
 export type PreferenceState = { queue: PreferenceCard[]; cursor: number; answers: Record<string, PreferenceAction>; readings: Partial<Record<Preference, PreferenceReading>>; sense?: 'classy' | 'current' | 'both'; stage: 'deck' | 'sense' | 'done' };
-export type AssessmentState = { queue: Card[]; cursor: number; exposures: Exposure[]; answers: Record<string, Action>; scores: Partial<Record<Factor, number>>; forcedChoice?: [Factor, Factor]; paused: boolean; awayPrompt: boolean; completed: boolean };
+export type AssessmentState = { queue: Card[]; cursor: number; exposures: Exposure[]; answers: Record<string, Action>; scores: Partial<Record<Factor, number>>; forcedChoice?: [Factor, Factor]; paused: boolean; awayPrompt: boolean; awayStartCardId?: string; completed: boolean };
 
 export const VIBE_CARDS: Card[] = factors.flatMap((factor) => [
   { id: `V-${factor}-A`, factor, side: 'A' as const },
@@ -52,15 +52,24 @@ export function beginExposure(state: AssessmentState, now = Date.now()): Assessm
 
 export function deferCard(state: AssessmentState, kind: 'next' | 'timeout', now = Date.now()): AssessmentState {
   const card = currentCard(state);
-  if (!card || state.completed) return state;
+  if (!card || state.completed || state.paused) return state;
   const exposures = state.exposures.map((exposure) => exposure.card.id === card.id && !exposure.endedAt ? { ...exposure, endedAt: now, endedBy: kind, latency: Math.max(0, now - exposure.startedAt), nextCount: exposure.nextCount + 1 } : exposure);
   const index = Math.min(state.queue.length, state.cursor + 4);
   const queue = [...state.queue];
   const moved = queue.splice(state.cursor, 1)[0];
   queue.splice(Math.min(index, queue.length), 0, moved);
-  const timedOut = kind === 'timeout';
-  const timeouts = exposures.filter((exposure) => exposure.endedBy === 'timeout').length;
-  return { ...state, queue, exposures, cursor: Math.min(state.cursor, queue.length - 1), paused: timeouts >= 2, awayPrompt: timeouts >= 2, completed: false };
+  const last = exposures.at(-1);
+  const consecutiveTimeout = kind === 'timeout' && last?.endedBy === 'timeout';
+  let firstTimedOut: string | undefined;
+  if (consecutiveTimeout) {
+    for (let index = exposures.length - 1; index >= 0 && exposures[index].endedBy === 'timeout'; index -= 1) {
+      firstTimedOut = exposures[index].card.id;
+    }
+  }
+  const shouldPrompt = consecutiveTimeout && !state.awayPrompt;
+  return { ...state, queue, exposures, cursor: Math.min(state.cursor, queue.length - 1),
+    paused: shouldPrompt || state.paused, awayPrompt: shouldPrompt || state.awayPrompt,
+    awayStartCardId: shouldPrompt ? firstTimedOut : state.awayStartCardId, completed: false };
 }
 
 export function answerCard(state: AssessmentState, action: Action, now = Date.now()): AssessmentState {
@@ -103,7 +112,14 @@ export function answerForcedChoice(state: AssessmentState, selected: Factor): As
 
 export function resolveAway(state: AssessmentState, away: boolean): AssessmentState {
   if (!state.awayPrompt) return state;
-  return { ...state, awayPrompt: false, paused: away };
+  const timeoutIds = new Set<string>();
+  for (let index = state.exposures.length - 1; index >= 0 && state.exposures[index].endedBy === 'timeout'; index -= 1) {
+    timeoutIds.add(state.exposures[index].card.id);
+  }
+  const exposures = state.exposures.filter((exposure) => !timeoutIds.has(exposure.card.id));
+  if (!away) return { ...state, exposures, awayPrompt: false, paused: false, awayStartCardId: undefined };
+  const cursor = Math.max(0, state.queue.findIndex((card) => card.id === state.awayStartCardId));
+  return { ...state, exposures, cursor, awayPrompt: false, paused: false, awayStartCardId: undefined };
 }
 
 export function firmness(scores: Partial<Record<Factor, number>>): Partial<Record<Factor, number>> {
