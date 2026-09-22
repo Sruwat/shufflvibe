@@ -6,7 +6,7 @@ require.extensions['.ts'] = (module, filename) => {
   const output = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020, esModuleInterop: true } }).outputText;
   module._compile(output, filename);
 };
-const { createAssessment, currentCard, beginExposure, deferCard, resolveAway, resumeAssessment, isRequiredAnswerExposure, backCard, answerCard } = require('../src/fullEngine.ts');
+const { createAssessment, currentCard, beginExposure, deferCard, resolveAway, resumeAssessment, isRequiredAnswerExposure, backCard, answerCard, latencyFirmness } = require('../src/fullEngine.ts');
 const { vibeName } = require('../src/algorithms.ts');
 
 function testAwayPromptDiscardsTimeoutsAndResumesInPlace() {
@@ -102,6 +102,16 @@ function testDeferredPartnerIsPulledForwardOnCollision() {
   assert.equal(currentCard(state).id, partner.id);
   assert.notEqual(state.queue[state.queue.length - 1].id, partner.id);
 }
+function testLatencyFirmnessUsesPostWarmupAnsweredCards() {
+  const factorIds = ['ENRG', 'AFFIL', 'CROWD', 'TALK', 'ROAM', 'MOVE', 'GAMES'];
+  const state = createAssessment();
+  state.answers = Object.fromEntries(factorIds.map((factor) => [`V-${factor}-A`, 'LOVE']));
+  state.exposures = factorIds.map((factor, index) => ({ card: { id: `V-${factor}-A`, factor, side: 'A' }, index: index + 3, startedAt: 0, endedAt: 100, endedBy: 'swiped', nextCount: 0, latency: (index + 1) * 100 }));
+  const firmness = latencyFirmness(state);
+  assert.equal(firmness.ENRG, 1);
+  assert.equal(firmness.GAMES, 0);
+}
+
 function testVibeNameV4UsesTheChosenTopAndFactorWeightForSecondTie() {
   const scores = { ENRG: 88, AFFIL: 12, CROWD: 88, TALK: 62, ROAM: 50, MOVE: 50, GAMES: 50 };
   assert.equal(vibeName(scores, {}, 'CROWD').startsWith('Big-Room'), true);
@@ -109,5 +119,5 @@ function testVibeNameV4UsesTheChosenTopAndFactorWeightForSecondTie() {
   assert.equal(vibeName({ ENRG: 88, AFFIL: 50, CROWD: 50, TALK: 50, ROAM: 50, MOVE: 50, GAMES: 50 }), 'Night Climber');
 }
 
-for (const test of [testOneTimeoutDoesNotOpenAwayPrompt, testDeferredPartnerIsPulledForwardOnCollision, testAwayPromptDiscardsTimeoutsAndResumesInPlace, testAwayChoiceResetsToFirstTimedOutCard, testUnansweredPauseRequiresExplicitResume, testThirdExposureCannotBeDeferred, testBackRecordsExposureAndReturnsToPreviousCard, testBackAfterAnsweredCardReturnsToTheCurrentCard, testVibeNameV4UsesTheChosenTopAndFactorWeightForSecondTie]) test();
-console.log('9 mobile assessment and naming behavior tests passed');
+for (const test of [testOneTimeoutDoesNotOpenAwayPrompt, testDeferredPartnerIsPulledForwardOnCollision, testAwayPromptDiscardsTimeoutsAndResumesInPlace, testAwayChoiceResetsToFirstTimedOutCard, testUnansweredPauseRequiresExplicitResume, testThirdExposureCannotBeDeferred, testBackRecordsExposureAndReturnsToPreviousCard, testBackAfterAnsweredCardReturnsToTheCurrentCard, testVibeNameV4UsesTheChosenTopAndFactorWeightForSecondTie, testLatencyFirmnessUsesPostWarmupAnsweredCards]) test();
+console.log('10 mobile assessment and naming behavior tests passed');

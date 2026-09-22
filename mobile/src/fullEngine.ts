@@ -162,6 +162,23 @@ export function backCard(state: AssessmentState, now = Date.now()): AssessmentSt
   return { ...state, queue, cursor, history, exposures };
 }
 
+export function latencyFirmness(state: AssessmentState): Partial<Record<Factor, number>> {
+  const answered = Object.keys(state.answers).flatMap((id) => {
+    const exposures = state.exposures.filter((exposure) => exposure.card.id === id);
+    if (!exposures.length || Math.min(...exposures.map((exposure) => exposure.index)) < 3) return [];
+    const latency = exposures.reduce((sum, exposure) => sum + (exposure.latency ?? 0), 0);
+    return latency > 0 ? [{ factor: exposures[0].card.factor, latency: Math.log(latency) }] : [];
+  });
+  if (answered.length < 5) return {};
+  const sorted = [...answered].sort((a, b) => a.latency - b.latency);
+  const ranked = new Map<typeof answered[number], number>();
+  sorted.forEach((answer, index) => ranked.set(answer, 1 - index / (sorted.length - 1)));
+  return Object.fromEntries(factors.flatMap((factor) => {
+    const values = answered.filter((answer) => answer.factor === factor).map((answer) => ranked.get(answer) ?? 0);
+    return values.length ? [[factor, values.reduce((sum, value) => sum + value, 0) / values.length]] : [];
+  })) as Partial<Record<Factor, number>>;
+}
+
 export function firmness(scores: Partial<Record<Factor, number>>): Partial<Record<Factor, number>> {
   return Object.fromEntries(factors.map((factor) => [factor, Math.abs((scores[factor] ?? 50) - 50) / 50])) as Partial<Record<Factor, number>>;
 }
