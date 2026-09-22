@@ -45,18 +45,21 @@ jobs:
         working-directory: mobile/android
         run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;27.1.12297006"
 
-      - name: Assemble debug APK
+      - name: Assemble standalone release APK (bundles JavaScript; no Metro required)
         working-directory: mobile/android
-        run: ./gradlew assembleDebug --no-daemon --stacktrace
+        run: ./gradlew assembleRelease --no-daemon --stacktrace
 
-      - name: Copy release artifact
+      - name: Verify bundled app and stage standalone APK
         run: |
+          APK=android/app/build/outputs/apk/release/app-release.apk
+          test -s "$APK"
+          unzip -l "$APK" | grep -q 'assets/index.android.bundle'
           mkdir -p artifacts
-          cp android/app/build/outputs/apk/debug/app-debug.apk artifacts/shuffl-demo-v1.apk
+          cp "$APK" artifacts/shuffl-standalone-v1.apk
 
-      - name: Upload APK artifact
+      - name: Upload standalone APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: shuffl-demo-v1-apk
-          path: mobile/artifacts/shuffl-demo-v1.apk
+          name: shuffl-standalone-v1-apk
+          path: mobile/artifacts/shuffl-standalone-v1.apk
           if-no-files-found: error
