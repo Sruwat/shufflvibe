@@ -4,12 +4,17 @@ This module is intentionally side-effect free so fixtures can compare mobile and
 """
 from dataclasses import dataclass, field
 from statistics import mean, pstdev
+from math import floor
 from typing import Literal
 
 FACTORS = ("ENRG", "AFFIL", "CROWD", "TALK", "ROAM", "MOVE", "GAMES")
 SWIPE_SCORE = {"LOVE": 88, "UP": 62, "DOWN": 38, "HARD_PASS": 12}
 Action = Literal["LOVE", "UP", "DOWN", "HARD_PASS"]
 PREFERENCE_WEIGHTS = {"FOOD": 20, "LIVE": 18, "POL": 18, "SCEN": 16, "NOV": 14, "HERIT": 14}
+
+def _round_score(value: float) -> int:
+    """Match JavaScript Math.round for the non-negative 0–100 score domain."""
+    return floor(value + 0.5)
 
 VENUE_TYPES = {
     "table for the night": {"ENRG": 25, "AFFIL": 85, "CROWD": 35, "TALK": 90, "MOVE": 10, "GAMES": 15},
@@ -94,7 +99,7 @@ def rescale(scores: dict[str, float], centre: float = 70.5, population_spread: f
     return {factor: max(0, min(100, centre + (score - user_mean) * stretch)) for factor, score in scores.items()}
 
 def chemistry(members: list[dict[str, float]], duration_hours: float = 4) -> dict:
-    vector = {factor: round(mean(member.get(factor, 50) for member in members)) for factor in FACTORS} if members else {factor: 50 for factor in FACTORS}
+    vector = {factor: _round_score(mean(member.get(factor, 50) for member in members)) for factor in FACTORS} if members else {factor: 50 for factor in FACTORS}
     roam = vector["ROAM"]
     stops = 1 if roam < 35 else 2 if roam < 65 else min(3, max(2, int(duration_hours)))
     return {"vector": vector, "tags": ["Running Hot"] if vector["ENRG"] >= 80 else [], "formation": "Best of Both" if len(members) > 1 else "In Sync", "stops": stops}
@@ -165,20 +170,20 @@ def chemistry_v2(members: list[dict[str, float]], duration_hours: float = 4, str
     """Apply the current asymmetric axis rules from CHEMISTRY_V2."""
     if not members:
         members = [{factor: 50 for factor in FACTORS}]
-    vector = {factor: round(mean(member.get(factor, 50) for member in members)) for factor in FACTORS}
+    vector = {factor: _round_score(mean(member.get(factor, 50) for member in members)) for factor in FACTORS}
     tags: list[str] = []
     highs = [member.get("ENRG", 50) for member in members if pole_strength(member.get("ENRG", 50)) and member.get("ENRG", 50) >= 70]
     lows = [member.get("ENRG", 50) for member in members if pole_strength(member.get("ENRG", 50)) and member.get("ENRG", 50) <= 30]
     hi_strength = sum(pole_strength(value) for value in highs)
     lo_strength = sum(pole_strength(value) for value in lows)
     if highs and hi_strength > lo_strength:
-        vector["ENRG"] = round(max(highs))
+        vector["ENRG"] = _round_score(max(highs))
     elif highs and lows:
         pull = 0.6 if len(lows) <= 2 else 0.5 if len(lows) == 3 else 0.4
-        vector["ENRG"] = round(mean(lows) + pull * (max(highs) - mean(lows)))
+        vector["ENRG"] = _round_score(mean(lows) + pull * (max(highs) - mean(lows)))
         tags.append("Slow Burn")
     elif all(55 <= member.get("ENRG", 50) < 80 for member in members):
-        vector["ENRG"] = min(100, round(vector["ENRG"] + 10))
+        vector["ENRG"] = min(100, _round_score(vector["ENRG"] + 10))
         tags.append("Could Go Late")
     talker = any(pole_strength(member.get("TALK", 50)) and member.get("TALK", 50) >= 70 for member in members)
     if talker:
@@ -197,7 +202,7 @@ def chemistry_v2(members: list[dict[str, float]], duration_hours: float = 4, str
     if roam_split:
         tags.append("Settle Then Roam")
     durations = [0.55, *([0.45 / (stops - 1)] * (stops - 1))] if roam_split and stops > 1 else [1.0 / stops] * stops
-    return {"vector": vector, "tags": tags[:2], "formation": "Best of Both" if len(members) > 1 else "In Sync", "stops": stops, "roam": round(roam), "stop_durations": durations, "talk_floor": 40 if talker else 0}
+    return {"vector": vector, "tags": tags[:2], "formation": "Best of Both" if len(members) > 1 else "In Sync", "stops": stops, "roam": _round_score(roam), "stop_durations": durations, "talk_floor": 40 if talker else 0}
 
 STOP_AXES = ("ENRG", "AFFIL", "CROWD", "TALK", "MOVE", "GAMES")
 WANT_FLOOR = 25

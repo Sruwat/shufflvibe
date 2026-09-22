@@ -1,4 +1,4 @@
-from app.full_engine import AssessmentSession, chemistry, chemistry_v2, fill_venues, firmness, rescale, select_venue_types
+from app.full_engine import AssessmentSession, chemistry, chemistry_v2, fill_venues, firmness, preference_fit, rescale, select_venue_types
 
 def test_soft_answer_inserts_partner_after_separation():
     session = AssessmentSession()
@@ -57,3 +57,15 @@ def test_venue_types_use_maximin_top_factor_satisfaction():
 def test_preference_fill_prefers_food_for_food_whole_point():
     selected = fill_venues(['buzzy restaurant'], [{'preferences': {'FOOD': 88, 'SCEN': 38}}])
     assert selected[0]['name'] == 'Depot 48'
+
+
+def test_score_rounding_matches_mobile_half_up():
+    result = chemistry_v2([{"AFFIL": 50}, {"AFFIL": 51}])
+    assert result["vector"]["AFFIL"] == 51
+
+
+def test_preference_fill_respects_political_sensibility():
+    venue = {"name": "venue", "pol_sense": "classy", "scores": {"POL": 100}}
+    member = {"preferences": {"POL": 100}, "pol_sense": "current"}
+    assert preference_fit(venue, [member]) == 24
+    assert preference_fit({**venue, "pol_sense": "both"}, [member]) == 42

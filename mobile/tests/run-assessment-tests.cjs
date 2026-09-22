@@ -6,7 +6,7 @@ require.extensions['.ts'] = (module, filename) => {
   const output = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020, esModuleInterop: true } }).outputText;
   module._compile(output, filename);
 };
-const { createAssessment, currentCard, beginExposure, deferCard, resolveAway, resumeAssessment, isRequiredAnswerExposure, backCard, answerCard, latencyFirmness, chemistryV2, selectVenueTypes, joinerShapeFit } = require('../src/fullEngine.ts');
+const { createAssessment, currentCard, beginExposure, deferCard, resolveAway, resumeAssessment, isRequiredAnswerExposure, backCard, answerCard, latencyFirmness, chemistryV2, selectVenueTypes, joinerShapeFit, preferenceFit } = require('../src/fullEngine.ts');
 const { vibeName } = require('../src/algorithms.ts');
 const { DemoService } = require('../src/services.ts');
 
@@ -109,6 +109,14 @@ function testVenueTypesUseMaximinTopFactorSatisfaction() {
   assert.equal(types.includes('games bar'), false);
 }
 
+function testScoreRoundingAndPoliticalPreferenceParity() {
+  assert.equal(chemistryV2([{ AFFIL: 50 }, { AFFIL: 51 }]).vector.AFFIL, 51);
+  const venue = { name: 'venue', pol_sense: 'classy', scores: { POL: 100 } };
+  const member = { preferences: { POL: 100 }, pol_sense: 'current' };
+  assert.equal(preferenceFit(venue, [member]), 24);
+  assert.equal(preferenceFit({ ...venue, pol_sense: 'both' }, [member]), 42);
+}
+
 function testRoamBendConsensusAndDurationCap() {
   const flexibleLow = chemistryV2([{ ROAM: 92 }, { ROAM: 30 }], 6);
   assert.equal(flexibleLow.roam, 92);
@@ -163,5 +171,5 @@ async function testDemoRoomJoinRequestEndToEnd() {
   assert.equal((await DemoService.getJoinRequests(room.id)).length, 0);
 }
 
-for (const test of [testOneTimeoutDoesNotOpenAwayPrompt, testDeferredPartnerIsPulledForwardOnCollision, testAwayPromptDiscardsTimeoutsAndResumesInPlace, testAwayChoiceResetsToFirstTimedOutCard, testUnansweredPauseRequiresExplicitResume, testThirdExposureCannotBeDeferred, testBackRecordsExposureAndReturnsToPreviousCard, testBackAfterAnsweredCardReturnsToTheCurrentCard, testVibeNameV4UsesTheChosenTopAndFactorWeightForSecondTie, testLatencyFirmnessUsesPostWarmupAnsweredCards, testRoamBendConsensusAndDurationCap, testVenueTypesUseMaximinTopFactorSatisfaction, testJoinerShapeFitUsesFrozenTypesAndRoamBend]) test();
-testDemoRoomJoinRequestEndToEnd().then(() => console.log('14 mobile assessment, naming, plan-chemistry, and room-flow tests passed')).catch(error => { console.error(error); process.exitCode = 1; });
+for (const test of [testOneTimeoutDoesNotOpenAwayPrompt, testDeferredPartnerIsPulledForwardOnCollision, testAwayPromptDiscardsTimeoutsAndResumesInPlace, testAwayChoiceResetsToFirstTimedOutCard, testUnansweredPauseRequiresExplicitResume, testThirdExposureCannotBeDeferred, testBackRecordsExposureAndReturnsToPreviousCard, testBackAfterAnsweredCardReturnsToTheCurrentCard, testVibeNameV4UsesTheChosenTopAndFactorWeightForSecondTie, testLatencyFirmnessUsesPostWarmupAnsweredCards, testRoamBendConsensusAndDurationCap, testVenueTypesUseMaximinTopFactorSatisfaction, testJoinerShapeFitUsesFrozenTypesAndRoamBend, testScoreRoundingAndPoliticalPreferenceParity]) test();
+testDemoRoomJoinRequestEndToEnd().then(() => console.log('15 mobile assessment, naming, plan-chemistry, parity, and room-flow tests passed')).catch(error => { console.error(error); process.exitCode = 1; });
