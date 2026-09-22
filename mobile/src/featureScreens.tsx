@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, radius } from './theme';
+import { colors } from './theme';
 import { FeatureMode, useApp } from './store';
 import { factors, preferences as preferenceFactors } from './data';
 import { getService } from './services';
@@ -71,12 +71,13 @@ function CapsuleScreen() { const { capsule, set } = useApp(); const approve = (m
 function ChatScreen() { const { set } = useApp(); const [sent, setSent] = useState(false); return <SafeAreaView style={styles.safe}><FeatureHeader label="GROUP CHAT" onBack={() => set({ screen: 'feature', featureMode: 'inbox' })}/><ScrollView contentContainerStyle={styles.content}><Text style={styles.eyebrow}>FRIDAY ROOM</Text><Text style={styles.title}>Talk through the night</Text><View style={styles.route}><Text style={styles.routeText}>Aarav</Text><Text style={styles.secondaryText}>Should we start at Sidecar?</Text></View><View style={styles.route}><Text style={styles.routeText}>Bela</Text><Text style={styles.secondaryText}>The plan is in. I’m in for the first stop.</Text></View>{sent && <View style={styles.route}><Text style={styles.routeText}>You</Text><Text style={styles.secondaryText}>I’ll share arrival details privately.</Text></View>}<FeatureButton label={sent ? 'Message sent' : 'Send arrival message'} onPress={() => setSent(true)}/><FeatureButton label="View active plan" onPress={() => set({ screen: 'feature', featureMode: 'activePlan' })} secondary/></ScrollView></SafeAreaView>; }
 
 export function FeatureScreen({ mode }: { mode: FeatureMode }) {
+  const { set } = useApp();
   if (mode === 'hostRoom') return <HostRoomScreen/>;
   if (mode === 'activePlan') return <ActivePlanScreen/>;
   if (mode === 'joinRequests') return <JoinRequestsScreen/>;
   if (mode === 'capsule') return <CapsuleScreen/>;
   if (mode === 'chat') return <ChatScreen/>;
-  const { set } = useApp(); const item = content[mode];
+  const item = content[mode];
   const go = () => item.next ? set({ screen: 'feature', featureMode: item.next }) : set({ screen: 'profileHome' });
   return <SafeAreaView style={styles.safe}><View style={styles.header}><Pressable onPress={() => set({ screen: 'control' })} style={styles.back}><Ionicons name="arrow-back" size={22} color={colors.text}/></Pressable><Text style={styles.headerLabel}>{item.eyebrow}</Text><Ionicons name={item.icon} size={22} color={colors.mint}/></View><ScrollView contentContainerStyle={styles.content}><View style={styles.heroIcon}><Ionicons name={item.icon} size={34} color={colors.mint}/></View><Text style={styles.eyebrow}>{item.eyebrow}</Text><Text style={styles.title}>{item.title}</Text><Text style={styles.body}>{item.body}</Text><Pressable onPress={go} style={styles.primary}><Text style={styles.primaryText}>{item.action}</Text></Pressable>{mode==='settings'&&<View style={styles.routeList}>{(Object.keys(content) as FeatureMode[]).map((route)=><Pressable key={route} onPress={()=>set({screen:'feature',featureMode:route})} style={styles.route}><Text style={styles.routeText}>{content[route].eyebrow}</Text><Ionicons name="chevron-forward" size={18} color={colors.muted}/></Pressable>)}</View>}<Pressable onPress={() => set({ screen: 'feature', featureMode: 'settings' })} style={styles.secondary}><Text style={styles.secondaryText}>Open feature hub</Text></Pressable></ScrollView></SafeAreaView>;
 }

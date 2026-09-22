@@ -9,7 +9,7 @@ export type PreferenceReading = { score: number; importance: number; sense?: 'cl
 export type PreferenceAction = 'WHOLE_POINT' | 'NICE_TO_HAVE' | 'DONT_MIND' | 'DONT_CARE';
 export type PreferenceCard = { id: string; factor: Preference; title: string; subtitle: string };
 export type PreferenceState = { queue: PreferenceCard[]; cursor: number; answers: Record<string, PreferenceAction>; readings: Partial<Record<Preference, PreferenceReading>>; sense?: 'classy' | 'current' | 'both'; stage: 'deck' | 'sense' | 'done' };
-export type AssessmentState = { queue: Card[]; cursor: number; exposures: Exposure[]; answers: Record<string, Action>; scores: Partial<Record<Factor, number>>; forcedChoice?: [Factor, Factor]; paused: boolean; awayPrompt: boolean; awayStartCardId?: string; completed: boolean };
+export type AssessmentState = { queue: Card[]; cursor: number; history: string[]; exposures: Exposure[]; answers: Record<string, Action>; scores: Partial<Record<Factor, number>>; forcedChoice?: [Factor, Factor]; chosenTop?: Factor; paused: boolean; awayPrompt: boolean; awayStartCardId?: string; completed: boolean };
 
 export const VIBE_CARDS: Card[] = factors.flatMap((factor) => [
   { id: `V-${factor}-A`, factor, side: 'A' as const },
@@ -35,7 +35,7 @@ export function choosePreferenceSense(state: PreferenceState, sense: 'classy' | 
 
 export function createAssessment(): AssessmentState {
   // One opening exposure per factor. Partners are inserted only after a soft answer.
-  return { queue: factors.map((factor) => VIBE_CARDS.find((card) => card.factor === factor && card.side === 'A')!), cursor: 0, exposures: [], answers: {}, scores: {}, paused: false, awayPrompt: false, completed: false };
+  return { queue: factors.map((factor) => VIBE_CARDS.find((card) => card.factor === factor && card.side === 'A')!), cursor: 0, history: [], exposures: [], answers: {}, scores: {}, paused: false, awayPrompt: false, completed: false };
 }
 
 function partner(card: Card): Card { return VIBE_CARDS.find((candidate) => candidate.factor === card.factor && candidate.side !== card.side)!; }
@@ -52,14 +52,19 @@ export function beginExposure(state: AssessmentState, now = Date.now()): Assessm
 
 export function deferCard(state: AssessmentState, kind: 'next' | 'timeout', now = Date.now()): AssessmentState {
   const card = currentCard(state);
-  if (!card || state.completed || state.paused) return state;
+  if (!card || state.completed || state.paused || isRequiredAnswerExposure(state)) return state;
   const exposures = state.exposures.map((exposure) => exposure.card.id === card.id && !exposure.endedAt ? { ...exposure, endedAt: now, endedBy: kind, latency: Math.max(0, now - exposure.startedAt), nextCount: exposure.nextCount + 1 } : exposure);
-  const index = Math.min(state.queue.length, state.cursor + 4);
   const queue = [...state.queue];
   const moved = queue.splice(state.cursor, 1)[0];
-  queue.splice(Math.min(index, queue.length), 0, moved);
+  queue.push(moved);
+  const partnerIndex = queue.findIndex((candidate) => candidate.factor === card.factor && candidate.id !== card.id);
+  if (partnerIndex === queue.length - 2) {
+    const [pairedCard] = queue.splice(partnerIndex, 1);
+    queue.splice(state.cursor, 0, pairedCard);
+  }
   const last = exposures.at(-1);
-  const consecutiveTimeout = kind === 'timeout' && last?.endedBy === 'timeout';
+  const previous = exposures.at(-2);
+  const consecutiveTimeout = kind === 'timeout' && last?.endedBy === 'timeout' && previous?.endedBy === 'timeout';
   let firstTimedOut: string | undefined;
   if (consecutiveTimeout) {
     for (let index = exposures.length - 1; index >= 0 && exposures[index].endedBy === 'timeout'; index -= 1) {
@@ -67,7 +72,7 @@ export function deferCard(state: AssessmentState, kind: 'next' | 'timeout', now 
     }
   }
   const shouldPrompt = consecutiveTimeout && !state.awayPrompt;
-  return { ...state, queue, exposures, cursor: Math.min(state.cursor, queue.length - 1),
+  return { ...state, queue, history: [...state.history, card.id], exposures, cursor: Math.min(state.cursor, queue.length - 1),
     paused: shouldPrompt || state.paused, awayPrompt: shouldPrompt || state.awayPrompt,
     awayStartCardId: shouldPrompt ? firstTimedOut : state.awayStartCardId, completed: false };
 }
@@ -89,7 +94,7 @@ export function answerCard(state: AssessmentState, action: Action, now = Date.no
   const nextCursor = state.cursor + 1;
   const completed = nextCursor >= queue.length || Object.keys(scores).length === factors.length && Object.keys(answers).length >= 7;
   const forcedChoice = completed ? unresolvedTie(scores) : undefined;
-  return { ...state, queue, cursor: Math.min(nextCursor, queue.length), exposures, answers, scores, completed: completed && !forcedChoice, forcedChoice };
+  return { ...state, queue, cursor: Math.min(nextCursor, queue.length), history: [...state.history, card.id], exposures, answers, scores, completed: completed && !forcedChoice, forcedChoice };
 }
 
 function scorePair(queue: Card[], exposures: Exposure[], answers: Record<string, Action>, factor: Factor): number {
@@ -107,19 +112,54 @@ function unresolvedTie(scores: Partial<Record<Factor, number>>): [Factor, Factor
 
 export function answerForcedChoice(state: AssessmentState, selected: Factor): AssessmentState {
   if (!state.forcedChoice?.includes(selected)) return state;
-  return { ...state, forcedChoice: undefined, completed: true };
+  return { ...state, chosenTop: selected, forcedChoice: undefined, completed: true };
 }
 
-export function resolveAway(state: AssessmentState, away: boolean): AssessmentState {
+export type AwayResolution = 'present' | 'away' | 'unanswered';
+
+export function resolveAway(state: AssessmentState, resolution: AwayResolution): AssessmentState {
   if (!state.awayPrompt) return state;
-  const timeoutIds = new Set<string>();
+  const timeoutIndexes = new Set<number>();
   for (let index = state.exposures.length - 1; index >= 0 && state.exposures[index].endedBy === 'timeout'; index -= 1) {
-    timeoutIds.add(state.exposures[index].card.id);
+    timeoutIndexes.add(index);
   }
-  const exposures = state.exposures.filter((exposure) => !timeoutIds.has(exposure.card.id));
-  if (!away) return { ...state, exposures, awayPrompt: false, paused: false, awayStartCardId: undefined };
+  const exposures = state.exposures.filter((_, index) => !timeoutIndexes.has(index));
   const cursor = Math.max(0, state.queue.findIndex((card) => card.id === state.awayStartCardId));
-  return { ...state, exposures, cursor, awayPrompt: false, paused: false, awayStartCardId: undefined };
+  if (resolution === 'present') return { ...state, exposures, awayPrompt: false, paused: false, awayStartCardId: undefined };
+  const history = state.history.slice(0, Math.max(0, state.history.length - timeoutIndexes.size));
+  return { ...state, exposures, history, cursor, awayPrompt: false, paused: resolution === 'unanswered', awayStartCardId: undefined };
+}
+
+export function resumeAssessment(state: AssessmentState): AssessmentState {
+  return state.paused && !state.awayPrompt ? { ...state, paused: false } : state;
+}
+
+export function isRequiredAnswerExposure(state: AssessmentState): boolean {
+  const card = currentCard(state);
+  if (!card || state.answers[card.id]) return false;
+  const seen = state.exposures.filter((exposure) => exposure.card.id === card.id);
+  const hasOpenExposure = seen.some((exposure) => !exposure.endedAt);
+  return seen.length >= 3 || (seen.length === 2 && !hasOpenExposure);
+}
+
+export function backCard(state: AssessmentState, now = Date.now()): AssessmentState {
+  if (!state.history.length || state.paused || state.completed) return state;
+  const card = currentCard(state);
+  const exposures = card ? state.exposures.map((exposure) => exposure.card.id === card.id && !exposure.endedAt
+    ? { ...exposure, endedAt: now, endedBy: 'back' as const, latency: Math.max(0, now - exposure.startedAt) }
+    : exposure) : state.exposures;
+  const queue = [...state.queue];
+  const previousId = state.history[state.history.length - 1];
+  const previousIndex = queue.findIndex((candidate) => candidate.id === previousId);
+  if (previousIndex < 0) return state;
+  const history = state.history.slice(0, -1);
+  if (previousIndex < state.cursor) {
+    return { ...state, cursor: previousIndex, history, exposures };
+  }
+  const [previous] = queue.splice(previousIndex, 1);
+  const cursor = Math.min(state.cursor, queue.length);
+  queue.splice(cursor, 0, previous);
+  return { ...state, queue, cursor, history, exposures };
 }
 
 export function firmness(scores: Partial<Record<Factor, number>>): Partial<Record<Factor, number>> {
@@ -158,7 +198,7 @@ export const VENUE_TYPES: Record<string, Partial<Record<Factor, number>>> = {
 
 export const PREFERENCE_WEIGHTS = { FOOD: 20, LIVE: 18, POL: 18, SCEN: 16, NOV: 14, HERIT: 14 } as const;
 
-export function preferenceFit(venue: { name: string; scores?: Partial<Record<keyof typeof PREFERENCE_WEIGHTS, number>> }, members: Array<Partial<Record<keyof typeof PREFERENCE_WEIGHTS, number>>>, visited = new Set<string>()) {
+export function preferenceFit(venue: { name: string; scores?: Partial<Record<keyof typeof PREFERENCE_WEIGHTS, number>> }, members: Partial<Record<keyof typeof PREFERENCE_WEIGHTS, number>>[], visited = new Set<string>()) {
   return members.reduce((total, member) => total + Object.entries(PREFERENCE_WEIGHTS).reduce((sum, [factor, weight]) => {
     const preference = member[factor as keyof typeof PREFERENCE_WEIGHTS] ?? 50;
     const delivery = factor === 'NOV' ? (visited.has(venue.name) ? 20 : 100) : venue.scores?.[factor as keyof typeof PREFERENCE_WEIGHTS] ?? 50;
@@ -166,12 +206,12 @@ export function preferenceFit(venue: { name: string; scores?: Partial<Record<key
   }, 0), 0);
 }
 
-export function fillVenues(types: string[], members: Array<Partial<Record<keyof typeof PREFERENCE_WEIGHTS, number>>>, pool: Array<{ name: string; type: string; scores?: Partial<Record<keyof typeof PREFERENCE_WEIGHTS, number>> }>, visited = new Set<string>()) {
+export function fillVenues(types: string[], members: Partial<Record<keyof typeof PREFERENCE_WEIGHTS, number>>[], pool: { name: string; type: string; scores?: Partial<Record<keyof typeof PREFERENCE_WEIGHTS, number>> }[], visited = new Set<string>()) {
   const used = new Set<string>();
   return types.map((type) => pool.filter((venue) => !used.has(venue.name) && venue.type === type).sort((a, b) => preferenceFit(b, members, visited) - preferenceFit(a, members, visited))[0] ?? pool.filter((venue) => !used.has(venue.name)).sort((a, b) => preferenceFit(b, members, visited) - preferenceFit(a, members, visited))[0]).filter((venue) => { if (!venue) return false; used.add(venue.name); return true; });
 }
 
-export function chemistry(members: Array<Partial<Record<Factor, number>>>, durationHours = 4): Chemistry {
+export function chemistry(members: Partial<Record<Factor, number>>[], durationHours = 4): Chemistry {
   const vector = Object.fromEntries(factors.map((factor) => [factor, Math.round(members.reduce((sum, member) => sum + (member[factor] ?? 50), 0) / Math.max(1, members.length))])) as Partial<Record<Factor, number>>;
   const energy = vector.ENRG ?? 50; const roam = vector.ROAM ?? 50;
   const tags: string[] = [];
@@ -184,7 +224,7 @@ export function chemistry(members: Array<Partial<Record<Factor, number>>>, durat
   return { vector, tags: tags.slice(0, 1), formation: members.length > 1 ? 'Best of Both' : 'In Sync', stopCount, stopDurations };
 }
 
-export function chemistryV2(members: Array<Partial<Record<Factor, number>>>, durationHours = 4, strangers = false) {
+export function chemistryV2(members: Partial<Record<Factor, number>>[], durationHours = 4, strangers = false) {
   const safeMembers = members.length ? members : [Object.fromEntries(factors.map((factor) => [factor, 50])) as Partial<Record<Factor, number>>];
   const vector = Object.fromEntries(factors.map((factor) => [factor, Math.round(safeMembers.reduce((sum, member) => sum + (member[factor] ?? 50), 0) / safeMembers.length)])) as Partial<Record<Factor, number>>;
   const strength = (score: number) => score >= 80 || score <= 20 ? 1 : score >= 70 || score <= 30 ? 0.5 : 0;
@@ -201,7 +241,7 @@ export function chemistryV2(members: Array<Partial<Record<Factor, number>>>, dur
   return { vector, tags: tags.slice(0, 2), formation: safeMembers.length > 1 ? 'Best of Both' : 'In Sync', stopCount, talkFloor: talker ? 40 : 0, stopDurations: stopCount === 1 ? [1] : Array.from({ length: stopCount }, () => 1 / stopCount) };
 }
 
-export function selectVenueTypes(members: Array<Partial<Record<Factor, number>>>, durationHours = 4, strangers = false) {
+export function selectVenueTypes(members: Partial<Record<Factor, number>>[], durationHours = 4, strangers = false) {
   const room = chemistryV2(members, durationHours, strangers); const target = room.vector;
   const ranked = Object.entries(VENUE_TYPES).filter(([, scores]) => !room.talkFloor || (scores.TALK ?? 0) >= room.talkFloor).map(([name, scores]) => {
     let distance = factors.reduce((sum, factor) => sum + Math.abs((scores[factor] ?? 50) - (target[factor] ?? 50)), 0);
@@ -211,7 +251,7 @@ export function selectVenueTypes(members: Array<Partial<Record<Factor, number>>>
   return ranked.slice(0, room.stopCount).map(([name]) => name);
 }
 
-export function generatePlan(members: Array<Partial<Record<Factor, number>>>, venues: Array<{ name: string; type: string; scores: Partial<Record<Factor, number>> }>) {
+export function generatePlan(members: Partial<Record<Factor, number>>[], venues: { name: string; type: string; scores: Partial<Record<Factor, number>> }[]) {
   const room = chemistry(members); const used = new Set<string>();
   return Array.from({ length: room.stopCount }, (_, index) => {
     const venue = venues.filter((candidate) => !used.has(candidate.name)).sort((a, b) => closeness(room.vector, a.scores) - closeness(room.vector, b.scores))[0] ?? venues[0];
