@@ -215,19 +215,47 @@ export const VENUE_TYPES: Record<string, Partial<Record<Factor, number>>> = {
 
 export const PREFERENCE_WEIGHTS = { FOOD: 20, LIVE: 18, POL: 18, SCEN: 16, NOV: 14, HERIT: 14 } as const;
 
-export function preferenceFit(venue: { name: string; scores?: Partial<Record<keyof typeof PREFERENCE_WEIGHTS, number>>; pol_sense?: string }, members: (Partial<Record<keyof typeof PREFERENCE_WEIGHTS, number>> & { preferences?: Partial<Record<keyof typeof PREFERENCE_WEIGHTS, number>>; pol_sense?: string })[], visited = new Set<string>()) {
-  return members.reduce((total, member) => total + Object.entries(PREFERENCE_WEIGHTS).reduce((sum, [factor, weight]) => {
-    if (factor === 'POL' && member.pol_sense && member.pol_sense !== 'both' && venue.pol_sense && venue.pol_sense !== 'both' && member.pol_sense !== venue.pol_sense) return sum;
-    const preferences = member.preferences ?? member;
-    const preference = preferences[factor as keyof typeof PREFERENCE_WEIGHTS] ?? 50;
-    const delivery = factor === 'NOV' ? (visited.has(venue.name) ? 20 : 100) : venue.scores?.[factor as keyof typeof PREFERENCE_WEIGHTS] ?? 50;
-    return sum + (preference / 100) * (delivery / 100) * weight;
+type PreferenceMember = Partial<Record<keyof typeof PREFERENCE_WEIGHTS, number>> & { preferences?: Partial<Record<keyof typeof PREFERENCE_WEIGHTS, number>>; pol_sense?: string; visited_venues?: string[] };
+type PreferenceVenue = { name: string; type: string; scores?: Partial<Record<keyof typeof PREFERENCE_WEIGHTS, number>>; pol_sense?: string };
+
+function senseOk(venue: PreferenceVenue, member: PreferenceMember) {
+  const sense = member.pol_sense ?? 'both'; const venueSense = venue.pol_sense ?? 'both';
+  return sense === 'both' || venueSense === 'both' || sense === venueSense;
+}
+
+export function preferenceFit(venue: PreferenceVenue, members: PreferenceMember[], visited = new Set<string>(), had: Set<string>[] = members.map(() => new Set<string>())) {
+  const people = members.length ? members : [{}];
+  const served = had.length ? had : people.map(() => new Set<string>());
+  return people.reduce((total, member, index) => total + Object.entries(PREFERENCE_WEIGHTS).reduce((sum, [factor]) => {
+    if (factor === 'POL' && !senseOk(venue, member)) return sum;
+    const prefs = member.preferences ?? member;
+    const preference = prefs[factor as keyof typeof PREFERENCE_WEIGHTS] ?? 50;
+    const memberVisited = visited.has(venue.name) || (member.visited_venues ?? []).includes(venue.name);
+    const delivery = factor === 'NOV' ? (memberVisited ? 20 : 100) : venue.scores?.[factor as keyof typeof PREFERENCE_WEIGHTS] ?? 50;
+    const urgency = preference >= 75 && !served[index]?.has(factor) ? 2 : 1;
+    return sum + (preference / 100) * urgency * Math.min(delivery, preference);
   }, 0), 0);
 }
 
-export function fillVenues(types: string[], members: (Partial<Record<keyof typeof PREFERENCE_WEIGHTS, number>> & { preferences?: Partial<Record<keyof typeof PREFERENCE_WEIGHTS, number>>; pol_sense?: string })[], pool: { name: string; type: string; scores?: Partial<Record<keyof typeof PREFERENCE_WEIGHTS, number>>; pol_sense?: string }[], visited = new Set<string>()) {
-  const used = new Set<string>();
-  return types.map((type) => pool.filter((venue) => !used.has(venue.name) && venue.type === type).sort((a, b) => preferenceFit(b, members, visited) - preferenceFit(a, members, visited))[0] ?? pool.filter((venue) => !used.has(venue.name)).sort((a, b) => preferenceFit(b, members, visited) - preferenceFit(a, members, visited))[0]).filter((venue) => { if (!venue) return false; used.add(venue.name); return true; });
+export function fillVenues(types: string[], members: PreferenceMember[], pool: PreferenceVenue[], visited = new Set<string>()) {
+  const people = members.length ? members : [{}];
+  const seen = new Set(visited); const had = people.map(() => new Set<string>()); const used = new Set<string>();
+  const selected: PreferenceVenue[] = [];
+  types.forEach((type) => {
+    const choices = pool.filter((venue) => !used.has(venue.name) && venue.type === type);
+    if (!choices.length) return;
+    const choice = choices.reduce((best, candidate) => preferenceFit(candidate, people, seen, had) > preferenceFit(best, people, seen, had) ? candidate : best);
+    selected.push(choice); used.add(choice.name);
+    people.forEach((member, index) => Object.keys(PREFERENCE_WEIGHTS).forEach((factor) => {
+      if (factor === 'POL' && !senseOk(choice, member)) return;
+      const prefs = member.preferences ?? member; const preference = prefs[factor as keyof typeof PREFERENCE_WEIGHTS] ?? 50;
+      const memberVisited = seen.has(choice.name) || (member.visited_venues ?? []).includes(choice.name);
+      const delivery = factor === 'NOV' ? (memberVisited ? 20 : 100) : choice.scores?.[factor as keyof typeof PREFERENCE_WEIGHTS] ?? 50;
+      if (preference >= 75 && delivery >= 55) had[index].add(factor);
+    }));
+    seen.add(choice.name);
+  });
+  return selected;
 }
 
 export function chemistry(members: Partial<Record<Factor, number>>[], durationHours = 4): Chemistry {

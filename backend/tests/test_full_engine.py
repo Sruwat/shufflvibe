@@ -67,5 +67,26 @@ def test_score_rounding_matches_mobile_half_up():
 def test_preference_fill_respects_political_sensibility():
     venue = {"name": "venue", "pol_sense": "classy", "scores": {"POL": 100}}
     member = {"preferences": {"POL": 100}, "pol_sense": "current"}
-    assert preference_fit(venue, [member]) == 24
-    assert preference_fit({**venue, "pol_sense": "both"}, [member]) == 42
+    assert preference_fit(venue, [member]) == 125
+    assert preference_fit({**venue, "pol_sense": "both"}, [member]) == 325
+
+
+def test_fill_carries_unserved_whole_point_preferences_between_stops():
+    member = {"preferences": {"FOOD": 90, "LIVE": 90, "POL": 0, "SCEN": 0, "NOV": 0, "HERIT": 0}}
+    venues = [
+        {"name": "food", "type": "pub", "scores": {"FOOD": 90, "LIVE": 0}},
+        {"name": "live", "type": "pub", "scores": {"FOOD": 0, "LIVE": 90}},
+    ]
+    assert [item["name"] for item in fill_venues(["pub", "pub"], [member], venues)] == ["food", "live"]
+
+def test_fill_never_substitutes_a_different_venue_type():
+    venues = [{"name": "pub", "type": "pub", "scores": {}}]
+    assert fill_venues(["club"], [{}], venues) == []
+
+
+def test_novelty_is_member_specific():
+    member = {"preferences": {"FOOD": 0, "LIVE": 0, "POL": 0, "SCEN": 0, "NOV": 100, "HERIT": 0}, "visited_venues": ["known"]}
+    known = {"name": "known", "type": "pub", "scores": {}}
+    new = {"name": "new", "type": "pub", "scores": {}}
+    assert preference_fit(known, [member]) == 40
+    assert preference_fit(new, [member]) == 200

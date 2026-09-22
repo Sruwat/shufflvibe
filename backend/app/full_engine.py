@@ -267,30 +267,54 @@ def select_venue_types(members: list[dict[str, float]], duration_hours: float = 
         previous_energy = energy
     return selected or ["pub"]
 
-def preference_fit(venue: dict, members: list[dict], visited: set[str] | None = None) -> float:
-    visited = visited or set()
+def _sense_ok(venue: dict, member: dict) -> bool:
+    sense = member.get("pol_sense", "both")
+    venue_sense = venue.get("pol_sense", "both")
+    return sense == "both" or venue_sense == "both" or sense == venue_sense
+
+
+def preference_fit(venue: dict, members: list[dict], visited: set[str] | None = None, had: list[set[str]] | None = None) -> float:
+    """Rank venues by preference delivery and carry unmet whole-point wants forward."""
+    seen = visited or set()
+    people = members or [{}]
+    served = had if had is not None else [set() for _ in people]
     total = 0.0
-    for member in members or [{}]:
+    for index, member in enumerate(people):
         prefs = member.get("preferences", member)
-        sense = member.get("pol_sense", "both")
-        for factor, weight in PREFERENCE_WEIGHTS.items():
-            if factor == "POL" and sense not in ("both", venue.get("pol_sense", "both")) and venue.get("pol_sense") != "both":
+        for factor in PREFERENCE_WEIGHTS:
+            importance = prefs.get(factor, 50)
+            if factor == "POL" and not _sense_ok(venue, member):
                 continue
-            score = 100 if factor == "NOV" and venue["name"] not in visited else 20 if factor == "NOV" else venue.get("scores", {}).get(factor, 50)
-            total += (prefs.get(factor, 50) / 100) * (score / 100) * weight
+            member_seen = seen | set(member.get("visited_venues", []))
+            delivery = 100 if factor == "NOV" and venue["name"] not in member_seen else 20 if factor == "NOV" else venue.get("scores", {}).get(factor, 50)
+            urgency = 2 if importance >= 75 and factor not in served[index] else 1
+            total += (importance / 100) * urgency * min(delivery, importance)
     return total
 
+
 def fill_venues(types: list[str], members: list[dict], venues: list[dict] | None = None, visited: set[str] | None = None) -> list[dict]:
-    pool = venues or DEMO_VENUES
+    pool = venues if venues is not None else DEMO_VENUES
+    people = members or [{}]
+    seen = set(visited or set())
+    had = [set() for _ in people]
     used: set[str] = set()
     selected: list[dict] = []
     for venue_type in types:
+        # Stage two may fill only the type fixed by stage one; never substitute another type.
         choices = [venue for venue in pool if venue.get("type") == venue_type and venue["name"] not in used]
         if not choices:
-            choices = [venue for venue in pool if venue["name"] not in used]
-        if not choices:
-            break
-        choice = max(choices, key=lambda venue: preference_fit(venue, members, visited))
+            continue
+        choice = max(choices, key=lambda venue: preference_fit(venue, people, seen, had))
         used.add(choice["name"])
         selected.append(choice)
+        for index, member in enumerate(people):
+            prefs = member.get("preferences", member)
+            for factor in PREFERENCE_WEIGHTS:
+                if prefs.get(factor, 50) < 75 or (factor == "POL" and not _sense_ok(choice, member)):
+                    continue
+                member_seen = seen | set(member.get("visited_venues", []))
+                delivery = 100 if factor == "NOV" and choice["name"] not in member_seen else 20 if factor == "NOV" else choice.get("scores", {}).get(factor, 50)
+                if delivery >= 55:
+                    had[index].add(factor)
+        seen.add(choice["name"])
     return selected
