@@ -115,6 +115,34 @@ def _bend_and_firmness(member: dict, factor: str) -> tuple[bool, float]:
     bend = 25.0 if extreme else 28.0 if band and firm else abs(score - 50) + 5.0
     return firm, bend
 
+def joiner_shape_fit(member: dict, venue_types: list[str], stop_count: int) -> dict:
+    """Apply the v4 room gate to the frozen plan shape, never venue preferences."""
+    failures = []
+    for stop_index, venue_type in enumerate(venue_types):
+        template = VENUE_TYPES.get(venue_type)
+        if template is None:
+            failures.append(f"Stop {stop_index + 1}: unknown venue type")
+            continue
+        for factor in STOP_AXES:
+            score = member.get(factor, 50)
+            bend = _bend_and_firmness(member, factor)[1]
+            value = template.get(factor, 50)
+            fits = value >= score - bend if score >= 50 else value <= score + bend
+            if not fits:
+                failures.append(f"Stop {stop_index + 1}: {factor} is outside your bend")
+    # ROAM is night-level. The v4 shape rates 1/2/3 stops at the centers of
+    # the published ROAM bands (20/50/80), then applies that member's bend.
+    roam = member.get("ROAM", 50)
+    roam_value = {1: 20, 2: 50, 3: 80}.get(stop_count)
+    if roam_value is None:
+        failures.append("The frozen plan has an unsupported stop count")
+    else:
+        roam_bend = _bend_and_firmness(member, "ROAM")[1]
+        fits = roam_value >= roam - roam_bend if roam >= 50 else roam_value <= roam + roam_bend
+        if not fits:
+            failures.append("The plan's stop count is outside your ROAM bend")
+    return {"eligible": not failures, "reasons": failures}
+
 def _roam_consensus(members: list[dict]) -> tuple[float, bool]:
     firm = [(member, _bend_and_firmness(member, "ROAM")) for member in members]
     firm = [(member, bend) for member, (is_firm, bend) in firm if is_firm]

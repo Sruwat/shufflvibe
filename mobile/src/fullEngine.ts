@@ -252,6 +252,23 @@ function planBend(member: ChemistryMember, factor: Factor): { firm: boolean; ben
   return { firm, bend: extreme ? 25 : band && firm ? 28 : Math.abs(score - 50) + 5 };
 }
 
+export function joinerShapeFit(member: ChemistryMember, venueTypes: string[], stopCount: number) {
+  const reasons: string[] = [];
+  venueTypes.forEach((venueType, stopIndex) => {
+    const template = VENUE_TYPES[venueType];
+    if (!template) { reasons.push(`Stop ${stopIndex + 1}: unknown venue type`); return; }
+    stopAxes.forEach((factor) => {
+      const score = member[factor] ?? 50; const bend = planBend(member, factor).bend; const value = template[factor] ?? 50;
+      const fits = score >= 50 ? value >= score - bend : value <= score + bend;
+      if (!fits) reasons.push(`Stop ${stopIndex + 1}: ${factor} is outside your bend`);
+    });
+  });
+  const roam = member.ROAM ?? 50; const roamValue = ({ 1: 20, 2: 50, 3: 80 } as Record<number, number>)[stopCount];
+  if (roamValue === undefined) reasons.push('The frozen plan has an unsupported stop count');
+  else { const bend = planBend(member, 'ROAM').bend; const fits = roam >= 50 ? roamValue >= roam - bend : roamValue <= roam + bend; if (!fits) reasons.push(`The plan's stop count is outside your ROAM bend`); }
+  return { eligible: reasons.length === 0, reasons };
+}
+
 function roamConsensus(members: ChemistryMember[]) {
   const firm = members.flatMap((member) => {
     const { firm: isFirm, bend } = planBend(member, 'ROAM');

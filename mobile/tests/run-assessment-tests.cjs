@@ -6,7 +6,7 @@ require.extensions['.ts'] = (module, filename) => {
   const output = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020, esModuleInterop: true } }).outputText;
   module._compile(output, filename);
 };
-const { createAssessment, currentCard, beginExposure, deferCard, resolveAway, resumeAssessment, isRequiredAnswerExposure, backCard, answerCard, latencyFirmness, chemistryV2, selectVenueTypes } = require('../src/fullEngine.ts');
+const { createAssessment, currentCard, beginExposure, deferCard, resolveAway, resumeAssessment, isRequiredAnswerExposure, backCard, answerCard, latencyFirmness, chemistryV2, selectVenueTypes, joinerShapeFit } = require('../src/fullEngine.ts');
 const { vibeName } = require('../src/algorithms.ts');
 const { DemoService } = require('../src/services.ts');
 
@@ -138,12 +138,24 @@ function testVibeNameV4UsesTheChosenTopAndFactorWeightForSecondTie() {
   assert.equal(vibeName({ ENRG: 88, AFFIL: 50, CROWD: 50, TALK: 50, ROAM: 50, MOVE: 50, GAMES: 50 }), 'Night Climber');
 }
 
+
+function testJoinerShapeFitUsesFrozenTypesAndRoamBend() {
+  const member = { ENRG: 12, AFFIL: 88, CROWD: 12, TALK: 70, ROAM: 12, MOVE: 12, GAMES: 12 };
+  assert.deepEqual(joinerShapeFit(member, ['table for the night'], 1), { eligible: true, reasons: [] });
+  const mismatch = joinerShapeFit({ ...member, AFFIL: 12 }, ['table for the night'], 3);
+  assert.equal(mismatch.eligible, false);
+  assert.ok(mismatch.reasons.some(reason => reason.includes('AFFIL')));
+  assert.ok(mismatch.reasons.some(reason => reason.includes('ROAM')));
+}
+
 async function testDemoRoomJoinRequestEndToEnd() {
   const room = (await DemoService.listHostedRooms()).find(item => item.id === 'room-demo');
   assert.ok(room);
-  const created = await DemoService.requestToJoin(room.id, 'mobile-test-joiner', 'Joining for dinner');
+  const created = await DemoService.requestToJoin(room.id, 'mobile-test-joiner', 'Joining for dinner', { ENRG: 12, AFFIL: 88, CROWD: 12, TALK: 70, ROAM: 12, MOVE: 12, GAMES: 12 });
+  const rejectedFit = await DemoService.getRoomEligibility(room.id, { ENRG: 95, AFFIL: 5, CROWD: 5, TALK: 5, ROAM: 95, MOVE: 95, GAMES: 95 });
+  assert.equal(rejectedFit.eligible, false);
   assert.equal(created.status, 'pending');
-  assert.equal((await DemoService.requestToJoin(room.id, 'mobile-test-joiner')).id, created.id);
+  assert.equal((await DemoService.requestToJoin(room.id, 'mobile-test-joiner', '', { ENRG: 12, AFFIL: 88, CROWD: 12, TALK: 70, ROAM: 12, MOVE: 12, GAMES: 12 })).id, created.id);
   assert.equal((await DemoService.getJoinRequests(room.id)).length, 1);
   const decision = await DemoService.decideJoinRequest(room.id, created.id, 'accepted');
   assert.equal(decision.plan_frozen, true);
@@ -151,5 +163,5 @@ async function testDemoRoomJoinRequestEndToEnd() {
   assert.equal((await DemoService.getJoinRequests(room.id)).length, 0);
 }
 
-for (const test of [testOneTimeoutDoesNotOpenAwayPrompt, testDeferredPartnerIsPulledForwardOnCollision, testAwayPromptDiscardsTimeoutsAndResumesInPlace, testAwayChoiceResetsToFirstTimedOutCard, testUnansweredPauseRequiresExplicitResume, testThirdExposureCannotBeDeferred, testBackRecordsExposureAndReturnsToPreviousCard, testBackAfterAnsweredCardReturnsToTheCurrentCard, testVibeNameV4UsesTheChosenTopAndFactorWeightForSecondTie, testLatencyFirmnessUsesPostWarmupAnsweredCards, testRoamBendConsensusAndDurationCap, testVenueTypesUseMaximinTopFactorSatisfaction]) test();
-testDemoRoomJoinRequestEndToEnd().then(() => console.log('13 mobile assessment, naming, plan-chemistry, and room-flow tests passed')).catch(error => { console.error(error); process.exitCode = 1; });
+for (const test of [testOneTimeoutDoesNotOpenAwayPrompt, testDeferredPartnerIsPulledForwardOnCollision, testAwayPromptDiscardsTimeoutsAndResumesInPlace, testAwayChoiceResetsToFirstTimedOutCard, testUnansweredPauseRequiresExplicitResume, testThirdExposureCannotBeDeferred, testBackRecordsExposureAndReturnsToPreviousCard, testBackAfterAnsweredCardReturnsToTheCurrentCard, testVibeNameV4UsesTheChosenTopAndFactorWeightForSecondTie, testLatencyFirmnessUsesPostWarmupAnsweredCards, testRoamBendConsensusAndDurationCap, testVenueTypesUseMaximinTopFactorSatisfaction, testJoinerShapeFitUsesFrozenTypesAndRoamBend]) test();
+testDemoRoomJoinRequestEndToEnd().then(() => console.log('14 mobile assessment, naming, plan-chemistry, and room-flow tests passed')).catch(error => { console.error(error); process.exitCode = 1; });

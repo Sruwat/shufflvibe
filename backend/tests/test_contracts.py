@@ -5,23 +5,23 @@ client = TestClient(app)
 
 def test_social_and_safety_contracts():
     assert client.post('/v1/rooms', json={'title': 'Friday'}).status_code == 200
-    assert client.post('/v1/rooms/join-requests', json={'room_id': 'room-demo'}).json()['status'] == 'pending'
+    assert client.post('/v1/rooms/join-requests', json={'room_id': 'room-demo', 'scores': {'ENRG': 12, 'AFFIL': 88, 'CROWD': 12, 'TALK': 70, 'ROAM': 12, 'MOVE': 12, 'GAMES': 12}}).json()['status'] == 'pending'
     assert client.post('/v1/privacy', json={'location_sharing': False}).json()['saved'] is True
     assert client.post('/v1/reports', json={'target_id': 'user-2', 'reason': 'spam'}).json()['status'] == 'received'
 
 def test_room_host_freezes_plan_and_join_request_is_resolved():
     room = client.post('/v1/rooms', json={'title': 'Parity room'}).json()
-    plan = client.post('/v1/plans/generate', json={'scores': {'ENRG': 82, 'ROAM': 70}}).json()
+    plan = client.post('/v1/plans/generate', json={'scores': {'ENRG': 12, 'AFFIL': 88, 'CROWD': 12, 'TALK': 70, 'ROAM': 12, 'MOVE': 12, 'GAMES': 12}}).json()
     hosted = client.post(f"/v1/rooms/{room['id']}/host", params={'plan_id': plan['id']})
     assert hosted.status_code == 200
     assert hosted.json()['status'] == 'hosted'
     assert hosted.json()['plan_id'] == plan['id']
-    request = client.post('/v1/rooms/join-requests', json={'room_id': room['id'], 'member_id': 'joiner-17', 'note': 'Joining solo'}).json()
+    request = client.post('/v1/rooms/join-requests', json={'room_id': room['id'], 'member_id': 'joiner-17', 'note': 'Joining solo', 'scores': {'ENRG': 12, 'AFFIL': 88, 'CROWD': 12, 'TALK': 70, 'ROAM': 12, 'MOVE': 12, 'GAMES': 12}}).json()
     assert request['member_id'] == 'joiner-17'
     assert client.get(f"/v1/rooms/{room['id']}/join-requests").json()['items'][0]['id'] == request['id']
     listed = client.get('/v1/rooms?status=hosted').json()['items']
     assert all('join_requests' not in item for item in listed)
-    assert client.post('/v1/rooms/join-requests', json={'room_id': room['id'], 'member_id': 'joiner-17'}).json()['id'] == request['id']
+    assert client.post('/v1/rooms/join-requests', json={'room_id': room['id'], 'member_id': 'joiner-17', 'scores': {'ENRG': 12, 'AFFIL': 88, 'CROWD': 12, 'TALK': 70, 'ROAM': 12, 'MOVE': 12, 'GAMES': 12}}).json()['id'] == request['id']
     result = client.post(f"/v1/rooms/{room['id']}/join-requests/{request['id']}/decision", json={'status': 'accepted'})
     assert result.status_code == 200
     assert result.json()['request']['status'] == 'accepted'
@@ -69,3 +69,14 @@ def test_join_request_contract_rejects_invalid_members_and_requires_hosted_room(
     assert client.post('/v1/rooms/join-requests', json={'room_id': room['id'], 'member_id': 'joiner'}).status_code == 409
     assert client.post('/v1/rooms/join-requests', json={'room_id': 'room-demo', 'member_id': '   '}).status_code == 422
     assert client.get('/v1/rooms/missing/join-requests').status_code == 404
+
+
+def test_room_join_gate_rejects_vibe_shape_mismatch():
+    result = client.post('/v1/rooms/join-requests', json={
+        'room_id': 'room-demo',
+        'member_id': 'mismatch-user',
+        'scores': {'ENRG': 95, 'AFFIL': 5, 'CROWD': 5, 'TALK': 5, 'ROAM': 95, 'MOVE': 95, 'GAMES': 95},
+    })
+    assert result.status_code == 409
+    assert result.json()['detail']['code'] == 'plan_shape_mismatch'
+    assert result.json()['detail']['reasons']

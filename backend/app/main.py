@@ -5,7 +5,7 @@ from uuid import uuid4
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
-from .full_engine import DEMO_VENUES, chemistry_v2, fill_venues, select_venue_types
+from .full_engine import DEMO_VENUES, chemistry_v2, fill_venues, joiner_shape_fit, select_venue_types
 
 app = FastAPI(title="SHUFFL API", version="0.2.0")
 
@@ -45,6 +45,12 @@ class JoinRequest(BaseModel):
     room_id: str
     member_id: str = Field(default="demo-joiner", min_length=1, max_length=200)
     note: str = Field(default="", max_length=1000)
+    scores: dict[str, Any] = Field(default_factory=dict)
+
+
+class JoinEligibilityRequest(BaseModel):
+    room_id: str
+    scores: dict[str, Any] = Field(default_factory=dict)
 
 
 class JoinDecision(BaseModel):
@@ -91,8 +97,8 @@ class FeatureFlagUpdate(BaseModel):
     enabled: bool
 
 
-_rooms: list[dict[str, Any]] = [{"id": "room-demo", "title": "Friday night, open to the city", "members": ["demo-user"], "visibility": "friends", "status": "hosted", "plan_id": "plan-demo", "chemistry": {}, "join_requests": []}]
-_plans: dict[str, dict[str, Any]] = {}
+_plans: dict[str, dict[str, Any]] = {"plan-demo": {"id": "plan-demo", "status": "locked", "locked": True, "stops": 1, "venue_types": ["table for the night"], "chemistry": {}}}
+_rooms: list[dict[str, Any]] = [{"id": "room-demo", "title": "Friday night, open to the city", "members": ["demo-user"], "visibility": "public", "status": "hosted", "plan_id": "plan-demo", "chemistry": {}, "join_requests": []}]
 _capsules: dict[str, dict[str, Any]] = {}
 _messages: list[dict[str, Any]] = []
 _reports: list[dict[str, Any]] = []
@@ -192,7 +198,14 @@ def rooms(status: str | None = None, visibility: str | None = None) -> dict[str,
         items = [room for room in items if room["status"] == status]
     if visibility:
         items = [room for room in items if room["visibility"] == visibility]
-    public_items = [{key: value for key, value in room.items() if key != "join_requests"} for room in items]
+    public_items = []
+    for room in items:
+        item = {key: value for key, value in room.items() if key != "join_requests"}
+        plan = _plans.get(room.get("plan_id"))
+        if room["status"] == "hosted" and plan:
+            item["stop_types"] = plan.get("venue_types", [])
+            item["stop_count"] = plan.get("stops", 0)
+        public_items.append(item)
     return {"items": public_items}
 
 
@@ -229,6 +242,17 @@ def host_room(room_id: str, plan_id: str) -> dict[str, Any]:
     return room
 
 
+@app.post("/v1/rooms/join-eligibility")
+def room_join_eligibility(payload: JoinEligibilityRequest) -> dict[str, Any]:
+    room = find_room(payload.room_id)
+    if room["status"] != "hosted":
+        raise HTTPException(status_code=409, detail="Room is not accepting requests")
+    plan = _plans.get(room.get("plan_id"))
+    if not plan:
+        raise HTTPException(status_code=409, detail="This room has no available frozen plan")
+    return joiner_shape_fit(payload.scores, plan.get("venue_types", []), plan.get("stops", 0))
+
+
 @app.post("/v1/rooms/join-requests")
 def join_room(payload: JoinRequest) -> dict[str, Any]:
     room = find_room(payload.room_id)
@@ -239,6 +263,12 @@ def join_room(payload: JoinRequest) -> dict[str, Any]:
         raise HTTPException(status_code=422, detail="member_id cannot be blank")
     if member_id in room["members"]:
         raise HTTPException(status_code=409, detail="Member is already in this room")
+    plan = _plans.get(room.get("plan_id"))
+    if not plan:
+        raise HTTPException(status_code=409, detail="This room has no available frozen plan")
+    fit = joiner_shape_fit(payload.scores, plan.get("venue_types", []), plan.get("stops", 0))
+    if not fit["eligible"]:
+        raise HTTPException(status_code=409, detail={"code": "plan_shape_mismatch", "message": "This frozen plan is outside your vibe bend", "reasons": fit["reasons"]})
     existing = next((item for item in room["join_requests"] if item["member_id"] == member_id and item["status"] == "pending"), None)
     if existing:
         return existing

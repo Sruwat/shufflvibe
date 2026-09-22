@@ -1,5 +1,5 @@
-import { venues } from './data';
-import { chemistryV2, fillVenues, selectVenueTypes } from './fullEngine';
+import { Factor, venues } from './data';
+import { chemistryV2, fillVenues, joinerShapeFit, selectVenueTypes } from './fullEngine';
 
 export type PrivacySettings = { location_sharing: boolean; approximate_presence: boolean; discoverability: boolean; visibility: Record<string, 'everyone' | 'friends' | 'nobody'> };
 export type PlanLocationConsent = { approved: boolean };
@@ -9,7 +9,8 @@ const defaultPrivacy: PrivacySettings = { location_sharing: false, approximate_p
 let demoPrivacy: PrivacySettings = { ...defaultPrivacy, visibility: { ...defaultPrivacy.visibility } };
 const demoPlanConsents: Record<string, boolean> = {};
 const demoBlockedUsers = new Set<string>();
-const demoRooms: Record<string, RoomRecord & { visibility: string; join_requests: JoinRequestRecord[] }> = { 'room-demo': { id: 'room-demo', title: 'Friday night, open to the city', status: 'hosted', visibility: 'public', members: ['demo-user'], join_requests: [] } };
+const demoPlans: Record<string, { types: string[]; count: number }> = { 'plan-demo': { types: ['table for the night'], count: 1 } };
+const demoRooms: Record<string, RoomRecord & { visibility: string; join_requests: JoinRequestRecord[]; plan_id?: string }> = { 'room-demo': { id: 'room-demo', title: 'Friday night, open to the city', status: 'hosted', visibility: 'public', members: ['demo-user'], plan_id: 'plan-demo', join_requests: [] } };
 let demoReportSequence = 0;
 
 export type ServiceMode = 'demo' | 'api';
@@ -22,7 +23,9 @@ export type PlanInput = {
   strangers?: boolean;
 };
 export type GeneratedPlan = { id: string; style: string; stops: string[]; chemistry?: Record<string, unknown> };
-export type RoomRecord = { id: string; title: string; status: string; members?: string[] };
+export type JoinerScores = Partial<Record<Factor, number>> & { latency_firmness?: Partial<Record<Factor, number>> };
+export type RoomFit = { eligible: boolean; reasons: string[] };
+export type RoomRecord = { id: string; title: string; status: string; members?: string[]; plan_id?: string; stop_types?: string[]; stop_count?: number; join_eligibility?: RoomFit };
 export type JoinRequestRecord = { id: string; room_id: string; member_id: string; status: 'pending' | 'accepted' | 'declined'; note: string; created_at?: string };
 export type Service = {
   mode: ServiceMode;
@@ -31,7 +34,8 @@ export type Service = {
   createRoom: (title: string, members?: string[]) => Promise<RoomRecord>;
   hostRoom: (roomId: string, planId: string) => Promise<RoomRecord>;
   listHostedRooms: () => Promise<RoomRecord[]>;
-  requestToJoin: (roomId: string, memberId: string, note?: string) => Promise<JoinRequestRecord>;
+  getRoomEligibility: (roomId: string, scores: JoinerScores) => Promise<RoomFit>;
+  requestToJoin: (roomId: string, memberId: string, note?: string, scores?: JoinerScores) => Promise<JoinRequestRecord>;
   getJoinRequests: (roomId: string, status?: 'pending' | 'accepted' | 'declined' | 'all') => Promise<JoinRequestRecord[]>;
   decideJoinRequest: (roomId: string, requestId: string, status: 'accepted' | 'declined') => Promise<{ request: JoinRequestRecord; room: RoomRecord; plan_frozen: boolean }>;
   lockPlan: (planId: string) => Promise<void>;
@@ -53,17 +57,15 @@ export const DemoService: Service = {
     const chemistry = chemistryV2(memberScores, input.duration_hours ?? 4, input.strangers ?? false);
     const types = selectVenueTypes(memberScores, input.duration_hours ?? 4, input.strangers ?? false);
     const selected = fillVenues(types, [input.preferences ?? {}], venues);
-    return {
-      id: `demo-plan-${Date.now()}`,
-      style: chemistry.tags[0] ?? 'Settle Then Roam',
-      stops: selected.map((venue) => venue.name),
-      chemistry,
-    };
+    const id = `demo-plan-${Date.now()}`;
+    demoPlans[id] = { types, count: selected.length };
+    return { id, style: chemistry.tags[0] ?? 'Settle Then Roam', stops: selected.map((venue) => venue.name), chemistry };
   },
   createRoom: async (title, members = []) => { const id = `demo-room-${Date.now()}`; demoRooms[id] = { id, title, status: 'draft', visibility: 'private', members: [...members], join_requests: [] }; return demoRooms[id]; },
-  hostRoom: async (roomId) => { const room = demoRooms[roomId]; if (!room) throw new Error('Room not found'); room.status = 'hosted'; room.visibility = 'public'; return room; },
-  listHostedRooms: async () => Object.values(demoRooms).filter(room => room.status === 'hosted').map(({ join_requests: _requests, ...room }) => room),
-  requestToJoin: async (roomId, memberId, note = '') => { const room = demoRooms[roomId]; if (!room || room.status !== 'hosted') throw new Error('Room is not accepting requests'); if (room.members?.includes(memberId)) throw new Error('You are already a room member'); const old = room.join_requests.find(item => item.member_id === memberId && item.status === 'pending'); if (old) return old; const request: JoinRequestRecord = { id: `demo-join-${Date.now()}`, room_id: roomId, member_id: memberId, status: 'pending', note }; room.join_requests.push(request); return request; },
+  hostRoom: async (roomId, planId) => { const room = demoRooms[roomId]; if (!room) throw new Error('Room not found'); if (!demoPlans[planId]) throw new Error('Plan shape not found'); room.plan_id = planId; room.status = 'hosted'; room.visibility = 'public'; return room; },
+  listHostedRooms: async () => Object.values(demoRooms).filter(room => room.status === 'hosted').map(({ join_requests: _requests, ...room }) => { const plan = demoPlans[room.plan_id ?? '']; return { ...room, ...(plan ? { stop_types: plan.types, stop_count: plan.count } : {}) }; }),
+  getRoomEligibility: async (roomId, scores) => { const room = demoRooms[roomId]; if (!room || room.status !== 'hosted') throw new Error('Room is not accepting requests'); const plan = demoPlans[room.plan_id ?? '']; if (!plan) throw new Error('This room has no available frozen plan'); return joinerShapeFit(scores, plan.types, plan.count); },
+  requestToJoin: async (roomId, memberId, note = '', scores = {}) => { const room = demoRooms[roomId]; if (!room || room.status !== 'hosted') throw new Error('Room is not accepting requests'); if (room.members?.includes(memberId)) throw new Error('You are already a room member'); const plan = demoPlans[room.plan_id ?? '']; if (!plan) throw new Error('This room has no available frozen plan'); const fit = joinerShapeFit(scores, plan.types, plan.count); if (!fit.eligible) throw new Error('This frozen plan is outside your vibe bend: ' + fit.reasons.join('; ')); const old = room.join_requests.find(item => item.member_id === memberId && item.status === 'pending'); if (old) return old; const request: JoinRequestRecord = { id: 'demo-join-' + Date.now(), room_id: roomId, member_id: memberId, status: 'pending', note }; room.join_requests.push(request); return request; },
   getJoinRequests: async (roomId, status = 'pending') => { const room = demoRooms[roomId]; if (!room) throw new Error('Room not found'); return room.join_requests.filter(item => status === 'all' || item.status === status); },
   decideJoinRequest: async (roomId, requestId, status) => { const room = demoRooms[roomId]; const request = room?.join_requests.find(item => item.id === requestId); if (!room || !request) throw new Error('Join request not found'); if (request.status !== 'pending') throw new Error('Join request already resolved'); request.status = status; if (status === 'accepted' && !room.members?.includes(request.member_id)) room.members = [...(room.members ?? []), request.member_id]; const { join_requests: _requests, ...roomRecord } = room; return { request, room: roomRecord, plan_frozen: true }; },
   lockPlan: async () => undefined,
@@ -120,7 +122,8 @@ export function createApiService(baseUrl: string): Service {
       return { id: String(result.id), title: String(result.title), status: String(result.status) };
     },
     listHostedRooms: async () => (await request('/v1/rooms?status=hosted')).items as RoomRecord[],
-    requestToJoin: async (roomId, memberId, note = '') => await request('/v1/rooms/join-requests', { method: 'POST', body: JSON.stringify({ room_id: roomId, member_id: memberId, note }) }) as JoinRequestRecord,
+    getRoomEligibility: async (roomId, scores) => await request('/v1/rooms/join-eligibility', { method: 'POST', body: JSON.stringify({ room_id: roomId, scores }) }) as RoomFit,
+    requestToJoin: async (roomId, memberId, note = '', scores = {}) => await request('/v1/rooms/join-requests', { method: 'POST', body: JSON.stringify({ room_id: roomId, member_id: memberId, note, scores }) }) as JoinRequestRecord,
     getJoinRequests: async (roomId, status = 'pending') => (await request(`/v1/rooms/${encodeURIComponent(roomId)}/join-requests?status=${status}`)).items as JoinRequestRecord[],
     decideJoinRequest: async (roomId, requestId, status) => await request(`/v1/rooms/${encodeURIComponent(roomId)}/join-requests/${encodeURIComponent(requestId)}/decision`, { method: 'POST', body: JSON.stringify({ status }) }) as { request: JoinRequestRecord; room: RoomRecord; plan_frozen: boolean },
     lockPlan: async (planId) => {
