@@ -171,21 +171,68 @@ def chemistry_v2(members: list[dict[str, float]], duration_hours: float = 4, str
     durations = [0.55, *([0.45 / (stops - 1)] * (stops - 1))] if roam_split and stops > 1 else [1.0 / stops] * stops
     return {"vector": vector, "tags": tags[:2], "formation": "Best of Both" if len(members) > 1 else "In Sync", "stops": stops, "roam": round(roam), "stop_durations": durations, "talk_floor": 40 if talker else 0}
 
+STOP_AXES = ("ENRG", "AFFIL", "CROWD", "TALK", "MOVE", "GAMES")
+WANT_FLOOR = 25
+SUB_MIN = 18
+DEGREE = 0.5
+
+
+def _effective_top(member: dict, members: list[dict]) -> str | None:
+    ranked = sorted(STOP_AXES, key=lambda factor: (-abs(member.get(factor, 50) - 50), -member.get("latency_firmness", {}).get(factor, 0.0), STOP_AXES.index(factor)))
+    wants = [factor for factor in ranked if abs(member.get(factor, 50) - 50) >= WANT_FLOOR]
+    if not wants:
+        return None
+    top = wants[0]
+    top_score = member.get(top, 50)
+    opposed = any(other is not member and _bend_and_firmness(other, top)[0] and ((other.get(top, 50) >= 50) != (top_score >= 50)) for other in members)
+    strong_second = [factor for factor in ranked if factor != top and abs(member.get(factor, 50) - 50) >= SUB_MIN]
+    return strong_second[0] if opposed and strong_second else top
+
+
+def _top_satisfaction(template: dict[str, float], member: dict, factor: str | None) -> float:
+    if factor is None:
+        return 1.0
+    score = member.get(factor, 50)
+    _, bend = _bend_and_firmness(member, factor)
+    delivered = template[factor] >= score - bend if score >= 50 else template[factor] <= score + bend
+    if delivered:
+        return 1.0
+    if abs(template[factor] - 50) <= 5 or ((template[factor] >= 50) == (score >= 50)):
+        return DEGREE
+    return 0.0
+
+
 def select_venue_types(members: list[dict[str, float]], duration_hours: float = 4, strangers: bool = False) -> list[str]:
-    room = chemistry_v2(members, duration_hours, strangers)
-    target = room["vector"]
-    candidates = []
-    for name, template in VENUE_TYPES.items():
-        if room["talk_floor"] and template["TALK"] < room["talk_floor"]:
-            continue
-        distance = sum(abs(template[factor] - target[factor]) for factor in FACTORS if factor != "ROAM")
-        if strangers and name in {"games pub", "pub", "street / market", "open ground"}:
-            distance -= 12
-        if "Common Ground" in room["tags"] and name in {"games pub", "games bar"}:
-            distance -= 10
-        candidates.append((distance, name))
-    candidates.sort()
-    return [name for _, name in candidates[:room["stops"]]] or ["pub"]
+    safe_members = members or [{factor: 50 for factor in FACTORS}]
+    room = chemistry_v2(safe_members, duration_hours, strangers)
+    tops = [_effective_top(member, safe_members) for member in safe_members]
+    used: set[str] = set()
+    selected: list[str] = []
+    previous_energy = -1
+    for stop_index in range(room["stops"]):
+        candidates = []
+        for name, template in VENUE_TYPES.items():
+            if name == "open ground" and stop_index > 0:
+                continue
+            if room["talk_floor"] and template["TALK"] < room["talk_floor"]:
+                continue
+            satisfaction = [_top_satisfaction(template, member, factor) for member, factor in zip(safe_members, tops) if factor]
+            minimum = min(satisfaction) if satisfaction else 1.0
+            total = sum(satisfaction)
+            variety = name not in used
+            arc = -template["ENRG"] if stop_index == 0 else template["ENRG"] >= previous_energy - 10
+            bridge = int((any(value == DEGREE for value in satisfaction) or (strangers and stop_index == 0)) and template["GAMES"] >= 60)
+            table_floor = int("Table and Floor" in room["tags"] and template["AFFIL"] >= 55 and template["CROWD"] >= 60)
+            common_ground = int("Common Ground" in room["tags"] and 55 <= template["GAMES"] <= 70)
+            target = room["vector"]
+            signal_distance = sum(abs(template[factor] - safe_members[index].get(factor, 50)) * (1.0 if _bend_and_firmness(safe_members[index], factor)[0] else 0.25) * abs(safe_members[index].get(factor, 50) - 50) / 50 for index in range(len(safe_members)) for factor in STOP_AXES)
+            shape_distance = sum(abs(template[factor] - target.get(factor, 50)) for factor in STOP_AXES)
+            candidates.append(((minimum, total, variety, table_floor, bridge, common_ground, arc, -signal_distance, -shape_distance), name, template["ENRG"]))
+        _, name, energy = max(candidates, key=lambda item: item[0])
+        selected.append(name)
+        used.add(name)
+        previous_energy = energy
+    return selected or ["pub"]
 
 def preference_fit(venue: dict, members: list[dict], visited: set[str] | None = None) -> float:
     visited = visited or set()

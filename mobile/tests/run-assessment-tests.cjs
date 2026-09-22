@@ -6,7 +6,7 @@ require.extensions['.ts'] = (module, filename) => {
   const output = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020, esModuleInterop: true } }).outputText;
   module._compile(output, filename);
 };
-const { createAssessment, currentCard, beginExposure, deferCard, resolveAway, resumeAssessment, isRequiredAnswerExposure, backCard, answerCard, latencyFirmness, chemistryV2 } = require('../src/fullEngine.ts');
+const { createAssessment, currentCard, beginExposure, deferCard, resolveAway, resumeAssessment, isRequiredAnswerExposure, backCard, answerCard, latencyFirmness, chemistryV2, selectVenueTypes } = require('../src/fullEngine.ts');
 const { vibeName } = require('../src/algorithms.ts');
 
 function testAwayPromptDiscardsTimeoutsAndResumesInPlace() {
@@ -102,6 +102,12 @@ function testDeferredPartnerIsPulledForwardOnCollision() {
   assert.equal(currentCard(state).id, partner.id);
   assert.notEqual(state.queue[state.queue.length - 1].id, partner.id);
 }
+function testVenueTypesUseMaximinTopFactorSatisfaction() {
+  const types = selectVenueTypes([{ GAMES: 88 }, { GAMES: 12 }], 6);
+  assert.equal(types[0], 'pub');
+  assert.equal(types.includes('games bar'), false);
+}
+
 function testRoamBendConsensusAndDurationCap() {
   const flexibleLow = chemistryV2([{ ROAM: 92 }, { ROAM: 30 }], 6);
   assert.equal(flexibleLow.roam, 92);
@@ -131,5 +137,5 @@ function testVibeNameV4UsesTheChosenTopAndFactorWeightForSecondTie() {
   assert.equal(vibeName({ ENRG: 88, AFFIL: 50, CROWD: 50, TALK: 50, ROAM: 50, MOVE: 50, GAMES: 50 }), 'Night Climber');
 }
 
-for (const test of [testOneTimeoutDoesNotOpenAwayPrompt, testDeferredPartnerIsPulledForwardOnCollision, testAwayPromptDiscardsTimeoutsAndResumesInPlace, testAwayChoiceResetsToFirstTimedOutCard, testUnansweredPauseRequiresExplicitResume, testThirdExposureCannotBeDeferred, testBackRecordsExposureAndReturnsToPreviousCard, testBackAfterAnsweredCardReturnsToTheCurrentCard, testVibeNameV4UsesTheChosenTopAndFactorWeightForSecondTie, testLatencyFirmnessUsesPostWarmupAnsweredCards, testRoamBendConsensusAndDurationCap]) test();
-console.log('11 mobile assessment, naming, and plan-chemistry tests passed');
+for (const test of [testOneTimeoutDoesNotOpenAwayPrompt, testDeferredPartnerIsPulledForwardOnCollision, testAwayPromptDiscardsTimeoutsAndResumesInPlace, testAwayChoiceResetsToFirstTimedOutCard, testUnansweredPauseRequiresExplicitResume, testThirdExposureCannotBeDeferred, testBackRecordsExposureAndReturnsToPreviousCard, testBackAfterAnsweredCardReturnsToTheCurrentCard, testVibeNameV4UsesTheChosenTopAndFactorWeightForSecondTie, testLatencyFirmnessUsesPostWarmupAnsweredCards, testRoamBendConsensusAndDurationCap, testVenueTypesUseMaximinTopFactorSatisfaction]) test();
+console.log('12 mobile assessment, naming, and plan-chemistry tests passed');

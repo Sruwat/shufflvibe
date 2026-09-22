@@ -48,6 +48,12 @@ def test_venue_types_filter_out_non_talkable_club_for_talker():
     types = select_venue_types([{'ENRG': 88, 'TALK': 88, 'ROAM': 80}, {'ENRG': 62, 'TALK': 75, 'ROAM': 70}])
     assert all(name != 'club' for name in types)
 
+def test_venue_types_use_maximin_top_factor_satisfaction():
+    types = select_venue_types([{"GAMES": 88}, {"GAMES": 12}], duration_hours=6)
+    assert types[0] == "pub"  # its mid-range games score serves both sides to a degree
+    assert "games bar" not in types  # maximizing one member cannot erase the other member
+
+
 def test_preference_fill_prefers_food_for_food_whole_point():
     selected = fill_venues(['buzzy restaurant'], [{'preferences': {'FOOD': 88, 'SCEN': 38}}])
     assert selected[0]['name'] == 'Depot 48'

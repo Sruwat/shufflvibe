@@ -293,14 +293,67 @@ export function chemistryV2(members: ChemistryMember[], durationHours = 4, stran
   return { vector, tags: tags.slice(0, 2), formation: safeMembers.length > 1 ? 'Best of Both' : 'In Sync', stopCount, roam: Math.round(roam.value), roamSplit: roam.split, talkFloor: talker ? 40 : 0, stopDurations };
 }
 
-export function selectVenueTypes(members: Partial<Record<Factor, number>>[], durationHours = 4, strangers = false) {
-  const room = chemistryV2(members, durationHours, strangers); const target = room.vector;
-  const ranked = Object.entries(VENUE_TYPES).filter(([, scores]) => !room.talkFloor || (scores.TALK ?? 0) >= room.talkFloor).map(([name, scores]) => {
-    let distance = factors.reduce((sum, factor) => sum + Math.abs((scores[factor] ?? 50) - (target[factor] ?? 50)), 0);
-    if (strangers && ['games pub', 'pub', 'street / market', 'open ground'].includes(name)) distance -= 12;
-    return [name, distance] as const;
-  }).sort((a, b) => a[1] - b[1]);
-  return ranked.slice(0, room.stopCount).map(([name]) => name);
+const stopAxes: Factor[] = ['ENRG', 'AFFIL', 'CROWD', 'TALK', 'MOVE', 'GAMES'];
+const wantFloor = 25;
+const subMin = 18;
+const degree = 0.5;
+
+function effectiveTop(member: ChemistryMember, members: ChemistryMember[]): Factor | undefined {
+  const ranked = [...stopAxes].sort((a, b) => Math.abs((member[b] ?? 50) - 50) - Math.abs((member[a] ?? 50) - 50) || (member.latency_firmness?.[b] ?? 0) - (member.latency_firmness?.[a] ?? 0) || stopAxes.indexOf(a) - stopAxes.indexOf(b));
+  const wants = ranked.filter((factor) => Math.abs((member[factor] ?? 50) - 50) >= wantFloor);
+  const top = wants[0];
+  if (!top) return undefined;
+  const score = member[top] ?? 50;
+  const opposed = members.some((other) => other !== member && planBend(other, top).firm && (((other[top] ?? 50) >= 50) !== (score >= 50)));
+  const second = ranked.find((factor) => factor !== top && Math.abs((member[factor] ?? 50) - 50) >= subMin);
+  return opposed && second ? second : top;
+}
+
+function topSatisfaction(template: Partial<Record<Factor, number>>, member: ChemistryMember, factor?: Factor): number {
+  if (!factor) return 1;
+  const score = member[factor] ?? 50;
+  const bend = planBend(member, factor).bend;
+  const value = template[factor] ?? 50;
+  const delivered = score >= 50 ? value >= score - bend : value <= score + bend;
+  if (delivered) return 1;
+  return Math.abs(value - 50) <= 5 || ((value >= 50) === (score >= 50)) ? degree : 0;
+}
+
+export function selectVenueTypes(members: ChemistryMember[], durationHours = 4, strangers = false) {
+  const safeMembers: ChemistryMember[] = members.length ? members : [Object.fromEntries(factors.map((factor) => [factor, 50])) as ChemistryMember];
+  const room = chemistryV2(safeMembers, durationHours, strangers);
+  const tops = safeMembers.map((member) => effectiveTop(member, safeMembers));
+  const used = new Set<string>();
+  const selected: string[] = [];
+  let previousEnergy = -1;
+  for (let stopIndex = 0; stopIndex < room.stopCount; stopIndex += 1) {
+    const candidates = Object.entries(VENUE_TYPES).flatMap(([name, template]) => {
+      if ((name === 'open ground' && stopIndex > 0) || (room.talkFloor && (template.TALK ?? 0) < room.talkFloor)) return [];
+      const satisfaction = safeMembers.flatMap((member, index) => tops[index] ? [topSatisfaction(template, member, tops[index])] : []);
+      const minimum = satisfaction.length ? Math.min(...satisfaction) : 1;
+      const total = satisfaction.reduce((sum, value) => sum + value, 0);
+      const arc = stopIndex === 0 ? -(template.ENRG ?? 50) : Number((template.ENRG ?? 50) >= previousEnergy - 10);
+      const bridge = Number((satisfaction.includes(degree) || (strangers && stopIndex === 0)) && (template.GAMES ?? 0) >= 60);
+      const tableFloor = Number(room.tags.includes('Table and Floor') && (template.AFFIL ?? 0) >= 55 && (template.CROWD ?? 0) >= 60);
+      const commonGround = Number(room.tags.includes('Common Ground') && (template.GAMES ?? 0) >= 55 && (template.GAMES ?? 0) <= 70);
+      const signalDistance = safeMembers.reduce((totalDistance, member) => totalDistance + stopAxes.reduce((sum, factor) => {
+        const deviation = Math.abs((member[factor] ?? 50) - 50) / 50;
+        return sum + Math.abs((template[factor] ?? 50) - (member[factor] ?? 50)) * (planBend(member, factor).firm ? 1 : 0.25) * deviation;
+      }, 0), 0);
+      const shapeDistance = stopAxes.reduce((sum, factor) => sum + Math.abs((template[factor] ?? 50) - (room.vector[factor] ?? 50)), 0);
+      return [{ key: [minimum, total, Number(!used.has(name)), tableFloor, bridge, commonGround, arc, -signalDistance, -shapeDistance], name, energy: template.ENRG ?? 50 }];
+    });
+    candidates.sort((a, b) => {
+      for (let index = 0; index < a.key.length; index += 1) if (a.key[index] !== b.key[index]) return b.key[index] - a.key[index];
+      return a.name.localeCompare(b.name);
+    });
+    const winner = candidates[0];
+    if (!winner) break;
+    selected.push(winner.name);
+    used.add(winner.name);
+    previousEnergy = winner.energy;
+  }
+  return selected.length ? selected : ['pub'];
 }
 
 export function generatePlan(members: Partial<Record<Factor, number>>[], venues: { name: string; type: string; scores: Partial<Record<Factor, number>> }[]) {
