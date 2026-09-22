@@ -3,11 +3,18 @@ import { Pressable, SafeAreaView, ScrollView, StyleSheet, Switch, Text, TextInpu
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from './theme';
 import { FeatureMode, useApp } from './store';
-import { factors, preferences as preferenceFactors } from './data';
+import { factors, preferences as preferenceFactors, venues } from './data';
 import { getService, JoinerScores, JoinRequestRecord, PrivacySettings, RoomRecord } from './services';
 import { latencyFirmness } from './fullEngine';
 
 const reportReasons = ['Harassment', 'Spam or scam', 'Inappropriate content', 'Safety concern', 'Something else'];
+
+function VenueDetailScreen() {
+  const { selectedVenueName, set } = useApp();
+  const venue = venues.find(item => item.name === selectedVenueName) ?? { name: selectedVenueName, type: 'Demo venue', area: 'Delhi NCR', tag: 'A place to make the night yours', color: '#20DDA9', scores: {} };
+  const strengths = Object.entries(venue.scores).sort(([, a], [, b]) => b - a).slice(0, 3);
+  return <SafeAreaView style={styles.safe}><FeatureHeader label="VENUE DETAIL" onBack={() => set({ screen: 'discover' })}/><ScrollView contentContainerStyle={styles.content}><View style={[styles.heroIcon, { backgroundColor: venue.color + '25' }]}><Ionicons name="location" size={34} color={venue.color}/></View><Text style={styles.eyebrow}>{venue.area.toUpperCase()} · {venue.type.toUpperCase()}</Text><Text style={styles.title}>{venue.name}</Text><Text style={styles.body}>{venue.tag}. A seeded demo venue profile; live opening status, booking, and map routing are not connected in this build.</Text><Text style={styles.eyebrow}>WHY IT MAY FIT</Text>{strengths.map(([factor, score]) => <View key={factor} style={styles.route}><Text style={styles.routeText}>{factor}</Text><Text style={styles.secondaryText}>{score}/100 · strong match</Text></View>)}<View style={styles.roomCard}><Text style={styles.routeText}>Place details</Text><Text style={styles.secondaryText}>Preference scores are demo data. Your exact location is never requested on this page.</Text></View><FeatureButton label="Open plan builder" onPress={() => set({ screen: 'feature', featureMode: 'activePlan' })}/><FeatureButton label="Back to discovery" onPress={() => set({ screen: 'discover' })} secondary/></ScrollView></SafeAreaView>;
+}
 
 function ReportSafetyScreen() {
   const { set } = useApp();
@@ -230,6 +237,7 @@ function ChatScreen() { const { set } = useApp(); const [sent, setSent] = useSta
 
 export function FeatureScreen({ mode }: { mode: FeatureMode }) {
   const { set } = useApp();
+  if (mode === 'venue') return <VenueDetailScreen/>;
   if (mode === 'privacy') return <PrivacySafetyScreen/>;
   if (mode === 'arrival') return <ArrivalScreen/>;
   if (mode === 'hostRoom') return <HostRoomScreen/>;
