@@ -77,6 +77,10 @@ class PrivacyUpdate(BaseModel):
     visibility: dict[str, str] = Field(default_factory=dict)
 
 
+class PlanLocationConsent(BaseModel):
+    approved: bool
+
+
 class FeatureFlagUpdate(BaseModel):
     name: str
     enabled: bool
@@ -88,6 +92,7 @@ _capsules: dict[str, dict[str, Any]] = {}
 _messages: list[dict[str, Any]] = []
 _reports: list[dict[str, Any]] = []
 _privacy: dict[str, dict[str, Any]] = {}
+_plan_location_consents: dict[str, bool] = {}
 _notifications: list[dict[str, Any]] = [{"id": "n-1", "kind": "room_request", "title": "A room is forming", "read": False}]
 _flags: dict[str, bool] = {"capsules": True, "heatmap": True, "live_chat": False}
 _answers: list[dict[str, Any]] = []
@@ -299,6 +304,25 @@ def report(payload: ReportRequest) -> dict[str, Any]:
     return record
 
 
+@app.get("/v1/plans/{plan_id}/location-consent")
+def get_plan_location_consent(plan_id: str) -> dict[str, bool]:
+    if plan_id not in _plans:
+        raise HTTPException(status_code=404, detail="Plan not found")
+    permitted = _privacy.get("demo-user", PrivacyUpdate().model_dump())["location_sharing"]
+    return {"approved": bool(permitted and _plan_location_consents.get(plan_id, False))}
+
+
+@app.post("/v1/plans/{plan_id}/location-consent")
+def set_plan_location_consent(plan_id: str, payload: PlanLocationConsent) -> dict[str, bool]:
+    if plan_id not in _plans:
+        raise HTTPException(status_code=404, detail="Plan not found")
+    permitted = _privacy.get("demo-user", PrivacyUpdate().model_dump())["location_sharing"]
+    if payload.approved and not permitted:
+        raise HTTPException(status_code=409, detail="Enable per-plan location sharing in privacy settings first")
+    _plan_location_consents[plan_id] = payload.approved
+    return {"approved": payload.approved}
+
+
 @app.post("/v1/privacy")
 def update_privacy(payload: PrivacyUpdate) -> dict[str, Any]:
     invalid = {key: value for key, value in payload.visibility.items() if value not in {"everyone", "friends", "nobody"}}
@@ -306,6 +330,8 @@ def update_privacy(payload: PrivacyUpdate) -> dict[str, Any]:
         raise HTTPException(status_code=422, detail="visibility values must be everyone, friends, or nobody")
     settings = payload.model_dump()
     _privacy["demo-user"] = settings
+    if not settings["location_sharing"]:
+        _plan_location_consents.clear()
     return {"saved": True, "settings": settings}
 
 

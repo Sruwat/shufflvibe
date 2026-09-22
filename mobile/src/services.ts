@@ -1,6 +1,12 @@
 import { venues } from './data';
 import { chemistryV2, fillVenues, selectVenueTypes } from './fullEngine';
 
+export type PrivacySettings = { location_sharing: boolean; approximate_presence: boolean; discoverability: boolean; visibility: Record<string, 'everyone' | 'friends' | 'nobody'> };
+export type PlanLocationConsent = { approved: boolean };
+const defaultPrivacy: PrivacySettings = { location_sharing: false, approximate_presence: true, discoverability: true, visibility: { profile: 'friends', vibe: 'friends', plans: 'friends' } };
+let demoPrivacy: PrivacySettings = { ...defaultPrivacy, visibility: { ...defaultPrivacy.visibility } };
+const demoPlanConsents: Record<string, boolean> = {};
+
 export type ServiceMode = 'demo' | 'api';
 export type PlanInput = {
   scores: Record<string, number>;
@@ -19,6 +25,10 @@ export type Service = {
   createRoom: (title: string, members?: string[]) => Promise<RoomRecord>;
   hostRoom: (roomId: string, planId: string) => Promise<RoomRecord>;
   lockPlan: (planId: string) => Promise<void>;
+  getPrivacy: () => Promise<PrivacySettings>;
+  savePrivacy: (settings: PrivacySettings) => Promise<PrivacySettings>;
+  getPlanLocationConsent: (planId: string) => Promise<PlanLocationConsent>;
+  savePlanLocationConsent: (planId: string, approved: boolean) => Promise<PlanLocationConsent>;
 };
 
 export const DemoService: Service = {
@@ -39,6 +49,10 @@ export const DemoService: Service = {
   createRoom: async (title) => ({ id: `demo-room-${Date.now()}`, title, status: 'draft' }),
   hostRoom: async (roomId) => ({ id: roomId, title: 'Demo room', status: 'hosted' }),
   lockPlan: async () => undefined,
+  getPrivacy: async () => ({ ...demoPrivacy, visibility: { ...demoPrivacy.visibility } }),
+  savePrivacy: async (settings) => { demoPrivacy = { ...settings, visibility: { ...settings.visibility } }; if (!settings.location_sharing) Object.keys(demoPlanConsents).forEach((key) => { demoPlanConsents[key] = false; }); return { ...demoPrivacy, visibility: { ...demoPrivacy.visibility } }; },
+  getPlanLocationConsent: async (planId) => ({ approved: demoPrivacy.location_sharing && Boolean(demoPlanConsents[planId]) }),
+  savePlanLocationConsent: async (planId, approved) => { if (approved && !demoPrivacy.location_sharing) throw new Error("Enable per-plan location sharing in privacy settings first"); demoPlanConsents[planId] = approved; return { approved }; },
 };
 
 export function createApiService(baseUrl: string): Service {
@@ -86,6 +100,21 @@ export function createApiService(baseUrl: string): Service {
     lockPlan: async (planId) => {
       await request(`/v1/plans/${encodeURIComponent(planId)}/lock`, { method: 'POST' });
     },
+    getPrivacy: async () => {
+      const result = await request('/v1/privacy');
+      return { ...defaultPrivacy, ...result, visibility: { ...defaultPrivacy.visibility, ...(result.visibility as Record<string, PrivacySettings['visibility'][string]> | undefined) } } as PrivacySettings;
+    },
+    savePrivacy: async (settings) => {
+      const result = await request('/v1/privacy', { method: 'POST', body: JSON.stringify(settings) });
+      return { ...defaultPrivacy, ...(result.settings as Partial<PrivacySettings>), visibility: { ...defaultPrivacy.visibility, ...((result.settings as PrivacySettings | undefined)?.visibility ?? {}) } };
+    },
+    getPlanLocationConsent: async (planId) => await request(
+      "/v1/plans/" + encodeURIComponent(planId) + "/location-consent",
+    ) as PlanLocationConsent,
+    savePlanLocationConsent: async (planId, approved) => await request(
+      "/v1/plans/" + encodeURIComponent(planId) + "/location-consent",
+      { method: "POST", body: JSON.stringify({ approved }) },
+    ) as PlanLocationConsent,
   };
 }
 

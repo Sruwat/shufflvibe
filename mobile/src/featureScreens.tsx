@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Pressable, SafeAreaView, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from './theme';
 import { FeatureMode, useApp } from './store';
 import { factors, preferences as preferenceFactors } from './data';
-import { getService } from './services';
+import { getService, PrivacySettings } from './services';
 
 const content: Record<FeatureMode, { eyebrow: string; title: string; body: string; action: string; next?: FeatureMode; icon: keyof typeof Ionicons.glyphMap }> = {
   venue:{eyebrow:'VENUE DETAIL',title:'Sidecar, GK-2',body:'Buzzy, easy to settle into · Greater Kailash II. Venue media, review notes, pinboard, and preference fit are kept together here.',action:'Add to plan',next:'activePlan',icon:'location-outline'},
@@ -65,6 +65,69 @@ function HostRoomScreen() {
   const confirmAction = () => confirm === 'host' ? host() : createPlan();
   return <SafeAreaView style={styles.safe}><FeatureHeader label="HOST A ROOM" onBack={() => set({ screen: 'control' })}/><ScrollView contentContainerStyle={styles.content}><Text style={styles.eyebrow}>ROOM SETUP</Text><Text style={styles.title}>{room.name}</Text><Text style={styles.body}>{room.public ? 'Room is public. The plan and chemistry are now frozen for everyone who joins.' : 'Build the room privately, make the plan, then host it when the room is ready.'}</Text><View style={styles.routeList}>{room.members.map(member => <View key={member} style={styles.route}><Text style={styles.routeText}>{member} · today’s vibe</Text><Text style={styles.secondaryText}>{member === 'Aarav' ? 'HOST' : 'CO-HOST'}</Text></View>)}</View>{!room.public && !plan.exists && !room.cohosts.length && <FeatureButton label="Add a co-host" onPress={addCohost}/>} {!room.public && !plan.exists && <FeatureButton label={busy ? 'Building plan…' : 'Create plan'} onPress={createPlan} secondary={!!room.cohosts.length}/>} {error ? <Text accessibilityRole="alert" style={styles.secondaryText}>{error}</Text> : null}{confirm && <View style={styles.route}><Text style={styles.body}>{confirm === 'host' ? 'You will not be able to add co-hosts after hosting this room. Continue?' : 'This plan is just for you because you have not added co-hosts. Continue?'}</Text><FeatureButton label={busy ? 'Please wait…' : 'Continue'} onPress={confirmAction}/><FeatureButton label="Cancel" onPress={() => setConfirm(null)} secondary/></View>} {plan.exists && <View style={styles.routeList}><Text style={styles.eyebrow}>{plan.style} · {plan.locked ? 'LOCKED' : 'PRIVATE DRAFT'}</Text>{plan.stops.map((stop, index) => <View key={`${index}-${stop}`} style={styles.route}><Text style={styles.routeText}>{index + 1}. {stop}</Text></View>)}</View>} {plan.exists && !room.public && <FeatureButton label={busy ? 'Hosting…' : 'Host room'} onPress={host}/>} {room.public && <FeatureButton label="Open join requests" onPress={() => set({ screen: 'feature', featureMode: 'joinRequests' })} secondary/>} {plan.exists && <FeatureButton label="View plan" onPress={() => set({ screen: 'feature', featureMode: 'activePlan' })} secondary/>}</ScrollView></SafeAreaView>;
 }
+function ArrivalScreen() {
+  const { plan, set } = useApp();
+  const [consented, setConsented] = useState(false);
+  const [allowed, setAllowed] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  useEffect(() => {
+    let active = true;
+    if (!plan.id || !plan.exists) return () => { active = false; };
+    setLoading(true);
+    Promise.all([getService().getPrivacy(), getService().getPlanLocationConsent(plan.id)]).then(([privacy, consent]) => {
+      if (active) { setAllowed(privacy.location_sharing); setConsented(consent.approved); }
+    }).catch((cause) => { if (active) setError(cause instanceof Error ? cause.message : 'Could not load arrival consent.'); }).finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [plan.id, plan.exists]);
+  const toggleConsent = async () => {
+    if (!plan.id || busy) return;
+    setBusy(true); setError('');
+    try { const result = await getService().savePlanLocationConsent(plan.id, !consented); setConsented(result.approved); }
+    catch (cause) { setError(cause instanceof Error ? cause.message : 'Could not update consent.'); }
+    finally { setBusy(false); }
+  };
+  return <SafeAreaView style={styles.safe}><FeatureHeader label="ARRIVAL & CONSENT" onBack={() => set({ screen: 'feature', featureMode: 'activePlan' })}/><ScrollView contentContainerStyle={styles.content}><Text style={styles.eyebrow}>PLAN CHECK-IN</Text><Text style={styles.title}>You have arrived</Text><Text style={styles.body}>The demo does not read GPS or expose exact coordinates. You can separately opt in to approximate presence for this plan.</Text>{!plan.exists || !plan.id ? <Text style={styles.secondaryText}>Create a plan before setting arrival consent.</Text> : <View style={styles.route}><View style={{ flex: 1, paddingRight: 12 }}><Text style={styles.routeText}>Approximate presence for this plan</Text><Text style={styles.secondaryText}>{loading ? 'Checking saved consent…' : allowed ? consented ? 'Shared as approximate presence' : 'Not shared' : 'Turn on per-plan permission in Privacy & Safety first'}</Text></View><Switch value={consented} disabled={loading || busy || !allowed} onValueChange={toggleConsent} trackColor={{ false: '#35413F', true: '#32D6B0' }} thumbColor={consented ? '#07100E' : '#E8EFEC'} accessibilityLabel="Approximate presence for this plan"/></View>}{error ? <Text accessibilityRole="alert" style={styles.secondaryText}>{error}</Text> : null}{!allowed && plan.id ? <FeatureButton label="Open Privacy & Safety" onPress={() => set({ screen: 'feature', featureMode: 'privacy' })} secondary/> : null}<FeatureButton label="End plan" onPress={() => set({ screen: 'feature', featureMode: 'feedback' })}/></ScrollView></SafeAreaView>;
+}
+
+function PrivacySafetyScreen() {
+  const { set } = useApp();
+  const [settings, setSettings] = useState<PrivacySettings | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+  useEffect(() => {
+    let active = true;
+    getService().getPrivacy().then((result) => { if (active) setSettings(result); }).catch((cause) => { if (active) setError(cause instanceof Error ? cause.message : 'Could not load privacy settings.'); }).finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, []);
+  const update = (patch: Partial<PrivacySettings>) => { if (!settings) return; setSettings({ ...settings, ...patch }); setMessage(''); };
+  const cycleVisibility = (key: string) => {
+    if (!settings) return;
+    const current = settings.visibility[key] ?? 'friends';
+    const next = current === 'everyone' ? 'friends' : current === 'friends' ? 'nobody' : 'everyone';
+    update({ visibility: { ...settings.visibility, [key]: next } });
+  };
+  const save = async () => {
+    if (!settings || saving) return;
+    setSaving(true); setError(''); setMessage('');
+    try { setSettings(await getService().savePrivacy(settings)); setMessage('Your privacy settings are saved.'); }
+    catch (cause) { setError(cause instanceof Error ? cause.message : 'Could not save privacy settings.'); }
+    finally { setSaving(false); }
+  };
+  const row = (title: string, detail: string, value: boolean, onChange: (value: boolean) => void) => <View key={title} style={styles.route}><View style={{ flex: 1, paddingRight: 16 }}><Text style={styles.routeText}>{title}</Text><Text style={styles.secondaryText}>{detail}</Text></View><Switch value={value} onValueChange={onChange} trackColor={{ false: '#35413F', true: '#32D6B0' }} thumbColor={value ? '#07100E' : '#E8EFEC'} accessibilityLabel={title}/></View>;
+  return <SafeAreaView style={styles.safe}><FeatureHeader label="PRIVACY & SAFETY" onBack={() => set({ screen: 'control' })}/><ScrollView contentContainerStyle={styles.content}><Text style={styles.eyebrow}>YOUR CONTROLS</Text><Text style={styles.title}>You choose what is shared</Text><Text style={styles.body}>Exact location is not shown to other members. Presence is approximate, and plan-level sharing still requires consent.</Text>{loading ? <Text style={styles.secondaryText}>Loading your saved choices…</Text> : !settings ? <Text accessibilityRole="alert" style={styles.secondaryText}>{error || 'Privacy settings are unavailable.'}</Text> : <>
+    {row('Allow per-plan location sharing', 'Off by default. This does not enable sharing for a plan without your consent.', settings.location_sharing, (value) => update({ location_sharing: value }))}
+    {row('Approximate group presence', 'Share a broad arrival/presence state, never an exact position.', settings.approximate_presence, (value) => update({ approximate_presence: value }))}
+    {row('Discoverability', 'Allow your profile to appear in eligible room and discovery surfaces.', settings.discoverability, (value) => update({ discoverability: value }))}
+    <Text style={styles.eyebrow}>WHO CAN SEE WHAT</Text>
+    {(['profile', 'vibe', 'plans'] as const).map((key) => <Pressable key={key} accessibilityRole="button" accessibilityLabel={`Change ${key} visibility`} onPress={() => cycleVisibility(key)} style={styles.route}><View><Text style={styles.routeText}>{key === 'profile' ? 'Profile' : key === 'vibe' ? 'Vibe context' : 'Plans'}</Text><Text style={styles.secondaryText}>Tap to change access</Text></View><Text style={styles.secondaryText}>{settings.visibility[key] ?? 'friends'} ›</Text></Pressable>)}
+    {error ? <Text accessibilityRole="alert" style={styles.secondaryText}>{error}</Text> : null}{message ? <Text accessibilityRole="alert" style={styles.secondaryText}>{message}</Text> : null}<FeatureButton label={saving ? 'Saving…' : 'Save privacy choices'} onPress={save}/>
+  </>}<FeatureButton label="Report or block someone" onPress={() => set({ screen: 'feature', featureMode: 'report' })} secondary/></ScrollView></SafeAreaView>;
+}
+
 function ActivePlanScreen() {
   const { room, plan, scores, preferences: preferenceState, set } = useApp();
   const [busy, setBusy] = useState(false);
@@ -113,6 +176,8 @@ function ChatScreen() { const { set } = useApp(); const [sent, setSent] = useSta
 
 export function FeatureScreen({ mode }: { mode: FeatureMode }) {
   const { set } = useApp();
+  if (mode === 'privacy') return <PrivacySafetyScreen/>;
+  if (mode === 'arrival') return <ArrivalScreen/>;
   if (mode === 'hostRoom') return <HostRoomScreen/>;
   if (mode === 'activePlan') return <ActivePlanScreen/>;
   if (mode === 'joinRequests') return <JoinRequestsScreen/>;
