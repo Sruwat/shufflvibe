@@ -9,6 +9,15 @@ require.extensions['.ts'] = (module, filename) => {
 const { createAssessment, currentCard, beginExposure, deferCard, resolveAway, resumeAssessment, isRequiredAnswerExposure, backCard, answerCard, latencyFirmness, chemistryV2, selectVenueTypes, joinerShapeFit, preferenceFit, fillVenues } = require('../src/fullEngine.ts');
 const { vibeName } = require('../src/algorithms.ts');
 const { DemoService } = require('../src/services.ts');
+const { MAX_SECURE_STORE_CHUNK_BYTES, splitSecureStoreValue } = require('../src/secureStoreChunks.ts');
+
+function testSecureStoreChunksRespectByteLimitAndPreserveUnicode() {
+  const value = `${'SHUFFL nightlife '.repeat(220)}🎶दिल्ली✨`;
+  const chunks = splitSecureStoreValue(value);
+  assert.ok(chunks.length > 1);
+  assert.equal(chunks.join(''), value);
+  for (const chunk of chunks) assert.ok(Buffer.byteLength(chunk, 'utf8') <= MAX_SECURE_STORE_CHUNK_BYTES);
+}
 
 function testAwayPromptDiscardsTimeoutsAndResumesInPlace() {
   let state = createAssessment();
@@ -178,5 +187,5 @@ async function testDemoRoomJoinRequestEndToEnd() {
   assert.equal((await DemoService.getJoinRequests(room.id)).length, 0);
 }
 
-for (const test of [testOneTimeoutDoesNotOpenAwayPrompt, testDeferredPartnerIsPulledForwardOnCollision, testAwayPromptDiscardsTimeoutsAndResumesInPlace, testAwayChoiceResetsToFirstTimedOutCard, testUnansweredPauseRequiresExplicitResume, testThirdExposureCannotBeDeferred, testBackRecordsExposureAndReturnsToPreviousCard, testBackAfterAnsweredCardReturnsToTheCurrentCard, testVibeNameV4UsesTheChosenTopAndFactorWeightForSecondTie, testLatencyFirmnessUsesPostWarmupAnsweredCards, testRoamBendConsensusAndDurationCap, testVenueTypesUseMaximinTopFactorSatisfaction, testJoinerShapeFitUsesFrozenTypesAndRoamBend, testScoreRoundingAndPoliticalPreferenceParity]) test();
-testDemoRoomJoinRequestEndToEnd().then(() => console.log('15 mobile assessment, naming, plan-chemistry, parity, and room-flow tests passed')).catch(error => { console.error(error); process.exitCode = 1; });
+for (const test of [testSecureStoreChunksRespectByteLimitAndPreserveUnicode, testOneTimeoutDoesNotOpenAwayPrompt, testDeferredPartnerIsPulledForwardOnCollision, testAwayPromptDiscardsTimeoutsAndResumesInPlace, testAwayChoiceResetsToFirstTimedOutCard, testUnansweredPauseRequiresExplicitResume, testThirdExposureCannotBeDeferred, testBackRecordsExposureAndReturnsToPreviousCard, testBackAfterAnsweredCardReturnsToTheCurrentCard, testVibeNameV4UsesTheChosenTopAndFactorWeightForSecondTie, testLatencyFirmnessUsesPostWarmupAnsweredCards, testRoamBendConsensusAndDurationCap, testVenueTypesUseMaximinTopFactorSatisfaction, testJoinerShapeFitUsesFrozenTypesAndRoamBend, testScoreRoundingAndPoliticalPreferenceParity]) test();
+testDemoRoomJoinRequestEndToEnd().then(() => console.log('16 mobile assessment, naming, plan-chemistry, parity, room-flow, and persistence tests passed')).catch(error => { console.error(error); process.exitCode = 1; });

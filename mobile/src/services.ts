@@ -17,6 +17,7 @@ export type ServiceMode = 'demo' | 'api';
 export type PlanInput = {
   scores: Record<string, number>;
   preferences?: Record<string, number>;
+  selectedVenueName?: string;
   pol_sense?: 'classy' | 'current' | 'both';
   members?: string[];
   duration_hours?: number;
@@ -57,9 +58,11 @@ export const DemoService: Service = {
     const chemistry = chemistryV2(memberScores, input.duration_hours ?? 4, input.strangers ?? false);
     const types = selectVenueTypes(memberScores, input.duration_hours ?? 4, input.strangers ?? false);
     const selected = fillVenues(types, [input.preferences ?? {}], venues);
+    const fixed = input.selectedVenueName ? venues.find((venue) => venue.name === input.selectedVenueName) : undefined;
+    const ordered = fixed ? [fixed, ...selected.filter((venue) => venue.name !== fixed.name)] : selected;
     const id = `demo-plan-${Date.now()}`;
     demoPlans[id] = { types, count: selected.length };
-    return { id, style: chemistry.tags[0] ?? 'Settle Then Roam', stops: selected.map((venue) => venue.name), chemistry };
+    return { id, style: chemistry.tags[0] ?? 'Settle Then Roam', stops: ordered.slice(0, Math.max(1, chemistry.stopCount)).map((venue) => venue.name), chemistry };
   },
   createRoom: async (title, members = []) => { const id = `demo-room-${Date.now()}`; demoRooms[id] = { id, title, status: 'draft', visibility: 'private', members: [...members], join_requests: [] }; return demoRooms[id]; },
   hostRoom: async (roomId, planId) => { const room = demoRooms[roomId]; if (!room) throw new Error('Room not found'); if (!demoPlans[planId]) throw new Error('Plan shape not found'); room.plan_id = planId; room.status = 'hosted'; room.visibility = 'public'; return room; },
