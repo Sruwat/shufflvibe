@@ -1,0 +1,355 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>SHUFFL - Line-Up theme</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@500;600;700;800&family=Bebas+Neue&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Caveat:wght@600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap"><style>
+  :root{
+    color-scheme:dark;
+    --page:#0A0A0D; --edge:rgba(255,255,255,.1);
+    --txt:#F4F2F8; --dim:#9E9AAC; --faint:#6E6A80;
+    --ui:"Instrument Sans",-apple-system,"Segoe UI",sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,monospace;
+  }
+  html,body{background:var(--page)}
+  body{margin:0;font-family:var(--ui);color:var(--txt);background:var(--page);padding-inline:16px;padding-block:0}
+  *{box-sizing:border-box}
+  .wrap{max-width:1160px;margin:0 auto;padding-block:36px 64px}
+  h1{font-family:"Archivo",sans-serif;font-weight:800;letter-spacing:-.035em;
+     font-size:clamp(30px,5.2vw,50px);line-height:1;margin:0 0 12px;text-wrap:balance}
+  .intro{color:var(--dim);max-width:64ch;line-height:1.6;font-size:15px;margin:0 0 8px}
+  .intro b{color:var(--txt);font-weight:600}
+  .note{font-family:var(--mono);font-size:11px;color:var(--faint);letter-spacing:.04em}
+
+  section.dir{margin-top:52px;padding-top:26px;border-top:1px solid var(--edge)}
+  .dirhead{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:baseline;margin-bottom:6px}
+  .dirhead h2{font-family:"Archivo",sans-serif;font-weight:800;letter-spacing:-.03em;
+              font-size:clamp(22px,3.4vw,30px);margin:0}
+  .dirhead .n{font-family:var(--mono);font-size:12px;color:var(--faint)}
+  .thesis{color:var(--dim);font-size:14.5px;line-height:1.6;max-width:70ch;margin:0 0 14px}
+  .thesis b{color:var(--txt);font-weight:600}
+  .specs{display:flex;flex-wrap:wrap;gap:10px 24px;margin:0 0 20px;font-size:12px;color:var(--dim)}
+  .specs div{display:flex;align-items:center;gap:7px}
+  .sw{width:15px;height:15px;border-radius:4px;border:1px solid rgba(255,255,255,.18)}
+  .specs b{color:var(--txt);font-weight:600}
+  .rail{display:flex;gap:22px;overflow-x:auto;padding-bottom:14px}
+  .unit{flex:0 0 auto;width:300px;display:flex;flex-direction:column;gap:9px}
+  .cap{font-size:12px;color:var(--dim);line-height:1.5}
+  .cap b{display:block;color:var(--txt);font-size:12.5px;font-weight:600;margin-bottom:1px}
+
+  .ph{width:300px;height:614px;border-radius:30px;overflow:hidden;position:relative;display:flex;
+      flex-direction:column;border:1px solid var(--edge);box-shadow:0 20px 44px rgba(0,0,0,.55)}
+  .sb{display:flex;justify-content:space-between;padding:9px 15px 2px;font-size:9.5px;font-family:var(--mono);flex:0 0 auto}
+  .bd{flex:1 1 auto;overflow:hidden;display:flex;flex-direction:column;gap:9px;padding:8px 13px 10px}
+  .nav{flex:0 0 auto;display:grid;grid-template-columns:repeat(3,1fr);padding:8px 0 11px;font-size:9.5px;text-align:center}
+  .grow{flex:1 1 auto}
+
+  /* ============ A · DAILY MIX ============ */
+  .v1{background:#0A0A0C;font-family:"Instrument Sans",sans-serif;color:#EFEFF2}
+  .v1 .sb{color:#77777F}
+  .v1 .hi{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;letter-spacing:-.03em;font-size:21px;line-height:1.05}
+  .v1 .sec{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:13.5px;letter-spacing:-.01em;margin-top:2px}
+  .v1 .sub{font-size:10.5px;color:#8B8B94;line-height:1.45}
+  .v1 .shelf{display:flex;gap:9px;overflow:hidden}
+  .v1 .card{width:96px;flex:0 0 auto}
+  .v1 .art{width:96px;height:96px;border-radius:7px;display:flex;align-items:flex-end;padding:7px;
+           font-size:9px;font-weight:700;color:rgba(0,0,0,.65);line-height:1.15}
+  .v1 .cn{font-size:10.5px;font-weight:600;margin-top:5px;line-height:1.3}
+  .v1 .cs{font-size:9.5px;color:#8B8B94}
+  .v1 .pill{display:inline-block;font-size:9.5px;font-weight:700;padding:6px 13px;border-radius:99px;
+            background:#FFB13C;color:#1A1000}
+  .v1 .pill.o{background:transparent;color:#EFEFF2;border:1px solid rgba(255,255,255,.25)}
+  .v1 .now{margin:0 8px;border-radius:9px;background:#1E1E23;padding:8px 10px;display:flex;align-items:center;gap:9px}
+  .v1 .nowart{width:30px;height:30px;border-radius:5px;flex:0 0 auto}
+  .v1 .nav{background:#0A0A0C;border-top:1px solid rgba(255,255,255,.07);color:#6E6E77}
+  .v1 .nav .on{color:#EFEFF2;font-weight:600}
+  .v1 .trk{display:flex;align-items:center;gap:10px;padding:7px 0}
+  .v1 .trkn{font-size:10px;color:#77777F;width:12px;font-variant-numeric:tabular-nums}
+  .v1 .trkt{font-size:11.5px;font-weight:600;line-height:1.25}
+  .v1 .trks{font-size:9.5px;color:#8B8B94}
+  .v1 .dur{margin-left:auto;font-size:9.5px;color:#77777F;font-variant-numeric:tabular-nums}
+
+  /* ============ B · SLEEVE NOTES ============ */
+  .v2{background:#F3F4F7;font-family:"Instrument Sans",sans-serif;color:#15151C}
+  .v2 .sb{color:#8A8A98}
+  .v2 .ser{font-family:"Instrument Serif",Georgia,serif;font-weight:400;letter-spacing:-.015em;line-height:1.02}
+  .v2 .hero{margin:-8px -13px 0;height:186px;position:relative;display:flex;flex-direction:column;
+            justify-content:flex-end;padding:14px;color:#fff}
+  .v2 .eyeb{font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;opacity:.8}
+  .v2 .lab{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#7C7C8C}
+  .v2 .row{display:flex;align-items:baseline;gap:10px;padding:9px 0;border-bottom:1px solid rgba(20,20,30,.1)}
+  .v2 .rn{font-family:var(--mono);font-size:10px;color:#9A9AA8;width:14px}
+  .v2 .rt{font-size:12.5px;font-weight:600;line-height:1.3}
+  .v2 .rs{font-size:10.5px;color:#6E6E7E;line-height:1.4}
+  .v2 .rd{margin-left:auto;font-family:var(--mono);font-size:10px;color:#9A9AA8}
+  .v2 .btn{display:inline-block;font-size:11px;font-weight:600;padding:9px 16px;border-radius:99px;
+           background:#3B2BD9;color:#fff}
+  .v2 .btn.o{background:transparent;color:#15151C;border:1px solid rgba(20,20,30,.22)}
+  .v2 .nav{background:rgba(243,244,247,.94);border-top:1px solid rgba(20,20,30,.1);color:#8A8A98}
+  .v2 .nav .on{color:#15151C;font-weight:600}
+  .v2 .tile{border-radius:10px;padding:11px;background:#fff;border:1px solid rgba(20,20,30,.08)}
+
+  /* ============ C · THE DECK ============ */
+  .v3{background:#08090C;font-family:"IBM Plex Sans",sans-serif;color:#E6EAF0}
+  .v3 .sb{color:#5E6675;font-family:var(--mono)}
+  .v3 .hd{font-family:"Archivo",sans-serif;font-weight:800;letter-spacing:-.02em;font-size:19px;line-height:1.05;text-transform:uppercase}
+  .v3 .lab{font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:#FF5C2B}
+  .v3 .lab.g{color:#5E6675}
+  .v3 .panel{border:1px solid rgba(255,255,255,.1);border-radius:4px;background:#0F1115;padding:10px}
+  .v3 .meta{font-family:var(--mono);font-size:9.5px;color:#7C8595;line-height:1.5}
+  .v3 .strip{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.07)}
+  .v3 .ix{font-family:var(--mono);font-size:10px;color:#FF5C2B;width:18px}
+  .v3 .tt{font-size:12px;font-weight:600}
+  .v3 .ts{font-family:var(--mono);font-size:9.5px;color:#7C8595}
+  .v3 .btn{display:inline-block;font-family:"Archivo",sans-serif;font-size:11px;font-weight:700;letter-spacing:.04em;
+           text-transform:uppercase;padding:9px 15px;border-radius:3px;background:#FF5C2B;color:#0B0B0D}
+  .v3 .btn.o{background:transparent;color:#E6EAF0;border:1px solid rgba(255,255,255,.2)}
+  .v3 .nav{background:#08090C;border-top:1px solid rgba(255,255,255,.1);color:#5E6675;font-family:var(--mono)}
+  .v3 .nav .on{color:#FF5C2B}
+  .v3 .wave{display:flex;align-items:flex-end;gap:2px;height:38px}
+  .v3 .wave i{flex:1;background:linear-gradient(180deg,#FF5C2B,rgba(255,92,43,.25));border-radius:1px}
+
+/* ===================== A · ON AIR ===================== */
+  .v4{background:#0E0B08;color:#EFE7DA;font-family:"Instrument Sans",sans-serif}
+  .v4 .sb{color:#8A7A66}
+  .v4 .ident{font-family:"Bebas Neue",sans-serif;font-size:31px;letter-spacing:.02em;line-height:.92}
+  .v4 .lamp{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:9px;
+            letter-spacing:.18em;color:#FF4133}
+  .v4 .lamp i{width:7px;height:7px;border-radius:50%;background:#FF4133;box-shadow:0 0 9px #FF4133}
+  .v4 .lab{font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:#8A7A66}
+  .v4 .panel{border:1px solid rgba(255,166,43,.24);border-radius:5px;background:#16110C;padding:10px}
+  .v4 .tuner{display:flex;align-items:flex-end;gap:3px;height:26px;padding:0 1px}
+  .v4 .tuner i{flex:1;background:#3A2E20}
+  .v4 .tuner i.on{background:#FFA62B}
+  .v4 .tuner i.now{background:#FF4133}
+  .v4 .btn{display:inline-block;font-family:"Bebas Neue",sans-serif;font-size:14px;letter-spacing:.06em;
+           padding:8px 15px;border-radius:3px;background:#FFA62B;color:#17110A}
+  .v4 .btn.o{background:transparent;color:#EFE7DA;border:1px solid rgba(239,231,218,.28)}
+  .v4 .row{display:flex;gap:9px;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.07)}
+  .v4 .tt{font-size:12px;font-weight:600}
+  .v4 .ts{font-family:var(--mono);font-size:9px;color:#8A7A66}
+  .v4 .nav{background:#0E0B08;border-top:1px solid rgba(255,166,43,.2);color:#8A7A66;font-family:var(--mono)}
+  .v4 .nav .on{color:#FFA62B}
+  .v4 .meter{display:flex;gap:2px;align-items:flex-end;height:14px}
+  .v4 .meter i{width:4px;background:#FFA62B}
+
+  /* ===================== B · SLEEVE ===================== */
+  .v5{background:#0B0B0B;color:#EDEAE4;font-family:"Instrument Sans",sans-serif}
+  .v5 .sb{color:#6E6A64}
+  .v5 .cover{position:relative;border-radius:2px;overflow:hidden;aspect-ratio:1;display:flex;
+             flex-direction:column;justify-content:space-between;padding:12px}
+  .v5 .anton{font-family:"Anton",sans-serif;text-transform:uppercase;letter-spacing:-.01em;line-height:.88}
+  .v5 .cat{font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;opacity:.75}
+  .v5 .paper{background:#F0EDE6;color:#16150F;border-radius:2px;padding:12px}
+  .v5 .paper .lab{font-family:var(--mono);font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;color:#7A756A}
+  .v5 .trk{display:flex;gap:9px;align-items:baseline;padding:6px 0;border-bottom:1px solid rgba(20,20,15,.12)}
+  .v5 .trk .n{font-family:var(--mono);font-size:9.5px;color:#8C877A;width:16px}
+  .v5 .trk .t{font-size:11.5px;font-weight:600;line-height:1.25}
+  .v5 .trk .s{font-size:10px;color:#6B675D;line-height:1.35}
+  .v5 .trk .d{margin-left:auto;font-family:var(--mono);font-size:9.5px;color:#8C877A}
+  .v5 .btn{display:inline-block;font-family:"Anton",sans-serif;text-transform:uppercase;font-size:12px;
+           letter-spacing:.05em;padding:9px 15px;border-radius:2px;background:#EDEAE4;color:#0B0B0B}
+  .v5 .btn.o{background:transparent;color:#EDEAE4;border:1px solid rgba(237,234,228,.3)}
+  .v5 .nav{background:#0B0B0B;border-top:1px solid rgba(255,255,255,.1);color:#6E6A64;font-family:var(--mono)}
+  .v5 .nav .on{color:#EDEAE4}
+  .v5 .sticker{position:absolute;top:9px;right:9px;background:#FF5A1F;color:#140A02;font-family:var(--mono);
+               font-size:8px;letter-spacing:.1em;padding:4px 7px;border-radius:2px;transform:rotate(3deg)}
+
+  /* ===================== C · FLYER ===================== */
+  .v6{background:#050507;color:#fff;font-family:"Instrument Sans",sans-serif}
+  .v6 .sb{color:#6B6B7A}
+  .v6 .huge{font-family:"Bebas Neue",sans-serif;line-height:.86;letter-spacing:.01em}
+  .v6 .glow{filter:drop-shadow(0 0 16px rgba(255,46,136,.55))}
+  .v6 .lab{font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#00E5FF}
+  .v6 .card{border-radius:12px;padding:12px;background:
+      linear-gradient(150deg,rgba(255,46,136,.22),rgba(0,229,255,.14));border:1px solid rgba(255,255,255,.14)}
+  .v6 .lineup{font-family:"Bebas Neue",sans-serif;font-size:20px;line-height:1.12;letter-spacing:.02em}
+  .v6 .sub{font-size:10px;color:#A6A4B8;line-height:1.4}
+  .v6 .btn{display:inline-block;font-family:"Bebas Neue",sans-serif;font-size:15px;letter-spacing:.07em;
+           padding:9px 17px;border-radius:99px;background:#FF2E88;color:#12000A;box-shadow:0 0 18px rgba(255,46,136,.5)}
+  .v6 .btn.o{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.3);box-shadow:none}
+  .v6 .nav{background:#050507;border-top:1px solid rgba(255,255,255,.1);color:#6B6B7A;font-family:var(--mono)}
+  .v6 .nav .on{color:#FF2E88}
+  .v6 .pctring{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;flex:0 0 auto;
+      background:conic-gradient(#00E5FF 0turn .92turn, rgba(255,255,255,.12) .92turn 1turn)}
+  .v6 .pctring b{width:42px;height:42px;border-radius:50%;background:#0A0A10;display:grid;place-items:center;
+      font-family:"Bebas Neue",sans-serif;font-size:16px}
+
+  /* ===================== D · MIXTAPE ===================== */
+  .v7{background:#111013;color:#F0ECE2;font-family:"Instrument Sans",sans-serif}
+  .v7 .sb{color:#7E7768}
+  .v7 .hand{font-family:"Caveat",cursive;font-weight:700;line-height:1.02}
+  .v7 .label{background:#EDE6D4;color:#1A1712;border-radius:3px;padding:11px 12px;position:relative;
+             box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+  .v7 .label .side{font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;color:#8A8271}
+  .v7 .rule{height:1px;background:repeating-linear-gradient(90deg,rgba(26,23,18,.25) 0 5px,transparent 5px 10px);margin:7px 0}
+  .v7 .reel{width:34px;height:34px;border-radius:50%;border:3px solid #C8BFA6;display:grid;place-items:center}
+  .v7 .reel i{width:11px;height:11px;border-radius:50%;background:#8A8271;display:block}
+  .v7 .lab{font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:#7E7768}
+  .v7 .btn{display:inline-block;font-size:11.5px;font-weight:600;padding:9px 15px;border-radius:99px;
+           background:#E2603A;color:#160904}
+  .v7 .btn.o{background:transparent;color:#F0ECE2;border:1px solid rgba(240,236,226,.3)}
+  .v7 .trk{display:flex;gap:8px;align-items:baseline;padding:5px 0}
+  .v7 .trk .n{font-family:var(--mono);font-size:9px;color:#8A8271;width:14px}
+  .v7 .trk .d{margin-left:auto;font-family:var(--mono);font-size:9px;color:#8A8271}
+  .v7 .nav{background:#111013;border-top:1px solid rgba(255,255,255,.1);color:#7E7768;font-family:var(--mono)}
+  .v7 .nav .on{color:#E2603A}
+  .v7 .tape{height:5px;border-radius:99px;background:linear-gradient(90deg,#E2603A 0 62%,rgba(255,255,255,.14) 62%)}
+
+
+  /* ===================== H · LINE-UP (the synthesis) ===================== */
+  .v8{background:#060609;color:#FBFAFF;font-family:"Instrument Sans",sans-serif}
+  .v8 .sb{color:#6C6880}
+  .v8 .cap2{font-family:"Bebas Neue",sans-serif;letter-spacing:.015em;line-height:.9}
+  .v8 .lab{font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:#6C6880}
+  .v8 .sec{font-family:"Bebas Neue",sans-serif;font-size:15px;letter-spacing:.06em;margin-top:2px}
+  .v8 .sub{font-size:10px;color:#9C98AE;line-height:1.42}
+  /* a poster tile: the artwork IS the headline */
+  .v8 .tile{position:relative;border-radius:9px;overflow:hidden;display:flex;flex-direction:column;
+            justify-content:flex-end;padding:9px}
+  .v8 .tile .cap2{position:relative;z-index:1}
+  .v8 .tile:after{content:"";position:absolute;inset:0;
+     background:linear-gradient(180deg,transparent 30%,rgba(0,0,0,.55));z-index:0}
+  .v8 .shelf{display:flex;gap:8px;overflow:hidden}
+  .v8 .sq{width:96px;flex:0 0 auto}
+  .v8 .sq .tile{height:82px}
+  .v8 .live{position:absolute;top:7px;left:7px;z-index:2;display:inline-flex;align-items:center;gap:4px;
+             font-family:var(--mono);font-size:7.5px;letter-spacing:.14em;color:#fff}
+  .v8 .live i{width:5px;height:5px;border-radius:50%;background:#FFC247;box-shadow:0 0 7px #FFC247}
+  .v8 .pct{position:absolute;top:6px;right:7px;z-index:2;font-family:"Bebas Neue",sans-serif;font-size:13px;
+           letter-spacing:.03em;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.6)}
+  .v8 .card{border-radius:10px;background:#131318;border:1px solid rgba(255,255,255,.08);padding:11px}
+  /* the line-up row: door time on the left in mono, the name in poster caps */
+  .v8 .lu{display:flex;gap:10px;align-items:baseline;padding:6px 0;border-top:1px solid rgba(255,255,255,.07)}
+  .v8 .lu:first-of-type{border-top:0}
+  .v8 .lu .t{font-family:var(--mono);font-size:9.5px;color:#FF2E7A;width:34px;flex:0 0 auto;letter-spacing:.02em}
+  .v8 .lu .n{font-family:"Bebas Neue",sans-serif;font-size:16px;letter-spacing:.03em;line-height:1}
+  .v8 .lu .m{font-size:9.5px;color:#9C98AE;line-height:1.4;margin-top:2px}
+  .v8 .btn{display:inline-block;font-family:"Bebas Neue",sans-serif;font-size:14px;letter-spacing:.07em;
+           padding:9px 16px;border-radius:99px;background:#FF2E7A;color:#12000A;
+           box-shadow:0 0 16px rgba(255,46,122,.45)}
+  .v8 .btn.o{background:transparent;color:#FBFAFF;border:1px solid rgba(255,255,255,.22);box-shadow:none}
+  .v8 .now{margin:0 8px;border-radius:9px;background:#131318;border:1px solid rgba(255,46,122,.3);
+           padding:7px 9px;display:flex;align-items:center;gap:9px;box-shadow:0 0 18px rgba(255,46,122,.14)}
+  .v8 .nav{background:#060609;border-top:1px solid rgba(255,255,255,.08);color:#6C6880;font-family:var(--mono)}
+  .v8 .nav .on{color:#FF2E7A}
+  .v8 .ring{width:48px;height:48px;border-radius:50%;flex:0 0 auto;display:grid;place-items:center;
+      background:conic-gradient(#FF2E7A 0turn .92turn, rgba(255,255,255,.1) .92turn 1turn);
+      box-shadow:0 0 18px rgba(255,46,122,.35)}
+  .v8 .ring b{width:39px;height:39px;border-radius:50%;background:#0A0A10;display:grid;place-items:center;
+      font-family:"Bebas Neue",sans-serif;font-size:15px;letter-spacing:.02em}
+  .v8 .dp{border-radius:50%;border:2px solid #060609}
+  .foot{margin-top:54px;padding-top:24px;border-top:1px solid var(--edge)}
+  .foot h3{font-family:"Archivo",sans-serif;font-weight:800;font-size:19px;margin:0 0 10px;letter-spacing:-.02em}
+  .foot p{color:var(--dim);font-size:13.5px;line-height:1.7;max-width:76ch;margin:0 0 10px}
+  .foot b{color:var(--txt)}
+</style><style>body{background:#060609;padding:28px}.rail{gap:26px}</style></head><body><div class="wrap"><h1 style="font-family:'Bebas Neue',sans-serif;letter-spacing:.02em">SHUFFL &middot; Line-Up</h1><p class="intro">The adopted look. The cover art is the poster; glow is spent only on what is live; poster caps name things and plain type explains them.</p><div class="rail"><div class="unit"><div class="ph v8">
+        <div class="sb"><span>9:41</span><span>SHUFFL</span></div>
+        <div class="bd">
+          <div class="tile" style="height:108px;background:linear-gradient(135deg,#FF2E7A,#8B2BFF 55%,#24E0FF)">
+            <div class="lab" style="color:rgba(255,255,255,.8);position:relative;z-index:1">Tonight · Delhi NCR</div>
+            <div class="cap2" style="font-size:28px">PEAK<br>CROWD-CHASER</div></div>
+          <div style="display:flex;gap:7px"><span class="btn">HOST</span><span class="btn o">JOIN</span></div>
+          <div class="sec">TONIGHT’S LINE-UP</div>
+          <div class="card">
+            <div class="lu"><div class="t">8:00</div>
+              <div><div class="n">BREWERY W/ BOARD GAMES</div>
+                <div class="m">a games pub · Cyber Hub · 3h 20</div></div></div>
+            <div class="lu"><div class="t">11:20</div>
+              <div><div class="n">BOWLING ALLEY</div>
+                <div class="m">a games bar · Saket · 2h 40</div></div></div>
+            <div style="display:flex;gap:6px;margin-top:9px">
+              <span class="btn" style="font-size:12px;padding:7px 13px">LOCK IT</span>
+              <span class="btn o" style="font-size:12px;padding:7px 13px">SHUFFLE</span>
+              <span class="btn o" style="font-size:12px;padding:7px 13px">CUSTOM</span></div></div>
+          <div class="sec">ROOMS LIVE NOW</div>
+          <div class="shelf">
+            <div class="sq"><div class="tile" style="background:linear-gradient(140deg,#FF2E7A,#FFC247)">
+              <span class="live"><i></i>LIVE</span><span class="pct">92%</span><div class="cap2" style="font-size:13px">SATURDAY,<br>FINALLY</div></div>
+              <div class="sub" style="margin-top:4px">Ravi +2</div></div>
+            <div class="sq"><div class="tile" style="background:linear-gradient(140deg,#24E0FF,#5B3BFF)">
+              <span class="live"><i></i>LIVE</span><span class="pct">61%</span><div class="cap2" style="font-size:13px">KHAN MKT,<br>SLOWLY</div></div>
+              <div class="sub" style="margin-top:4px">Meher +1</div></div>
+            <div class="sq"><div class="tile" style="background:linear-gradient(140deg,#2A2A33,#15151B)">
+              <div class="cap2" style="font-size:13px;color:#9C98AE">OPEN<br>NIGHT</div></div>
+              <div class="sub" style="margin-top:4px">you’d set it</div></div></div>
+          <div class="sec">CHARTS</div>
+          <div class="sub">Hauz Khas 31% · Cyber Hub 24% · Aerocity 18%</div>
+        </div>
+        <div class="now"><div class="tile" style="width:28px;height:28px;border-radius:5px;padding:0;
+             background:linear-gradient(140deg,#FF2E7A,#FFC247)"></div>
+          <div><div style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:.04em">SATURDAY, FINALLY</div>
+            <div class="sub" style="font-size:9px">2 stops · locked</div></div>
+          <div style="margin-left:auto;color:#FF2E7A">▸</div></div>
+        <div class="nav"><div>HOME</div><div class="on">SHUFFL</div><div>SOCIAL</div></div>
+      </div>
+      </div><div class="unit"><div class="ph v8">
+        <div class="sb"><span>9:52</span><span>3 OF 5</span></div>
+        <div class="bd" style="background:radial-gradient(85% 45% at 50% 0%,rgba(255,46,122,.26),transparent 68%)">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div class="ring"><b>92</b></div>
+            <div><div class="cap2" style="font-size:25px">SATURDAY,<br>FINALLY</div>
+              <div class="sub">The Whole Team Out · Caught the Spark</div></div></div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="dp" style="width:30px;height:30px;background:linear-gradient(140deg,#FF2E7A,#FFC247)"></div>
+            <div class="sub" style="font-size:9.5px">hosted by Ravi</div>
+            <div style="display:flex;margin-left:auto">
+              <div class="dp" style="width:24px;height:24px;background:#24E0FF"></div>
+              <div class="dp" style="width:24px;height:24px;background:#8B2BFF;margin-left:-8px"></div></div>
+            <div class="sub" style="font-size:9.5px">♪ on</div></div>
+          <div class="card">
+            <div class="lu"><div class="t">8:00</div>
+              <div><div class="n">BREWERY W/ BOARD GAMES</div>
+                <div class="m">for you — it builds from here, and you can still hear people</div></div></div>
+            <div class="lu"><div class="t">11:20</div>
+              <div><div class="n">BOWLING ALLEY</div>
+                <div class="m">for you — full room, and the loudest part of the night</div></div></div></div>
+          <div class="sub"><b style="color:#FBFAFF">+</b> builds the way you drew it &nbsp;
+            <b style="color:#FBFAFF">−</b> quieter first stop than you asked for</div>
+          <div class="sec">WHO’S IN</div>
+          <div class="card" style="padding:9px 11px">
+            <div class="lu" style="padding:5px 0"><div class="t" style="color:#9C98AE">RAVI</div>
+              <div class="m" style="margin-top:0">Peak Crowd-Chaser · hosting</div></div>
+            <div class="lu" style="padding:5px 0"><div class="t" style="color:#9C98AE">SANA</div>
+              <div class="m" style="margin-top:0">Inner-Circle Table-Talker</div></div>
+            <div class="lu" style="padding:5px 0"><div class="t" style="color:#9C98AE">KABIR</div>
+              <div class="m" style="margin-top:0">Arcade Nomad · 2 spots left</div></div>
+          </div>
+          <div class="sub" style="font-size:9.5px">Tap the card for photos of each stop.</div>
+          <div class="grow"></div>
+          <div style="display:flex;align-items:center;justify-content:center;gap:17px">
+            <span class="btn o" style="padding:10px 13px">◀</span>
+            <span class="btn" style="padding:13px 24px;font-size:17px">ASK TO JOIN</span>
+            <span class="btn o" style="padding:10px 13px">▶</span></div>
+        </div>
+      </div>
+      </div><div class="unit"><div class="ph v8">
+        <div class="sb"><span>10:05</span><span></span></div>
+        <div class="bd">
+          <div class="tile" style="height:120px;background:linear-gradient(135deg,#FFC247,#FF2E7A 60%,#8B2BFF)">
+            <div class="lab" style="color:rgba(255,255,255,.82);position:relative;z-index:1">The Whole Team Out</div>
+            <div class="cap2" style="font-size:29px">SATURDAY,<br>FINALLY</div></div>
+          <div style="display:flex;align-items:center;gap:7px">
+            <div style="display:flex"><div class="dp" style="width:24px;height:24px;background:#FF2E7A"></div>
+              <div class="dp" style="width:24px;height:24px;background:#24E0FF;margin-left:-8px"></div>
+              <div class="dp" style="width:24px;height:24px;background:#FFC247;margin-left:-8px"></div></div>
+            <div class="sub">Ravi, Sana, Kabir · 6 hrs · Settle Then Roam</div></div>
+          <div class="card">
+            <div class="lu"><div class="t">8:00</div>
+              <div><div class="n">BREWERY W/ BOARD GAMES</div>
+                <div class="m"><b style="color:#FBFAFF">Ravi</b> some energy, more at the next one ·
+                <b style="color:#FBFAFF">Sana</b> you can hear each other ·
+                <b style="color:#FBFAFF">Kabir</b> something to play</div></div></div>
+            <div class="lu"><div class="t">11:20</div>
+              <div><div class="n">BOWLING ALLEY</div>
+                <div class="m"><b style="color:#FBFAFF">Ravi</b> full room, and it climbs ·
+                <b style="color:#FBFAFF">Sana</b> still your table · <b style="color:#FBFAFF">Kabir</b> lanes</div></div></div>
+          </div>
+          <div class="sub" style="border-left:2px solid #FFC247;padding-left:8px">No dressed-up room tonight —
+            nothing on this shape is a POL place.</div>
+          <div class="card" style="padding:9px 11px;display:flex;align-items:center;gap:12px">
+            <div class="sub" style="font-size:9.5px">₹₹</div>
+            <div class="sub" style="font-size:9.5px">View menu</div>
+            <div class="sub" style="font-size:9.5px;margin-left:auto">Been here? <b style="color:#FBFAFF">Y</b> / <b style="color:#FBFAFF">N</b></div></div>
+          <div class="grow"></div>
+          <div style="display:flex;gap:7px"><span class="btn">LOCK THIS</span>
+            <span class="btn o">HOST THIS</span></div>
+        </div>
+        <div class="nav"><div>HOME</div><div class="on">SHUFFL</div><div>SOCIAL</div></div>
+      </div>
+      </div></div></div></body></html>

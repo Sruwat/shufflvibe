@@ -1,0 +1,166 @@
+area,city,state,latitude,longitude,radius_meters,priority
+Connaught Place,Delhi,Delhi,,,2500,high
+Khan Market,Delhi,Delhi,,,2500,high
+Chanakyapuri,Delhi,Delhi,,,3000,high
+India Gate,Delhi,Delhi,,,2500,normal
+Lodhi Road,Delhi,Delhi,,,2500,high
+Jor Bagh,Delhi,Delhi,,,2000,normal
+Golf Links,Delhi,Delhi,,,2000,normal
+Sunder Nagar,Delhi,Delhi,,,2000,normal
+Paharganj,Delhi,Delhi,,,2500,high
+Karol Bagh,Delhi,Delhi,,,3000,high
+Rajendra Nagar,Delhi,Delhi,,,2500,normal
+Patel Nagar,Delhi,Delhi,,,3000,normal
+Daryaganj,Delhi,Delhi,,,2500,normal
+Chandni Chowk,Delhi,Delhi,,,2500,normal
+Hauz Khas,Delhi,Delhi,,,2500,high
+Green Park,Delhi,Delhi,,,2500,high
+SDA,Delhi,Delhi,,,2000,high
+Safdarjung Enclave,Delhi,Delhi,,,2500,high
+Malviya Nagar,Delhi,Delhi,,,3000,high
+Saket,Delhi,Delhi,,,3000,high
+Mehrauli,Delhi,Delhi,,,3500,high
+Qutub,Delhi,Delhi,,,3000,high
+Chattarpur,Delhi,Delhi,,,4000,high
+Vasant Kunj,Delhi,Delhi,,,4000,high
+Aerocity,Delhi,Delhi,,,3000,high
+Greater Kailash I,Delhi,Delhi,,,2500,high
+Greater Kailash II,Delhi,Delhi,,,2500,high
+Kailash Colony,Delhi,Delhi,,,2500,high
+Nehru Place,Delhi,Delhi,,,3000,high
+Kalkaji,Delhi,Delhi,,,3000,normal
+CR Park,Delhi,Delhi,,,2500,high
+Panchsheel Park,Delhi,Delhi,,,2500,high
+Siri Fort,Delhi,Delhi,,,2500,normal
+Shahpur Jat,Delhi,Delhi,,,2000,high
+Defence Colony,Delhi,Delhi,,,2500,high
+South Extension,Delhi,Delhi,,,2500,high
+Lajpat Nagar,Delhi,Delhi,,,3000,high
+Amar Colony,Delhi,Delhi,,,2000,high
+East of Kailash,Delhi,Delhi,,,2500,high
+Jangpura,Delhi,Delhi,,,2500,normal
+Nizamuddin,Delhi,Delhi,,,2500,normal
+Maharani Bagh,Delhi,Delhi,,,2500,normal
+New Friends Colony,Delhi,Delhi,,,3000,high
+Okhla,Delhi,Delhi,,,4000,normal
+Jasola,Delhi,Delhi,,,3500,normal
+Sarita Vihar,Delhi,Delhi,,,3500,normal
+Vasant Vihar,Delhi,Delhi,,,3000,high
+R K Puram,Delhi,Delhi,,,3000,normal
+Munirka,Delhi,Delhi,,,2500,normal
+Mahipalpur,Delhi,Delhi,,,3500,normal
+Dwarka Sector 10,Delhi,Delhi,,,3500,high
+Dwarka Sector 12,Delhi,Delhi,,,3500,high
+Dwarka Sector 21,Delhi,Delhi,,,3500,normal
+Janakpuri,Delhi,Delhi,,,3500,high
+Rajouri Garden,Delhi,Delhi,,,3000,high
+Punjabi Bagh,Delhi,Delhi,,,3000,high
+Kirti Nagar,Delhi,Delhi,,,3000,normal
+Moti Nagar,Delhi,Delhi,,,3000,normal
+Tilak Nagar,Delhi,Delhi,,,3000,normal
+Subhash Nagar,Delhi,Delhi,,,2500,normal
+Paschim Vihar,Delhi,Delhi,,,3500,high
+Tagore Garden,Delhi,Delhi,,,2500,normal
+Rohini Sector 7,Delhi,Delhi,,,4000,high
+Rohini Sector 9,Delhi,Delhi,,,4000,high
+Pitampura,Delhi,Delhi,,,3500,high
+Netaji Subhash Place,Delhi,Delhi,,,2500,high
+Shalimar Bagh,Delhi,Delhi,,,3500,normal
+Model Town,Delhi,Delhi,,,3000,normal
+Civil Lines,Delhi,Delhi,,,3000,high
+Kamla Nagar,Delhi,Delhi,,,2500,high
+Majnu Ka Tila,Delhi,Delhi,,,2000,high
+Mukherjee Nagar,Delhi,Delhi,,,3000,normal
+GTB Nagar,Delhi,Delhi,,,2500,high
+Hudson Lane,Delhi,Delhi,,,2000,high
+Kingsway Camp,Delhi,Delhi,,,2500,normal
+Shahdara,Delhi,Delhi,,,3500,normal
+Preet Vihar,Delhi,Delhi,,,3000,high
+Laxmi Nagar,Delhi,Delhi,,,3000,normal
+Karkardooma,Delhi,Delhi,,,3000,normal
+Mayur Vihar Phase 1,Delhi,Delhi,,,3000,high
+Mayur Vihar Phase 3,Delhi,Delhi,,,3000,normal
+Anand Vihar,Delhi,Delhi,,,3000,high
+Vivek Vihar,Delhi,Delhi,,,2500,high
+IP Extension,Delhi,Delhi,,,3000,normal
+Patparganj,Delhi,Delhi,,,3500,normal
+Cyber Hub,Gurugram,Haryana,,,2500,high
+Golf Course Road,Gurugram,Haryana,,,5000,high
+Golf Course Extension Road,Gurugram,Haryana,,,5000,high
+MG Road,Gurugram,Haryana,,,4000,high
+Sector 29,Gurugram,Haryana,,,3000,high
+DLF Phase 1,Gurugram,Haryana,,,3500,high
+DLF Phase 2,Gurugram,Haryana,,,3000,high
+DLF Phase 3,Gurugram,Haryana,,,3000,high
+DLF Phase 4,Gurugram,Haryana,,,3000,high
+Udyog Vihar,Gurugram,Haryana,,,3500,high
+Sohna Road,Gurugram,Haryana,,,5000,high
+Sushant Lok,Gurugram,Haryana,,,3000,high
+Sector 42,Gurugram,Haryana,,,3500,high
+Sector 43,Gurugram,Haryana,,,3500,high
+Sector 49,Gurugram,Haryana,,,3500,high
+Sector 50,Gurugram,Haryana,,,3500,high
+Sector 56,Gurugram,Haryana,,,3500,high
+Sector 57,Gurugram,Haryana,,,3500,high
+New Gurgaon Sector 82,Gurugram,Haryana,,,4000,normal
+Manesar,Gurugram,Haryana,,,5000,normal
+Old Gurgaon,Gurugram,Haryana,,,4000,normal
+Sector 18,Noida,Uttar Pradesh,,,3000,high
+Sector 29,Noida,Uttar Pradesh,,,3000,high
+Sector 32,Noida,Uttar Pradesh,,,3000,high
+Sector 37,Noida,Uttar Pradesh,,,3000,high
+Sector 38A,Noida,Uttar Pradesh,,,2500,high
+Sector 41,Noida,Uttar Pradesh,,,3000,high
+Sector 50,Noida,Uttar Pradesh,,,3500,high
+Sector 62,Noida,Uttar Pradesh,,,3500,high
+Sector 63,Noida,Uttar Pradesh,,,3500,normal
+Sector 75,Noida,Uttar Pradesh,,,3500,high
+Sector 76,Noida,Uttar Pradesh,,,3500,normal
+Sector 93A,Noida,Uttar Pradesh,,,3500,normal
+Sector 94,Noida,Uttar Pradesh,,,3000,high
+Sector 104,Noida,Uttar Pradesh,,,3500,high
+Sector 132,Noida,Uttar Pradesh,,,4000,normal
+Pari Chowk,Greater Noida,Uttar Pradesh,,,5000,high
+Knowledge Park,Greater Noida,Uttar Pradesh,,,5000,normal
+Techzone,Greater Noida,Uttar Pradesh,,,5000,normal
+Indirapuram,Ghaziabad,Uttar Pradesh,,,4000,high
+Vaishali,Ghaziabad,Uttar Pradesh,,,3500,high
+Kaushambi,Ghaziabad,Uttar Pradesh,,,3000,high
+Raj Nagar,Ghaziabad,Uttar Pradesh,,,4000,normal
+Raj Nagar Extension,Ghaziabad,Uttar Pradesh,,,4500,normal
+Crossings Republik,Ghaziabad,Uttar Pradesh,,,4500,normal
+Old Ghaziabad,Ghaziabad,Uttar Pradesh,,,4000,normal
+Faridabad Sector 12,Faridabad,Haryana,,,3500,high
+Faridabad Sector 15,Faridabad,Haryana,,,3500,high
+Faridabad Sector 16,Faridabad,Haryana,,,3500,high
+Faridabad Sector 21,Faridabad,Haryana,,,3500,normal
+NIT Faridabad,Faridabad,Haryana,,,4000,normal
+Greater Faridabad,Faridabad,Haryana,,,5000,normal
+Surajkund,Faridabad,Haryana,,,4000,normal
+Sonipat,Sonipat,Haryana,,,6000,normal
+Kundli,Sonipat,Haryana,,,5000,normal
+Murthal,Sonipat,Haryana,,,5000,normal
+Panipat,Panipat,Haryana,,,6000,normal
+Rohtak,Rohtak,Haryana,,,6000,normal
+Rewari,Rewari,Haryana,,,6000,normal
+Jhajjar,Jhajjar,Haryana,,,6000,normal
+Nuh,Nuh,Haryana,,,6000,normal
+Palwal,Palwal,Haryana,,,6000,normal
+Bhiwani,Bhiwani,Haryana,,,6000,normal
+Charkhi Dadri,Charkhi Dadri,Haryana,,,6000,normal
+Narnaul,Mahendragarh,Haryana,,,6000,normal
+Jind,Jind,Haryana,,,6000,normal
+Karnal,Karnal,Haryana,,,6000,normal
+Meerut,Meerut,Uttar Pradesh,,,7000,normal
+Modipuram,Meerut,Uttar Pradesh,,,5000,normal
+Ghaziabad District,Ghaziabad,Uttar Pradesh,,,7000,normal
+Bulandshahr,Bulandshahr,Uttar Pradesh,,,6000,normal
+Khurja,Bulandshahr,Uttar Pradesh,,,5000,normal
+Baghpat,Baghpat,Uttar Pradesh,,,6000,normal
+Baraut,Baghpat,Uttar Pradesh,,,5000,normal
+Hapur,Hapur,Uttar Pradesh,,,6000,normal
+Muzaffarnagar,Muzaffarnagar,Uttar Pradesh,,,6000,normal
+Shamli,Shamli,Uttar Pradesh,,,6000,normal
+Alwar,Alwar,Rajasthan,,,7000,normal
+Bhiwadi,Alwar,Rajasthan,,,5000,high
+Bharatpur,Bharatpur,Rajasthan,,,7000,normal

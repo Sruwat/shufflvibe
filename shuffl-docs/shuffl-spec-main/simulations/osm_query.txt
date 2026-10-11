@@ -1,0 +1,5 @@
+[out:json][timeout:180];
+(
+  nwr["amenity"~"^(bar|pub|nightclub|restaurant|cafe)$"](28.35,76.80,28.90,77.45);
+);
+out tags center;

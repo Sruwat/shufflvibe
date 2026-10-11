@@ -1,9 +1,29 @@
-__pycache__/
-*.pyc
-~$*.docx
-.DS_Store
-Thumbs.db
-artifacts/
+# Secrets and local configuration
+**/.env
+**/.env.*
+!**/.env.example
 
-node_modules/
-.expo/
+# Generated venue data and transient Google/API responses
+**/data/
+**/data_market_ready/
+**/data_market_ready_v2/
+**/google_details_raw.json
+**/*.inspect.ndjson
+**/*.xlsx
+**/*.sqlite3
+
+# Dependencies and build output
+**/node_modules/
+**/__pycache__/
+**/*.pyc
+**/.gradle/
+**/.gradle-home/
+**/build/
+**/dist/
+**/.shuffl-native-build/
+
+# Local artifacts, renders and temporary files
+artifacts/
+.tmp-sheet/
+_docx_review/
+docx-reference-render/

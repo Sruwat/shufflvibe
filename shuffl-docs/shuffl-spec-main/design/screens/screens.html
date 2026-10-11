@@ -1,0 +1,1492 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>SHUFFL - the screens</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap"><style>
+  :root{color-scheme:dark;--page:#0A0A0D;--edge:rgba(255,255,255,.1);--txt:#F4F2F8;--dim:#9E9AAC;--faint:#6E6A80;
+    --ui:"Instrument Sans",-apple-system,sans-serif;--mono:"IBM Plex Mono",monospace}
+  html,body{background:var(--page)}
+  body{margin:0;font-family:var(--ui);color:var(--txt);padding:28px}
+  *{box-sizing:border-box}
+  h1{font-family:"Archivo";font-weight:800;letter-spacing:-.035em;font-size:40px;margin:0 0 6px}
+  .intro{color:var(--dim);max-width:70ch;line-height:1.6;font-size:14px;margin:0 0 26px}
+  .rail{display:flex;flex-wrap:wrap;gap:26px}
+  .unit{width:300px;display:flex;flex-direction:column;gap:9px}
+  .cap{font-size:11.5px;color:var(--dim);line-height:1.5}
+  .cap b{display:block;color:var(--txt);font-size:12.5px;font-weight:600;margin-bottom:1px}
+
+  .ph{width:300px;height:614px;border-radius:30px;overflow:hidden;position:relative;display:flex;
+      flex-direction:column;border:1px solid var(--edge);box-shadow:0 20px 44px rgba(0,0,0,.55)}
+  .sb{display:flex;justify-content:space-between;padding:9px 15px 2px;font-size:9.5px;font-family:var(--mono);flex:0 0 auto}
+  .bd{flex:1 1 auto;overflow:hidden;display:flex;flex-direction:column;gap:9px;padding:8px 13px 8px}
+  .nav{flex:0 0 auto;display:grid;grid-template-columns:repeat(3,1fr);padding:8px 0 11px;font-size:9px;text-align:center}
+  .grow{flex:1 1 auto}
+
+  /* ================= LINE-UP ================= */
+  .v8{background:#060609;color:#FBFAFF;font-family:"Instrument Sans",sans-serif}
+  .v8 .sb{color:#6C6880}
+  .v8 .cap2{font-family:"Bebas Neue",sans-serif;letter-spacing:.015em;line-height:.9}
+  .v8 .lab{font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:#6C6880}
+  .v8 .sec{font-family:"Bebas Neue",sans-serif;font-size:15px;letter-spacing:.06em;margin-top:2px}
+  .v8 .sub{font-size:10px;color:#9C98AE;line-height:1.42}
+  .v8 .tile{position:relative;border-radius:9px;overflow:hidden;display:flex;flex-direction:column;
+            justify-content:flex-end;padding:9px}
+  .v8 .tile .cap2{position:relative;z-index:1}
+  .v8 .tile:after{content:"";position:absolute;inset:0;
+     background:linear-gradient(180deg,transparent 30%,rgba(0,0,0,.55));z-index:0}
+  .v8 .shelf{display:flex;gap:8px;overflow:hidden;flex:0 0 auto}
+  .v8 .sq{width:96px;flex:0 0 auto}
+  .v8 .sq .tile{height:82px;flex:0 0 auto}
+  .v8 .live{position:absolute;top:7px;left:7px;z-index:2;display:inline-flex;align-items:center;gap:4px;
+             font-family:var(--mono);font-size:7.5px;letter-spacing:.14em;color:#fff}
+  .v8 .live i{width:5px;height:5px;border-radius:50%;background:#FFC247;box-shadow:0 0 7px #FFC247}
+  .v8 .pct{position:absolute;top:6px;right:7px;z-index:2;font-family:"Bebas Neue",sans-serif;font-size:13px;
+           letter-spacing:.03em;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.6)}
+  .v8 .card{border-radius:10px;background:#131318;border:1px solid rgba(255,255,255,.08);padding:11px;flex:0 0 auto}
+  .v8 .lu{display:flex;gap:10px;align-items:baseline;padding:6px 0;border-top:1px solid rgba(255,255,255,.07)}
+  .v8 .lu:first-of-type{border-top:0}
+  .v8 .lu .t{font-family:var(--mono);font-size:9.5px;color:#FF2E7A;width:34px;flex:0 0 auto;letter-spacing:.02em}
+  .v8 .lu .n{font-family:"Bebas Neue",sans-serif;font-size:16px;letter-spacing:.03em;line-height:1}
+  .v8 .lu .m{font-size:9.5px;color:#9C98AE;line-height:1.4;margin-top:2px}
+  .v8 .btn{display:inline-block;flex:0 0 auto;font-family:"Bebas Neue",sans-serif;font-size:14px;letter-spacing:.07em;
+           padding:9px 16px;border-radius:99px;background:#FF2E7A;color:#12000A;
+           box-shadow:0 0 16px rgba(255,46,122,.45);text-align:center}
+  .v8 .btn.o{background:transparent;color:#FBFAFF;border:1px solid rgba(255,255,255,.22);box-shadow:none}
+  .v8 .btn.dead{background:#1C1C22;color:#5A5668;box-shadow:none;border:1px solid rgba(255,255,255,.07)}
+  .v8 .nav{background:#060609;border-top:1px solid rgba(255,255,255,.08);color:#6C6880;font-family:var(--mono)}
+  .v8 .nav .on{color:#FF2E7A}
+  .v8 .ring{width:48px;height:48px;border-radius:50%;flex:0 0 auto;display:grid;place-items:center;
+      background:conic-gradient(#FF2E7A 0turn .92turn, rgba(255,255,255,.1) .92turn 1turn);
+      box-shadow:0 0 18px rgba(255,46,122,.35)}
+  .v8 .ring b{width:39px;height:39px;border-radius:50%;background:#0A0A10;display:grid;place-items:center;
+      font-family:"Bebas Neue",sans-serif;font-size:15px;letter-spacing:.02em}
+  .v8 .dp{border-radius:50%;border:2px solid #060609}
+
+  /* ---- additions for this set ---- */
+  .v8 .bar{flex:0 0 auto;margin:0 8px 6px;border-radius:9px;background:#131318;
+           border:1px solid rgba(255,46,122,.3);box-shadow:0 0 18px rgba(255,46,122,.14);
+           padding:7px 10px;display:flex;align-items:center;gap:8px}
+  .v8 .bar .k{font-family:"Bebas Neue",sans-serif;font-size:13px;letter-spacing:.04em;line-height:1}
+  .v8 .bar .v{font-family:var(--mono);font-size:8.5px;color:#FF2E7A;letter-spacing:.1em;margin-left:auto}
+  .v8 .bar.quiet{border-color:rgba(255,255,255,.1);box-shadow:none}
+  .v8 .bar.quiet .v{color:#9C98AE}
+  .v8 .srch{display:flex;align-items:center;gap:7px;border-radius:99px;background:#131318;
+            border:1px solid rgba(255,255,255,.09);padding:7px 11px;font-size:10px;color:#6C6880}
+  .v8 .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .v8 .chip{display:inline-block;font-family:var(--mono);font-size:8px;letter-spacing:.1em;
+            text-transform:uppercase;padding:3px 7px;border-radius:99px;
+            background:rgba(255,255,255,.07);color:#9C98AE}
+  .v8 .chip.hot{background:rgba(255,46,122,.15);color:#FF7FAC}
+  .v8 .blur{filter:blur(5px) saturate(.7);opacity:.5}
+  .v8 .blur.deep{filter:blur(8px) saturate(.6);opacity:.85}
+  .v8 .lockover{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;
+                align-items:center;justify-content:center;gap:11px;padding:0 30px;text-align:center}
+  .v8 .storyrail{display:flex;gap:8px;flex:0 0 auto}
+  .v8 .story{width:46px;text-align:center;flex:0 0 auto}
+  .v8 .story .r{width:46px;height:46px;border-radius:50%;padding:2px;
+     background:conic-gradient(#FF2E7A,#FFC247,#24E0FF,#FF2E7A)}
+  .v8 .story .r>div{width:100%;height:100%;border-radius:50%;border:2px solid #060609}
+  .v8 .story span{display:block;font-size:8px;color:#9C98AE;margin-top:3px;overflow:hidden;white-space:nowrap}
+  .v8 .listrow{display:flex;gap:9px;align-items:center;padding:7px 0;border-top:1px solid rgba(255,255,255,.07)}
+  .v8 .ppl{display:flex}
+  .v8 .ppl div{width:24px;height:24px;flex:0 0 auto;border-radius:50%;border:2px solid #060609;margin-left:-7px}
+  .v8 .ppl div:first-child{margin-left:0}
+  .v8 .toggle{display:grid;grid-template-columns:1fr 1fr;border-radius:99px;background:#131318;
+              border:1px solid rgba(255,255,255,.1);padding:3px;gap:3px}
+  .v8 .toggle span{text-align:center;padding:7px 0;border-radius:99px;font-family:"Bebas Neue",sans-serif;
+                   font-size:13px;letter-spacing:.07em;color:#9C98AE}
+  .v8 .toggle span.on{background:#FF2E7A;color:#12000A;box-shadow:0 0 14px rgba(255,46,122,.4)}
+  .v8 .transport{display:flex;align-items:center;justify-content:center;gap:20px;padding:4px 0}
+  .v8 .transport b{font-family:var(--mono);font-size:14px;color:#9C98AE}
+  .v8 .transport .p{width:42px;height:42px;border-radius:50%;background:#FF2E7A;color:#12000A;
+     display:grid;place-items:center;font-size:15px;box-shadow:0 0 18px rgba(255,46,122,.45)}
+  .v8 .big{font-family:"Bebas Neue",sans-serif;font-size:30px;letter-spacing:.02em;line-height:.92}
+  .v8 .sticky{position:absolute;left:0;right:0;bottom:30px;z-index:3;padding:26px 13px 10px;
+              background:linear-gradient(180deg,rgba(6,6,9,0),#060609 62%)}
+  .v8 .note{border-radius:4px;padding:8px 9px;font-size:9px;line-height:1.4;color:#1A1A1F;
+            transform:rotate(-1.4deg)}
+  .v8 .vrail{display:flex;gap:7px;flex:0 0 auto}
+  .v8 .vrail div{width:53px;height:62px;border-radius:7px;flex:0 0 auto}
+
+  .v8 .scrim{position:absolute;inset:0;z-index:4;background:rgba(3,3,6,.46)}
+  .v8 .sheet{position:absolute;z-index:5;left:11px;right:11px;border-radius:14px;background:#131318;
+             border:1px solid rgba(255,255,255,.12);box-shadow:0 18px 46px rgba(0,0,0,.7);padding:12px}
+  .v8 .swipe{display:flex;align-items:center;gap:9px;margin-top:10px}
+  .v8 .swipe .s{flex:1 1 0;text-align:center;padding:9px 0;border-radius:99px;
+                font-family:"Bebas Neue",sans-serif;font-size:13px;letter-spacing:.07em}
+  .v8 .swipe .no{border:1px solid rgba(255,255,255,.2);color:#9C98AE}
+  .v8 .swipe .yes{background:#FF2E7A;color:#12000A;box-shadow:0 0 16px rgba(255,46,122,.45)}
+
+  /* ---- gold: #FFC247 is artwork-only everywhere except the promotion ---- */
+  .v8 .au{border-color:rgba(255,194,71,.45);box-shadow:0 0 22px rgba(255,194,71,.15)}
+  .v8 .chip.au{background:rgba(255,194,71,.16);color:#FFC247}
+  .v8 .btn.au{background:#FFC247;color:#1A1200;box-shadow:0 0 18px rgba(255,194,71,.45)}
+  .v8 .lab.au{color:#FFC247}
+  .v8 .goldrow{background:linear-gradient(90deg,rgba(255,194,71,.11),rgba(255,194,71,0) 70%)}
+  .v8 .frame{position:relative;border-radius:10px;height:214px;flex:0 0 auto;
+             background:#0C0C11;border:1px solid rgba(255,255,255,.1);overflow:hidden}
+  .v8 .frame i{position:absolute;width:17px;height:17px;border:2px solid #FFC247;opacity:.85}
+  .v8 .prog{height:3px;border-radius:99px;background:rgba(255,255,255,.1);flex:0 0 auto;overflow:hidden}
+  .v8 .prog b{display:block;height:100%;background:#FFC247;box-shadow:0 0 10px rgba(255,194,71,.6)}
+  .v8 .shutter{width:54px;height:54px;border-radius:50%;background:#FFC247;margin:0 auto;
+               box-shadow:0 0 22px rgba(255,194,71,.5);border:4px solid #060609;outline:2px solid #FFC247}
+</style></head><body><h1>SHUFFL &middot; the screens</h1>
+<p class="intro">Thirteen screens in the <b>Line-Up</b> theme, as the pushed documents describe them (2026-09-30).
+The cover art is the poster; glow is spent only on what is live; Bebas Neue names things and Instrument Sans
+explains them; door times sit left in mono.</p>
+<div class="rail">
+
+<!-- ============================================================ 01 HOME -->
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd">
+    <div class="srch"><span>&#9906;</span><span>Search people</span></div>
+    <div class="storyrail">
+      <div class="story"><div class="r"><div style="background:linear-gradient(140deg,#FF2E7A,#7A1038)"></div></div><span>Aarav</span></div>
+      <div class="story"><div class="r"><div style="background:linear-gradient(140deg,#24E0FF,#0B4A5C)"></div></div><span>Nitya</span></div>
+      <div class="story"><div class="r"><div style="background:linear-gradient(140deg,#FFC247,#6B4A00)"></div></div><span>Zoya</span></div>
+      <div class="story"><div class="r"><div style="background:linear-gradient(140deg,#9B6BFF,#2E1A55)"></div></div><span>Kabir</span></div>
+      <div class="story"><div class="r"><div style="background:linear-gradient(140deg,#38E29B,#0C4430)"></div></div><span>Sana</span></div>
+    </div>
+    <div class="card" style="padding:9px 11px">
+      <div class="lab">3 waiting on you</div>
+      <div class="listrow" style="border-top:0;padding-top:5px">
+        <div class="dp" style="width:26px;height:26px;background:linear-gradient(140deg,#FF2E7A,#7A1038)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:10.5px;font-weight:600">Aarav made you a co-host</div>
+          <div class="sub" style="font-size:9px">Late Shift &middot; draw your skeleton</div></div>
+        <div class="chip hot">Accept</div>
+      </div>
+      <div class="listrow">
+        <div class="dp" style="width:26px;height:26px;background:linear-gradient(140deg,#24E0FF,#0B4A5C)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:10.5px;font-weight:600">Nitya added you to a capsule</div>
+          <div class="sub" style="font-size:9px">Draw your skeleton</div></div>
+        <div class="chip hot">Accept</div>
+      </div>
+    </div>
+    <div class="sec">WHAT YOUR FRIENDS ARE UP TO</div>
+    <div class="shelf">
+      <div class="sq"><div class="tile" style="background:linear-gradient(150deg,#FF2E7A,#3A0A1C)">
+        <span class="live"><i></i>LIVE</span><div class="cap2" style="font-size:16px">LATE<br>SHIFT</div></div>
+        <div class="sub" style="font-size:9px;margin-top:4px">Aarav hosted</div></div>
+      <div class="sq"><div class="tile" style="background:linear-gradient(150deg,#24E0FF,#07303B)">
+        <span class="live"><i></i>LIVE</span><div class="cap2" style="font-size:16px">THE LONG<br>TABLE</div></div>
+        <div class="sub" style="font-size:9px;margin-top:4px">Zoya joined</div></div>
+      <div class="sq"><div class="tile" style="background:linear-gradient(150deg,#FFC247,#4A3200)">
+        <div class="cap2" style="font-size:16px">OPEN<br>NIGHT</div></div>
+        <div class="sub" style="font-size:9px;margin-top:4px">Kabir hosted</div></div>
+    </div>
+    <div class="sec">POSTS</div>
+    <div class="card" style="padding:0">
+      <div class="listrow" style="border-top:0;padding:9px 11px">
+        <div class="dp" style="width:30px;height:30px;background:linear-gradient(140deg,#38E29B,#0C4430)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:10.5px;font-weight:600">Sana &middot; Depot 48</div>
+          <div class="sub" style="font-size:9px">&ldquo;third stop and still going&rdquo;</div></div>
+        <div style="width:30px;height:30px;border-radius:6px;background:linear-gradient(150deg,#FF2E7A,#3A0A1C)"></div></div>
+      <div class="listrow" style="padding:9px 11px">
+        <div class="dp" style="width:30px;height:30px;background:linear-gradient(140deg,#9B6BFF,#2E1A55)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:10.5px;font-weight:600">Kabir &middot; Piano Man</div>
+          <div class="sub" style="font-size:9px">&ldquo;the set was worth the queue&rdquo;</div></div>
+        <div style="width:30px;height:30px;border-radius:6px;background:linear-gradient(150deg,#24E0FF,#07303B)"></div></div>
+    </div>
+    <div class="grow"></div>
+  </div>
+  <div class="bar"><span class="k">AARAV&rsquo;S ROOM</span><span class="v">2/5 SKELETONS</span></div>
+  <div class="nav"><span class="on">HOME</span><span>PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>01 &middot; Home — the social hub</b>People search, stories, the invites that are waiting on you,
+what your friends are up to, posts. No venues anywhere. The status bar is already live.</p>
+</div>
+
+<!-- ============================================================ 02 SHUFFL LOCKED -->
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd blur">
+    <div class="srch"><span>&#9906;</span><span>Search venues</span></div>
+    <div class="row2"><div class="btn">HOST</div><div class="btn o">JOIN</div></div>
+    <div class="card">
+      <div class="lab">YOUR SHAPE</div>
+      <div class="lu"><span class="t">20:00</span><div><div class="n">A BUZZY RESTAURANT</div></div></div>
+      <div class="lu"><span class="t">22:30</span><div><div class="n">A BIG LOUD BAR</div></div></div>
+      <div class="lu"><span class="t">01:00</span><div><div class="n">A CLUB</div></div></div>
+    </div>
+    <div class="sec">SUGGESTED VENUES</div>
+    <div class="shelf">
+      <div class="sq"><div class="tile" style="background:linear-gradient(150deg,#FF2E7A,#3A0A1C)"></div></div>
+      <div class="sq"><div class="tile" style="background:linear-gradient(150deg,#24E0FF,#07303B)"></div></div>
+      <div class="sq"><div class="tile" style="background:linear-gradient(150deg,#FFC247,#4A3200)"></div></div>
+    </div>
+    <div class="grow"></div>
+  </div>
+  <div class="lockover">
+    <div class="lab">LOCKED</div>
+    <div class="big">DRAW TONIGHT<br>FIRST</div>
+    <div class="sub" style="font-size:10.5px">Three sliders and a line. Then all of this is yours.</div>
+    <div class="btn" style="margin-top:3px">START</div>
+  </div>
+  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>02 &middot; SHUFFL, locked</b>What Play opens. The screen is blurred behind its own layout, so the
+user sees the shape of what they are about to get. Tapping any feature starts the unlock sequence.
+<b style="color:#FF7FAC;font-weight:600">The blur is the empty state.</b></p>
+</div>
+
+<!-- ============================================================ 03 SHUFFL -->
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd">
+    <div style="display:flex;gap:8px;align-items:center">
+      <div class="srch" style="flex:1 1 auto"><span>&#9906;</span><span>Search venues</span></div>
+      <div class="chip" style="padding:6px 8px">12km &middot; 8-2 &middot; &#8377;&#8377;</div>
+    </div>
+    <div class="row2"><div class="btn">HOST</div><div class="btn o">JOIN</div></div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:baseline">
+        <div class="lab">YOUR SHAPE</div><div class="chip hot">Nothing picked yet</div></div>
+      <div class="lu" style="padding-top:7px"><span class="t">20:00</span>
+        <div style="flex:1 1 auto"><div class="n">A BUZZY RESTAURANT</div>
+        <div class="m">it builds from here</div></div>
+        <div style="flex:0 0 auto;text-align:right"><div class="cap2" style="font-size:15px;color:#FF2E7A">8</div>
+        <div class="lab" style="font-size:7px;letter-spacing:.14em">PLACES &#8250;</div></div></div>
+      <div class="lu"><span class="t">22:30</span>
+        <div style="flex:1 1 auto"><div class="n">A BIG LOUD BAR</div>
+        <div class="m">you can still hear each other</div></div>
+        <div style="flex:0 0 auto;text-align:right"><div class="cap2" style="font-size:15px;color:#FF2E7A">10</div>
+        <div class="lab" style="font-size:7px;letter-spacing:.14em">PLACES &#8250;</div></div></div>
+      <div class="lu"><span class="t">01:00</span>
+        <div style="flex:1 1 auto"><div class="n">A CLUB</div>
+        <div class="m">the floor you drew at the end</div></div>
+        <div style="flex:0 0 auto;text-align:right"><div class="cap2" style="font-size:15px;color:#FF2E7A">6</div>
+        <div class="lab" style="font-size:7px;letter-spacing:.14em">PLACES &#8250;</div></div></div>
+    </div>
+    <div class="row2" style="grid-template-columns:1.45fr 1fr">
+      <div class="btn" style="font-size:12px">BUILD THIS NIGHT</div>
+      <div class="btn o" style="font-size:11px">REDRAW</div></div>
+<div class="sec">OR TRY A PRESET</div>
+    <div style="display:flex;flex-wrap:wrap;gap:7px"><div class="btn" style="position:relative;overflow:hidden;background:#3BD1A0;color:#06251B;box-shadow:0 0 15px #3BD1A066;font-size:11px;padding:8px 13px"><span style="position:absolute;inset:0"><span style="position:absolute;left:66%;top:-4px;font-size:21px;transform:rotate(-14deg);filter:grayscale(1) brightness(.10);opacity:.34;line-height:1">&#127828;</span><span style="position:absolute;left:82%;top:11px;font-size:16px;transform:rotate(12deg);filter:grayscale(1) brightness(.10);opacity:.34;line-height:1">&#127829;</span><span style="position:absolute;left:93%;top:-2px;font-size:13px;transform:rotate(-6deg);filter:grayscale(1) brightness(.10);opacity:.34;line-height:1">&#127836;</span><span style="position:absolute;left:74%;top:16px;font-size:12px;transform:rotate(8deg);filter:grayscale(1) brightness(.10);opacity:.34;line-height:1">&#127839;</span></span><span style="position:relative;z-index:1;padding-right:14px">FOODIE&rsquo;S DAY OUT</span></div><div class="btn" style="position:relative;overflow:hidden;background:#24E0FF;color:#042630;box-shadow:0 0 15px #24E0FF66;font-size:11px;padding:8px 13px"><span style="position:absolute;inset:0"><span style="position:absolute;left:66%;top:-4px;font-size:21px;transform:rotate(-14deg);filter:grayscale(1) brightness(.10);opacity:.34;line-height:1">&#127866;</span><span style="position:absolute;left:82%;top:11px;font-size:16px;transform:rotate(12deg);filter:grayscale(1) brightness(.10);opacity:.34;line-height:1">&#127867;</span><span style="position:absolute;left:93%;top:-2px;font-size:13px;transform:rotate(-6deg);filter:grayscale(1) brightness(.10);opacity:.34;line-height:1">&#129347;</span></span><span style="position:relative;z-index:1;padding-right:14px">SOUTH DELHI PUB CRAWL</span></div><div class="btn" style="position:relative;overflow:hidden;background:#9B6BFF;color:#160A33;box-shadow:0 0 15px #9B6BFF66;font-size:11px;padding:8px 13px"><span style="position:absolute;inset:0"><span style="position:absolute;left:66%;top:-4px;font-size:21px;transform:rotate(-14deg);filter:grayscale(1) brightness(.10);opacity:.34;line-height:1">&#128663;</span><span style="position:absolute;left:82%;top:11px;font-size:16px;transform:rotate(12deg);filter:grayscale(1) brightness(.10);opacity:.34;line-height:1">&#128739;</span><span style="position:absolute;left:93%;top:-2px;font-size:13px;transform:rotate(-6deg);filter:grayscale(1) brightness(.10);opacity:.34;line-height:1">&#127756;</span></span><span style="position:relative;z-index:1;padding-right:14px">THE DESERT RUN</span></div><div class="btn" style="position:relative;overflow:hidden;background:#FF7A3D;color:#2B0D00;box-shadow:0 0 15px #FF7A3D66;font-size:11px;padding:8px 13px"><span style="position:absolute;inset:0"><span style="position:absolute;left:66%;top:-4px;font-size:21px;transform:rotate(-14deg);filter:grayscale(1) brightness(.10);opacity:.34;line-height:1">&#128266;</span><span style="position:absolute;left:82%;top:11px;font-size:16px;transform:rotate(12deg);filter:grayscale(1) brightness(.10);opacity:.34;line-height:1">&#127911;</span><span style="position:absolute;left:93%;top:-2px;font-size:13px;transform:rotate(-6deg);filter:grayscale(1) brightness(.10);opacity:.34;line-height:1">&#127925;</span></span><span style="position:relative;z-index:1;padding-right:14px">LATE &amp; LOUD</span></div></div>
+    <div class="sub" style="font-size:9px;color:#6C6880;text-align:center">See all presets &#8250;</div>
+    <div class="sec" style="margin-top:2px">SUGGESTED VENUES</div>
+    <div class="card" style="padding:0">
+      <div class="listrow" style="border-top:0;padding:8px 11px">
+        <div style="width:26px;height:26px;border-radius:6px;background:linear-gradient(150deg,#9B6BFF,#2E1A55)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:10.5px;font-weight:600">Piano Man</div>
+          <div class="sub" style="font-size:9px">a live room &middot; open till 1</div></div>
+        <div class="cap2" style="font-size:14px;color:#FF2E7A">88</div></div>
+    </div>
+    <div class="grow"></div>
+  </div>
+  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>03 &middot; SHUFFL, unlocked — the going-out hub</b>Venue search above Host and Join. <b>The shape, as a list of stops</b> — each row carrying the count of venues that fit it and are open then, and tapping a row opens that stop's list. Nothing is picked yet. <b>Reset</b> sits alone under it; <b>Give me something else</b> went with the generator.</p>
+</div>
+
+<!-- ============================================================ 04 SKELETON -->
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd">
+    <div class="lab">STEP 4 OF 4</div>
+    <div class="cap2" style="font-size:26px">DRAW TONIGHT</div>
+    <div class="sub">Drag across. Up is louder. Hold a circle to say how full.</div>
+    <div class="card" style="padding:9px">
+      <div style="display:flex;gap:5px;margin-bottom:6px">
+        <div style="flex:1 1 0;border-radius:6px;background:#1C1C22;padding:5px;text-align:center">
+          <div style="height:26px;border-radius:4px;background:linear-gradient(150deg,#FFC247,#4A3200)"></div>
+          <div class="sub" style="font-size:7.5px;margin-top:3px">buzzy restaurant</div></div>
+        <div style="flex:1 1 0;border-radius:6px;background:#1C1C22;padding:5px;text-align:center">
+          <div style="height:26px;border-radius:4px;background:linear-gradient(150deg,#24E0FF,#07303B)"></div>
+          <div class="sub" style="font-size:7.5px;margin-top:3px">big loud bar</div></div>
+        <div style="flex:1 1 0;border-radius:6px;background:#1C1C22;padding:5px;text-align:center">
+          <div style="height:26px;border-radius:4px;background:linear-gradient(150deg,#FF2E7A,#3A0A1C)"></div>
+          <div class="sub" style="font-size:7.5px;margin-top:3px">club</div></div>
+      </div>
+      <svg viewBox="0 0 258 240" style="width:100%;display:block">
+        <defs><pattern id="g" width="25.8" height="28" patternUnits="userSpaceOnUse">
+          <path d="M25.8 0H0v28" fill="none" stroke="rgba(255,255,255,.06)"/></pattern></defs>
+        <rect width="258" height="240" fill="url(#g)"/>
+        <path d="M43 188 L129 122 L215 52" fill="none" stroke="#FF2E7A" stroke-width="2.4" stroke-linecap="round"/>
+        <circle cx="43" cy="188" r="17" fill="#0A0A10" stroke="#FF2E7A" stroke-width="2"/>
+        <circle cx="129" cy="122" r="25" fill="#0A0A10" stroke="#FF2E7A" stroke-width="2"/>
+        <circle cx="215" cy="52" r="34" fill="#0A0A10" stroke="#FF2E7A" stroke-width="2"/>
+        <g fill="#FF7FAC">
+          <circle cx="43" cy="184" r="2.4"/><rect x="40.8" y="187.5" width="4.4" height="6.5" rx="2.2"/>
+          <circle cx="122" cy="115" r="2.4"/><rect x="119.8" y="118.5" width="4.4" height="6.5" rx="2.2"/>
+          <circle cx="134" cy="114" r="2.4"/><rect x="131.8" y="117.5" width="4.4" height="6.5" rx="2.2"/>
+          <circle cx="127" cy="127" r="2.4"/><rect x="124.8" y="130.5" width="4.4" height="6.5" rx="2.2"/>
+          <circle cx="139" cy="128" r="2.4"/><rect x="136.8" y="131.5" width="4.4" height="6.5" rx="2.2"/>
+          <circle cx="203" cy="40" r="2.4"/><rect x="200.8" y="43.5" width="4.4" height="6.5" rx="2.2"/>
+          <circle cx="215" cy="37" r="2.4"/><rect x="212.8" y="40.5" width="4.4" height="6.5" rx="2.2"/>
+          <circle cx="227" cy="41" r="2.4"/><rect x="224.8" y="44.5" width="4.4" height="6.5" rx="2.2"/>
+          <circle cx="206" cy="54" r="2.4"/><rect x="203.8" y="57.5" width="4.4" height="6.5" rx="2.2"/>
+          <circle cx="219" cy="53" r="2.4"/><rect x="216.8" y="56.5" width="4.4" height="6.5" rx="2.2"/>
+          <circle cx="230" cy="56" r="2.4"/><rect x="227.8" y="59.5" width="4.4" height="6.5" rx="2.2"/>
+          <circle cx="210" cy="67" r="2.4"/><rect x="207.8" y="70.5" width="4.4" height="6.5" rx="2.2"/>
+          <circle cx="223" cy="68" r="2.4"/><rect x="220.8" y="71.5" width="4.4" height="6.5" rx="2.2"/>
+        </g>
+        <text x="43" y="232" fill="#6C6880" font-size="9" font-family="IBM Plex Mono" text-anchor="middle">20:00</text>
+        <text x="129" y="232" fill="#6C6880" font-size="9" font-family="IBM Plex Mono" text-anchor="middle">22:30</text>
+        <text x="215" y="232" fill="#6C6880" font-size="9" font-family="IBM Plex Mono" text-anchor="middle">01:00</text>
+      </svg>
+    </div>
+    <div class="sub" style="font-size:9.5px;text-align:center">Up is louder &middot; bigger is fuller</div>
+    <div class="grow"></div>
+    <div class="btn">NEXT</div>
+    <div class="sub" style="text-align:center">Or select from presets</div>
+  </div>
+  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>04 &middot; The skeleton game</b>X is stops, Y is energy, circle size is crowd &mdash; and the
+circles <b>fill with figures of people</b> as they grow. The live preview above each circle shows the kind of
+place being read from the drawing.</p>
+</div>
+
+<!-- ============================================================ 05 HOST WHAT -->
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd">
+    <div class="cap2" style="font-size:26px">WHAT WOULD YOU<br>LIKE TO HOST?</div>
+    <div class="srch"><span>&#9906;</span><span>Search a venue</span></div>
+    <div class="btn">HOST TONIGHT&rsquo;S PLAN</div>
+    <div class="btn o">HOST WITH CO-HOSTS</div>
+    <div class="sec">FITS TONIGHT&rsquo;S SHAPE</div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="listrow" style="border-top:0;padding:9px 11px">
+        <div style="width:34px;height:34px;border-radius:7px;background:linear-gradient(150deg,#FF2E7A,#3A0A1C)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:11px;font-weight:600">Depot 48</div>
+          <div class="sub" style="font-size:9px">a big loud bar &middot; Aerocity</div></div>
+        <div class="cap2" style="font-size:15px;color:#FF2E7A">94</div></div>
+      <div class="listrow" style="padding:9px 11px">
+        <div style="width:34px;height:34px;border-radius:7px;background:linear-gradient(150deg,#24E0FF,#07303B)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:11px;font-weight:600">Cirrus 9</div>
+          <div class="sub" style="font-size:9px">a rooftop bar &middot; Aerocity</div></div>
+        <div class="cap2" style="font-size:15px;color:#FF2E7A">89</div></div>
+      <div class="listrow" style="padding:9px 11px">
+        <div style="width:34px;height:34px;border-radius:7px;background:linear-gradient(150deg,#FFC247,#4A3200)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:11px;font-weight:600">Big Chill, Khan</div>
+          <div class="sub" style="font-size:9px">a buzzy restaurant &middot; Khan Mkt</div></div>
+        <div class="cap2" style="font-size:15px;color:#FF2E7A">82</div></div>
+      <div class="listrow" style="padding:9px 11px">
+        <div style="width:34px;height:34px;border-radius:7px;background:linear-gradient(150deg,#9B6BFF,#2E1A55)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:11px;font-weight:600">Piano Man</div>
+          <div class="sub" style="font-size:9px">a live room &middot; Safdarjung</div></div>
+        <div class="cap2" style="font-size:15px;color:#FF2E7A">78</div></div>
+      <div class="listrow" style="padding:9px 11px">
+        <div style="width:34px;height:34px;border-radius:7px;background:linear-gradient(150deg,#38E29B,#0C4430)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:11px;font-weight:600">Dilli Haat</div>
+          <div class="sub" style="font-size:9px">a street market &middot; INA</div></div>
+        <div class="cap2" style="font-size:15px;color:#FF2E7A">71</div></div>
+    </div>
+    <div class="grow"></div>
+  </div>
+  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>05 &middot; Host</b>A venue search, the two renamed buttons &mdash; <b>Host tonight's plan</b> and
+<b>Host with co-hosts</b> &mdash; and five venues by vibe match. Neither button asks for a skeleton or a filter
+again.</p>
+</div>
+
+<!-- ============================================================ 06 HOST ROOM -->
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd">
+    <div style="display:flex;align-items:center;gap:8px">
+      <span class="lab">&#9834;</span>
+      <div class="cap2" style="font-size:19px;flex:1 1 auto">LATE SHIFT &#9998;</div>
+      <span class="lab">&#10005;</span></div>
+    <div class="btn o" style="font-size:12px;padding:7px 16px">HOST ROOM</div>
+    <div class="card" style="text-align:center;padding:11px;
+         background:linear-gradient(170deg,rgba(255,46,122,.14),rgba(36,224,255,.08))">
+      <div class="cap2" style="font-size:21px">BIG ROOM,<br>LOUD NIGHT</div>
+      <div style="margin-top:5px"><span class="chip hot">Caught the Spark</span></div>
+      <div style="display:flex;justify-content:center;margin-top:9px">
+        <div class="dp" style="width:29px;height:29px;background:linear-gradient(140deg,#FF2E7A,#7A1038)"></div>
+        <div class="dp" style="width:29px;height:29px;margin-left:-7px;background:linear-gradient(140deg,#24E0FF,#0B4A5C)"></div>
+        <div class="dp" style="width:29px;height:29px;margin-left:-7px;background:linear-gradient(140deg,#FFC247,#6B4A00)"></div>
+        <div class="dp" style="width:29px;height:29px;margin-left:-7px;background:#1C1C22"></div>
+        <div class="dp" style="width:29px;height:29px;margin-left:-7px;background:#1C1C22"></div>
+      </div>
+
+    </div>
+    <div style="display:flex;gap:7px">
+      <span class="chip">&#9655; MUTE</span><span class="chip">&#9633; CAMERA</span>
+      <span class="chip" style="margin-left:auto">&#9834; MUSIC</span></div>
+    <div class="card" style="padding:0">
+      <div class="listrow" style="border-top:0;padding:7px 11px">
+        <div class="dp" style="width:22px;height:22px;background:linear-gradient(140deg,#FF2E7A,#7A1038)"></div>
+        <div style="flex:1 1 auto;font-size:10px">Aarav &middot; <span style="color:#9C98AE">host</span></div>
+        <span class="chip hot" style="font-size:7.5px">DREW</span></div>
+      <div class="listrow" style="padding:7px 11px">
+        <div class="dp" style="width:22px;height:22px;background:linear-gradient(140deg,#24E0FF,#0B4A5C)"></div>
+        <div style="flex:1 1 auto;font-size:10px">Nitya</div>
+        <span class="chip hot" style="font-size:7.5px">DREW</span></div>
+      <div class="listrow" style="padding:7px 11px">
+        <div class="dp" style="width:22px;height:22px;background:linear-gradient(140deg,#FFC247,#6B4A00)"></div>
+        <div style="flex:1 1 auto;font-size:10px">Zoya</div>
+        <span class="chip hot" style="font-size:7.5px">DREW</span></div>
+      <div class="listrow" style="padding:7px 11px;opacity:.5">
+        <div class="dp" style="width:22px;height:22px;background:#1C1C22"></div>
+        <div style="flex:1 1 auto;font-size:10px">Kabir</div>
+        <span class="chip" style="font-size:7.5px">DRAWING</span>
+        <span class="lab" style="letter-spacing:0;margin-left:6px">&#10005;</span></div>
+      <div class="listrow" style="padding:7px 11px;opacity:.5">
+        <div class="dp" style="width:22px;height:22px;background:#1C1C22"></div>
+        <div style="flex:1 1 auto;font-size:10px">Sana</div>
+        <span class="chip" style="font-size:7.5px">NOT IN YET</span>
+        <span class="lab" style="letter-spacing:0;margin-left:6px">&#10005;</span></div>
+    </div>
+    <div class="grow"></div>
+    <div class="btn o" style="font-size:12px">ADD CO-HOSTS</div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <div class="btn dead" style="flex:1 1 auto">CREATE PLAN</div>
+      <div class="cap2" style="font-size:19px;color:#6C6880">3/5</div></div>
+  </div>
+  <div class="bar"><span class="k">LATE SHIFT</span><span class="v">3/5 SKELETONS</span></div>
+  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>06 &middot; The host room, waiting on skeletons</b>Create Plan is greyed with
+<b>3/5</b> beside it &mdash; three of five have entered <i>and</i> drawn. It goes live only at 5/5, and the
+deadlock is broken by removing someone, not by a timer.</p>
+</div>
+
+<!-- ============================================================ 07 JOIN FILTERS -->
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd">
+    <div class="cap2" style="font-size:26px">WHAT MATTERS<br>TONIGHT?</div>
+    <div class="sub">We&rsquo;ll order the rooms by whichever you pick.</div>
+    <div class="toggle" style="margin-top:3px"><span class="on">PLACE</span><span>PEOPLE</span></div>
+    <div class="card">
+      <div class="lab">PLACE</div>
+      <div class="sub" style="margin-top:4px">Does this room&rsquo;s night suit me? Ordered by how well
+        the plan serves the shape you drew.</div>
+      <div style="height:1px;background:rgba(255,255,255,.08);margin:9px 0"></div>
+      <div class="lab">PEOPLE</div>
+      <div class="sub" style="margin-top:4px">Are these my kind of people? Ordered by how close the
+        room&rsquo;s blend is to your going-out identity.</div>
+    </div>
+    <div class="sec">FILTERS</div>
+    <div class="card" style="padding:0">
+      <div class="listrow" style="border-top:0;padding:9px 11px">
+        <div style="flex:1 1 auto;font-size:10.5px">Distance</div>
+        <div class="lab" style="letter-spacing:.06em">12 KM</div></div>
+      <div class="listrow" style="padding:9px 11px">
+        <div style="flex:1 1 auto;font-size:10.5px">Budget</div>
+        <div class="lab" style="letter-spacing:.06em">&#8377;3,000</div></div>
+      <div class="listrow" style="padding:9px 11px">
+        <div style="flex:1 1 auto;font-size:10.5px">Time</div>
+        <div class="lab" style="letter-spacing:.06em">20:00&ndash;02:00</div></div>
+      <div class="listrow" style="padding:9px 11px">
+        <div style="flex:1 1 auto;font-size:10.5px">Venues</div>
+        <div class="lab" style="letter-spacing:.06em">ANY</div></div>
+    </div>
+    <div class="grow"></div>
+    <div class="btn">SHOW ME ROOMS</div>
+  </div>
+  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>07 &middot; Join — Place or People</b>The fifth filter, and the only one that changes the
+<i>order</i> rather than the set. Both numbers already existed in the engine; now the user picks which one
+sorts.</p>
+</div>
+
+<!-- ============================================================ 08 ROOM PLAYER -->
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd" style="background:linear-gradient(185deg,rgba(255,46,122,.2),rgba(6,6,9,0) 58%)">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <span class="lab">3 OF 5</span><span class="lab">&#9834; TAP TO PLAY</span></div>
+    <div style="display:flex;gap:11px;align-items:center">
+      <div class="ring"><b>92%</b></div>
+      <div style="flex:1 1 auto">
+        <div class="cap2" style="font-size:21px">THE LONG TABLE</div>
+        <div class="sub">by Nitya &middot; <span class="chip">Our Table</span></div></div>
+    </div>
+    <div class="sub" style="color:#FF7FAC;font-size:10px">&#9656; You would barely change this room</div>
+    <div class="card" style="padding:10px 11px">
+      <div class="lu" style="padding-top:0"><span class="t">20:30</span><div><div class="n">BIG CHILL, KHAN</div>
+        <div class="m">for you &mdash; you can hear each other</div></div></div>
+      <div class="lu"><span class="t">23:00</span><div><div class="n">PIANO MAN</div>
+        <div class="m">for you &mdash; there&rsquo;s a set at eleven</div></div></div>
+      <div class="lu"><span class="t">01:30</span><div><div class="n">THE PIANO BAR</div>
+        <div class="m">for you &mdash; still a table at one</div></div></div>
+    </div>
+    <div class="card" style="padding:9px 11px;border-color:rgba(255,194,71,.28)">
+      <div class="sub" style="font-size:9.5px"><b style="color:#FFC247">No floor tonight</b> &mdash; nothing on
+        this shape has one.</div></div>
+    <div>
+      <div class="lab">IN THE ROOM</div>
+      <div style="display:flex;align-items:center;gap:9px;margin-top:6px">
+        <div class="ppl">
+          <div style="background:linear-gradient(140deg,#24E0FF,#0B4A5C)"></div>
+          <div style="background:linear-gradient(140deg,#FFC247,#6B4A00)"></div>
+          <div style="background:linear-gradient(140deg,#9B6BFF,#2E1A55)"></div>
+          <div style="background:#1C1C22"></div></div>
+        <div class="sub" style="font-size:9.5px">Nitya, Zoya, Kabir +1<br>
+          <span style="color:#6C6880">mostly Table Talkers</span></div></div>
+    </div>
+    <div class="card" style="padding:8px 11px;display:flex;align-items:center;gap:9px">
+      <div style="width:28px;height:28px;border-radius:5px;background:linear-gradient(140deg,#FF2E7A,#24E0FF)"></div>
+      <div style="flex:1 1 auto"><div style="font-size:10px;font-weight:600">Nitya&rsquo;s pick</div>
+        <div class="sub" style="font-size:9px">Khruangbin &mdash; So We Won&rsquo;t Forget</div></div>
+      <span class="chip">MUTED</span></div>
+    <div class="grow"></div>
+    <div class="transport"><b>&#9198;</b><div class="p">&#9205;</div><b>&#9197;</b></div>
+    <div class="btn">REQUEST TO JOIN</div>
+  </div>
+  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>08 &middot; The room player</b>Five rooms back to back with rewind, play, forward. The match is
+a ring, the room's blend style washes the screen, the plan is a line-up with a per-person reason &mdash; and under
+<i>People</i>, the disturbance line.</p>
+</div>
+
+<!-- ============================================================ 09 CAPSULE WAIT -->
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd" style="align-items:center;justify-content:center;text-align:center;padding:0 26px">
+    <div class="lab">SHUFFL CAPSULE</div>
+    <div class="big">WAITING FOR<br>CAPSULE<br>MEMBERS</div>
+    <div class="sub" style="font-size:10.5px">Nobody can browse until everyone has drawn &mdash; otherwise we
+      can&rsquo;t tell what kind of night they want.</div>
+    <div style="display:flex;gap:9px;margin-top:6px">
+      <div style="text-align:center">
+        <div class="dp" style="width:40px;height:40px;background:linear-gradient(140deg,#24E0FF,#0B4A5C);opacity:.35"></div>
+        <div class="lab" style="margin-top:4px;letter-spacing:.06em">NITYA</div></div>
+      <div style="text-align:center">
+        <div class="dp" style="width:40px;height:40px;background:linear-gradient(140deg,#FFC247,#6B4A00);opacity:.35"></div>
+        <div class="lab" style="margin-top:4px;letter-spacing:.06em">ZOYA</div></div>
+    </div>
+    <div class="sub" style="font-size:9.5px">Kabir and Sana are in</div>
+    <div class="btn o" style="margin-top:8px;font-size:12px">CANCEL CAPSULE</div>
+  </div>
+  <div class="bar"><span class="k">YOUR CAPSULE</span><span class="v">AWAITING MEMBERS</span></div>
+  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>09 &middot; The capsule, waiting</b>The join screen goes blank until every member has accepted
+and drawn. The outstanding DPs stay dim and drop off one by one. The status bar carries the wait if the user
+leaves.</p>
+</div>
+
+<!-- ============================================================ 10 PLAN CARD -->
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd">
+    <div class="tile" style="height:88px;background:linear-gradient(150deg,#FF2E7A,#24E0FF 120%)">
+      <span class="live"><i></i>3 STOPS &middot; 6 HRS</span>
+      <div class="cap2" style="font-size:25px">BIG ROOM,<br>LOUD NIGHT</div></div>
+    <div class="card" style="padding:10px 11px">
+      <div class="lu" style="padding-top:0"><span class="t">20:00</span><div><div class="n">CIRRUS 9</div>
+        <div class="m">a rooftop bar &middot; &#8377;&#8377;</div>
+        <div class="m" style="color:#FBFAFF">Aarav &mdash; it builds from here</div>
+        <div class="m" style="color:#FBFAFF">Nitya &mdash; the food&rsquo;s good</div></div></div>
+      <div class="lu"><span class="t">22:30</span><div><div class="n">DEPOT 48</div>
+        <div class="m">a big loud bar &middot; &#8377;&#8377;</div>
+        <div class="m" style="color:#FBFAFF">Zoya &mdash; this is your line</div>
+        <div class="m" style="color:#FBFAFF">Nitya &mdash; you can still hear each other</div></div></div>
+      <div class="lu"><span class="t">01:00</span><div><div class="n">KITTY SU</div>
+        <div class="m">a club &middot; &#8377;&#8377;&#8377;</div>
+        <div class="m" style="color:#FBFAFF">Aarav &mdash; the floor at the end</div></div></div>
+    </div>
+    <div class="card" style="padding:9px 11px;border-left:2px solid #FFC247;border-radius:4px">
+      <div class="sub" style="font-size:9.5px">No live music tonight &mdash; nothing on this shape has an
+        act.</div></div>
+    <div class="card" style="padding:9px 11px">
+      <div class="sub" style="font-size:9.5px">Ask for a seat near the bar &mdash; it suits how this room
+        faces out.</div>
+      <div style="display:flex;align-items:center;gap:9px;margin-top:8px">
+        <span class="chip">VIEW MENU</span>
+        <span class="sub" style="font-size:9px;margin-left:auto">Been here before?</span>
+        <span class="chip hot">Y</span><span class="chip">N</span></div>
+    </div>
+    <div class="grow"></div>
+    <div class="sub" style="text-align:center;font-size:10px;color:#FF7FAC">&#8646; Change a stop</div>
+    <div class="row2"><div class="btn">LOCK THIS</div><div class="btn o">HOST THIS</div></div>
+  </div>
+  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>10 &middot; The plan card</b>A poster, then door times left in mono with the venue in poster caps, two lines per person, and the unserved preference on an amber rule. Note Zoya's line: <b>&ldquo;this is your line&rdquo;</b> &mdash; the merge carries provenance. The control under it is now <b>Change a stop</b>, which reopens that stop's list — nothing regenerates.</p>
+</div>
+
+<!-- ============================================================ 11 ACTIVE PLAN -->
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd">
+    <div class="cap2" style="font-size:21px">LATE SHIFT&rsquo;S PLAN</div>
+    <div style="border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,.08)">
+      <svg viewBox="0 0 274 150" style="width:100%;display:block;background:#101017">
+        <path d="M0 96 L70 78 L130 104 L200 64 L274 86" stroke="rgba(255,255,255,.07)" stroke-width="9" fill="none"/>
+        <path d="M44 0 L62 150" stroke="rgba(255,255,255,.05)" stroke-width="7" fill="none"/>
+        <path d="M190 0 L172 150" stroke="rgba(255,255,255,.05)" stroke-width="7" fill="none"/>
+        <path d="M58 112 Q110 60 150 74 Q200 92 226 44" stroke="#FF2E7A" stroke-width="2"
+              stroke-dasharray="5 4" fill="none"/>
+        <circle cx="58" cy="112" r="9" fill="#FF2E7A"/>
+        <text x="58" y="115.5" font-size="9" font-family="IBM Plex Mono" fill="#12000A" text-anchor="middle">1</text>
+        <circle cx="150" cy="74" r="9" fill="#FF2E7A" opacity=".55"/>
+        <text x="150" y="77.5" font-size="9" font-family="IBM Plex Mono" fill="#12000A" text-anchor="middle">2</text>
+        <circle cx="226" cy="44" r="9" fill="#FF2E7A" opacity=".55"/>
+        <text x="226" y="47.5" font-size="9" font-family="IBM Plex Mono" fill="#12000A" text-anchor="middle">3</text>
+        <circle cx="86" cy="126" r="13" fill="rgba(36,224,255,.18)"/>
+        <circle cx="86" cy="126" r="4.5" fill="#24E0FF"/>
+      </svg>
+    </div>
+    <div class="sub" style="font-family:var(--mono);font-size:9.5px;color:#FF2E7A">2.3 KM TO STOP 1</div>
+    <div class="card" style="padding:0">
+      <div class="listrow" style="border-top:0;padding:9px 11px">
+        <div style="width:30px;height:30px;border-radius:6px;background:linear-gradient(150deg,#24E0FF,#07303B)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:11px;font-weight:600">Cirrus 9 &middot; 20:00</div>
+          <div class="sub" style="font-size:9px">you&rsquo;re 2.3km away</div></div>
+        <span class="chip hot">&#9673; POST</span></div>
+      <div class="listrow" style="padding:9px 11px">
+        <div style="width:30px;height:30px;border-radius:6px;background:linear-gradient(150deg,#FF2E7A,#3A0A1C)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:11px;font-weight:600">Depot 48 &middot; 22:30</div>
+          <div class="sub" style="font-size:9px">a big loud bar</div></div></div>
+      <div class="listrow" style="padding:9px 11px">
+        <div style="width:30px;height:30px;border-radius:6px;background:linear-gradient(150deg,#9B6BFF,#2E1A55)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:11px;font-weight:600">Kitty Su &middot; 01:00</div>
+          <div class="sub" style="font-size:9px">a club</div></div></div>
+    </div>
+    <div>
+      <div class="lab">WHO&rsquo;S COMING</div>
+      <div class="sub" style="margin-top:4px;font-size:9.5px">Aarav &middot; Peak Front-Rower<br>
+        Nitya &middot; Locked-In Table-Talker<br>Zoya &middot; Front Row</div></div>
+    <div class="card" style="padding:8px 11px;display:flex;align-items:center;gap:8px">
+      <span class="lab" style="letter-spacing:0;font-size:11px">&#9678;</span>
+      <div class="sub" style="font-size:9px;flex:1 1 auto">Live location is off. The room sees an area,
+        never a person.</div>
+      <span class="chip">OFF</span></div>
+    <div class="grow"></div>
+    <div class="btn o" style="font-size:12px">END PLAN</div>
+  </div>
+  <div class="bar"><span class="k">LATE SHIFT&rsquo;S OUTING PLAN</span><span class="v">LIVE</span></div>
+  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>11 &middot; Active plan</b>The stops on a map with the group as an anonymised cluster, never
+individual positions. The camera appears on a stop once you arrive. The vibe names are V5 names.</p>
+</div>
+
+<!-- ============================================================ 12 MESSAGES -->
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd">
+    <div style="display:flex;gap:8px;align-items:center">
+      <div class="cap2" style="font-size:21px;flex:1 1 auto">MESSAGES</div>
+      <div class="chip hot" style="padding:5px 9px">&#9881; SHUFFL</div></div>
+    <div class="srch"><span>&#9906;</span><span>Search messages</span></div>
+    <div class="card" style="padding:0">
+      <div class="listrow" style="border-top:0;padding:9px 11px">
+        <div class="dp" style="width:34px;height:34px;background:linear-gradient(140deg,#FF2E7A,#7A1038)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:11px;font-weight:600">Late Shift</div>
+          <div class="sub" style="font-size:9px">Aarav: locked it, see you at eight</div></div>
+        <div class="lab" style="letter-spacing:.05em">19:42</div></div>
+      <div class="listrow" style="padding:9px 11px">
+        <div class="dp" style="width:34px;height:34px;background:linear-gradient(140deg,#24E0FF,#0B4A5C)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:11px;font-weight:600">The Usual Suspects</div>
+          <div class="sub" style="font-size:9px">Nitya: recreate it for tonight?</div></div>
+        <div class="lab" style="letter-spacing:.05em">18:10</div></div>
+      <div class="listrow" style="padding:9px 11px">
+        <div class="dp" style="width:34px;height:34px;background:linear-gradient(140deg,#FFC247,#6B4A00)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:11px;font-weight:600">Zoya</div>
+          <div class="sub" style="font-size:9px">that rooftop was unreal</div></div>
+        <div class="lab" style="letter-spacing:.05em">YST</div></div>
+      <div class="listrow" style="padding:9px 11px">
+        <div class="dp" style="width:34px;height:34px;background:linear-gradient(140deg,#9B6BFF,#2E1A55)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:11px;font-weight:600">Kabir</div>
+          <div class="sub" style="font-size:9px">you around Friday?</div></div>
+        <div class="lab" style="letter-spacing:.05em">YST</div></div>
+      <div class="listrow" style="padding:9px 11px">
+        <div class="dp" style="width:34px;height:34px;background:linear-gradient(140deg,#38E29B,#0C4430)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:11px;font-weight:600">Brunch Club</div>
+          <div class="sub" style="font-size:9px">Sana: sent a plan to the group</div></div>
+        <div class="lab" style="letter-spacing:.05em">MON</div></div>
+    </div>
+    <div class="grow"></div>
+  </div>
+  <div class="nav"><span>HOME</span><span>PLAY</span><span class="on">MESSAGES</span></div>
+</div>
+<p class="cap"><b>12 &middot; Messages</b>Messages and nothing else now &mdash; DMs, the SHUFFL group chats, a
+search through them, and the SHUFFL button that starts a group. Stories and notifications moved to Home.</p>
+</div>
+
+<!-- ============================================================ 13 PROFILE -->
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd">
+    <div style="display:flex;align-items:center;gap:8px">
+      <span class="lab">&#9834;</span>
+      <div class="cap2" style="font-size:17px;flex:1 1 auto">ISHAAN&rsquo;S VIBE PROFILE</div>
+      <span class="lab">&#9881;</span></div>
+    <div style="display:flex;gap:11px;align-items:center">
+      <div class="dp" style="width:60px;height:60px;background:linear-gradient(140deg,#FF2E7A,#24E0FF)"></div>
+      <div><div class="cap2" style="font-size:23px">PEAK<br>FRONT-ROWER</div>
+        <div class="sub" style="font-size:9.5px">today</div></div></div>
+    <div style="display:flex;gap:5px;flex-wrap:wrap">
+      <span class="chip">Gig-Goer</span><span class="chip">Foodie</span>
+      <span class="chip">Always On The Table</span><span class="chip">Good Eye</span></div>
+    <div class="sec">WHAT I CARE ABOUT IN A PLACE</div>
+    <div class="card" style="padding:9px 11px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px 11px;font-size:9.5px">
+        <div>Food <span style="color:#FF2E7A">&#9679;&#9679;&#9679;</span></div>
+        <div>A live act <span style="color:#FF2E7A">&#9679;&#9679;&#9679;</span></div>
+        <div>Dressed-up <span style="color:#6C6880">&#9679;&#9675;&#9675;</span></div>
+        <div>The look <span style="color:#FF2E7A">&#9679;&#9679;&#9675;</span></div>
+        <div>Somewhere new <span style="color:#6C6880">&#9679;&#9675;&#9675;</span></div>
+        <div>Somewhere old <span style="color:#6C6880">&#9679;&#9675;&#9675;</span></div>
+        <div>Something to play <span style="color:#FF2E7A">&#9679;&#9679;&#9679;</span></div>
+      </div>
+      <div class="sub" style="font-size:9px;margin-top:7px;color:#FF7FAC">Redo my preferences</div></div>
+    <div class="sec">YOUR OVERALL GOING OUT TYPE</div>
+    <div class="sub" style="font-size:10px">Mostly <b style="color:#FBFAFF">Front Row</b> &mdash; you go out for
+      something to watch, and you want to hear the people you came with.</div>
+    <div class="grow"></div>
+    <div class="row2" style="gap:7px">
+      <div class="chip" style="text-align:center;padding:7px">PAST EVENTS &middot; 14</div>
+      <div class="chip" style="text-align:center;padding:7px">VIBE HISTORY</div></div>
+  </div>
+  <div class="nav"><span class="on">HOME</span><span>PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>13 &middot; Profile</b>Today's V5 name as the hero, seven badges, the seven preference rows each
+tappable, the overall going-out type, past events and vibe history.</p>
+</div>
+
+<!-- ============================================================ 14 CAPSULE APPROVAL (member) -->
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd blur deep" style="background:linear-gradient(185deg,rgba(255,46,122,.14),rgba(6,6,9,0) 55%)">
+    <div class="srch"><span>&#9906;</span><span>Search people</span></div>
+    <div class="storyrail">
+      <div class="story"><div class="r"><div style="background:linear-gradient(140deg,#FF2E7A,#7A1038)"></div></div><span>Aarav</span></div>
+      <div class="story"><div class="r"><div style="background:linear-gradient(140deg,#24E0FF,#0B4A5C)"></div></div><span>Nitya</span></div>
+      <div class="story"><div class="r"><div style="background:linear-gradient(140deg,#FFC247,#6B4A00)"></div></div><span>Zoya</span></div>
+      <div class="story"><div class="r"><div style="background:linear-gradient(140deg,#9B6BFF,#2E1A55)"></div></div><span>Kabir</span></div>
+    </div>
+    <div class="card" style="height:72px"></div>
+    <div class="sec">WHAT YOUR FRIENDS ARE UP TO</div>
+    <div class="shelf">
+      <div class="sq"><div class="tile" style="background:linear-gradient(150deg,#FF2E7A,#3A0A1C)"></div></div>
+      <div class="sq"><div class="tile" style="background:linear-gradient(150deg,#24E0FF,#07303B)"></div></div>
+      <div class="sq"><div class="tile" style="background:linear-gradient(150deg,#FFC247,#4A3200)"></div></div>
+    </div>
+    <div class="sec">POSTS</div>
+    <div class="card" style="height:88px"></div>
+    <div class="grow"></div>
+  </div>
+  <div class="scrim"></div>
+  <div class="sheet" style="top:84px;display:flex;flex-direction:column">
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="dp" style="width:22px;height:22px;background:linear-gradient(140deg,#24E0FF,#0B4A5C)"></div>
+      <div class="lab" style="letter-spacing:.1em">NITYA IS VIEWING THIS ROOM</div></div>
+    <div style="display:flex;gap:10px;align-items:center;margin-top:11px">
+      <div class="ring" style="width:42px;height:42px"><b style="width:34px;height:34px;font-size:13px">88%</b></div>
+      <div style="flex:1 1 auto">
+        <div class="cap2" style="font-size:19px">THE LONG TABLE</div>
+        <div class="sub">by Rhea &middot; <span class="chip">Our Table</span></div></div>
+    </div>
+    <div class="sub" style="font-size:9.5px;color:#FF7FAC;margin-top:7px">For the capsule &mdash; 88% together</div>
+    <div class="card" style="padding:9px 10px;margin-top:9px;background:#1B1B21">
+      <div class="lu" style="padding-top:0"><span class="t">20:30</span><div><div class="n">BIG CHILL, KHAN</div>
+        <div class="m">you &mdash; you can hear each other</div></div></div>
+      <div class="lu"><span class="t">23:00</span><div><div class="n">PIANO MAN</div>
+        <div class="m">you &mdash; there&rsquo;s a set at eleven</div></div></div>
+    </div>
+    <div style="margin-top:9px">
+      <div class="lab">WHO ELSE HAS DECIDED</div>
+      <div style="display:flex;align-items:center;gap:7px;margin-top:6px">
+        <div class="dp" style="width:22px;height:22px;background:linear-gradient(140deg,#FFC247,#6B4A00)"></div>
+        <span class="chip hot" style="font-size:7.5px">IN</span>
+        <div class="dp" style="width:22px;height:22px;margin-left:5px;background:#1C1C22"></div>
+        <span class="chip" style="font-size:7.5px">WAITING</span></div>
+    </div>
+    <div class="sub" style="font-size:9px;text-align:center;margin-top:11px">Swipe, or tap</div>
+    <div class="swipe"><div class="s no">&#8592; NOT THIS ONE</div><div class="s yes">I&rsquo;M IN &#8594;</div></div>
+  </div>
+  <div class="nav"><span class="on">HOME</span><span>PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>14 &middot; Capsule approval, the member's side</b>The capsule creator's live room view, pushed to
+everyone else headed <b>&ldquo;Nitya is viewing this room&rdquo;</b>. Swipe right to approve, left to decline.
+Tapping away minimises it into their own status bar.</p>
+</div>
+
+<!-- ============================================================ 15 CAPSULE AWAITING (creator) -->
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd blur deep" style="background:linear-gradient(185deg,rgba(255,46,122,.2),rgba(6,6,9,0) 58%)">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <span class="lab">3 OF 5</span><span class="lab">&#9834; ON</span></div>
+    <div style="display:flex;gap:11px;align-items:center">
+      <div class="ring"><b>88%</b></div>
+      <div style="flex:1 1 auto"><div class="cap2" style="font-size:21px">THE LONG TABLE</div>
+        <div class="sub">by Rhea</div></div></div>
+    <div class="card" style="padding:10px 11px">
+      <div class="lu" style="padding-top:0"><span class="t">20:30</span><div><div class="n">BIG CHILL, KHAN</div>
+        <div class="m">for the capsule &mdash; you can hear each other</div></div></div>
+      <div class="lu"><span class="t">23:00</span><div><div class="n">PIANO MAN</div>
+        <div class="m">for the capsule &mdash; there&rsquo;s a set at eleven</div></div></div>
+      <div class="lu"><span class="t">01:30</span><div><div class="n">THE PIANO BAR</div>
+        <div class="m">for the capsule &mdash; still a table at one</div></div></div>
+    </div>
+    <div><div class="lab">IN THE ROOM</div>
+      <div class="ppl" style="margin-top:6px">
+        <div style="background:linear-gradient(140deg,#24E0FF,#0B4A5C)"></div>
+        <div style="background:linear-gradient(140deg,#FFC247,#6B4A00)"></div>
+        <div style="background:linear-gradient(140deg,#9B6BFF,#2E1A55)"></div>
+        <div style="background:#1C1C22"></div></div></div>
+    <div class="grow"></div>
+    <div class="transport"><b>&#9198;</b><div class="p">&#9205;</div><b>&#9197;</b></div>
+    <div class="btn">REQUEST TO JOIN</div>
+  </div>
+  <div class="scrim"></div>
+  <div class="sheet" style="top:150px;text-align:center">
+    <div style="display:flex;justify-content:flex-end"><span class="lab" style="letter-spacing:0;font-size:12px">&#8211;</span></div>
+    <div class="cap2" style="font-size:22px;margin-top:-4px">WAITING ON<br>APPROVAL FROM<br>THE CAPSULE</div>
+    <div class="sub" style="margin-top:9px;font-size:10px">They&rsquo;re all looking at this room right now.</div>
+    <div style="display:flex;justify-content:center;gap:11px;margin-top:11px">
+      <div style="text-align:center">
+        <div class="dp" style="width:34px;height:34px;background:linear-gradient(140deg,#24E0FF,#0B4A5C);opacity:.35"></div>
+        <div class="lab" style="margin-top:4px;letter-spacing:.06em">NITYA</div></div>
+      <div style="text-align:center">
+        <div class="dp" style="width:34px;height:34px;background:linear-gradient(140deg,#9B6BFF,#2E1A55);opacity:.35"></div>
+        <div class="lab" style="margin-top:4px;letter-spacing:.06em">KABIR</div></div>
+      <div style="text-align:center">
+        <div class="dp" style="width:34px;height:34px;background:linear-gradient(140deg,#FFC247,#6B4A00)"></div>
+        <div class="chip hot" style="margin-top:4px;font-size:7.5px">ZOYA &#10003;</div></div>
+    </div>
+    <div class="sub" style="font-size:9px;margin-top:11px;color:#6C6880">Minimise this and it waits in the
+      bar below.</div>
+    <div class="btn o" style="margin-top:9px;font-size:12px;width:100%">CANCEL THE REQUEST</div>
+  </div>
+  <div class="bar"><span class="k">THE LONG TABLE</span><span class="v">AWAITING CAPSULE</span></div>
+  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>15 &middot; Capsule approval, the creator's side</b>The room blurs behind the box, the undecided
+DPs stay dim and drop off as people answer. <b>Minimising sends it to the status bar</b> &mdash; the creator is
+never trapped in the wait.</p>
+</div>
+
+<!-- ============================================================ 16 TWO ROOMS -->
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd">
+    <div class="lab">THE SHAPES DON&rsquo;T MEET</div>
+    <div class="cap2" style="font-size:25px">YOU TWO DREW<br>DIFFERENT NIGHTS</div>
+    <div class="card" style="padding:10px">
+      <svg viewBox="0 0 254 128" style="width:100%;display:block">
+        <defs><pattern id="gg" width="25.4" height="25.6" patternUnits="userSpaceOnUse">
+          <path d="M25.4 0H0v25.6" fill="none" stroke="rgba(255,255,255,.055)"/></pattern></defs>
+        <rect width="254" height="128" fill="url(#gg)"/>
+        <path d="M30 64 L200 64" stroke="#4A4756" stroke-width="2" stroke-dasharray="4 5"/>
+        <path d="M30 104 L115 64 L200 22" stroke="#FF2E7A" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+        <path d="M30 22 L115 64 L200 106" stroke="#24E0FF" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+        <circle cx="30" cy="104" r="4.5" fill="#FF2E7A"/><circle cx="200" cy="22" r="4.5" fill="#FF2E7A"/>
+        <circle cx="30" cy="22" r="4.5" fill="#24E0FF"/><circle cx="200" cy="106" r="4.5" fill="#24E0FF"/>
+        <text x="209" y="25" fill="#FF2E7A" font-size="8.5" font-family="IBM Plex Mono">YOU</text>
+        <text x="209" y="109" fill="#24E0FF" font-size="8.5" font-family="IBM Plex Mono">ZOYA</text>
+        <text x="30" y="124" fill="#6C6880" font-size="8.5" font-family="IBM Plex Mono">20:00</text>
+        <text x="182" y="124" fill="#6C6880" font-size="8.5" font-family="IBM Plex Mono">02:00</text>
+      </svg>
+      <div class="sub" style="font-size:9.5px;margin-top:7px"><span style="color:#4A4756">&#9472;&#9472;</span>
+        Averaging you gives the flat line &mdash; a night <b style="color:#FBFAFF">neither of you drew</b>.</div>
+    </div>
+    <div class="sec">SO, TWO WAYS</div>
+    <div class="card" style="padding:11px;border-color:rgba(255,46,122,.35)">
+      <div style="display:flex;align-items:baseline;gap:7px">
+        <div class="cap2" style="font-size:17px">SPLIT INTO TWO ROOMS</div>
+        <span class="chip hot" style="margin-left:auto;font-size:7.5px">SUGGESTED</span></div>
+      <div class="sub" style="margin-top:5px">You build to a floor. Zoya starts big and winds down. Two rooms,
+        two nights, both of them real &mdash; and you can still meet at the first stop.</div>
+    </div>
+    <div class="card" style="padding:11px">
+      <div class="cap2" style="font-size:17px">ONE NIGHT, ZOYA&rsquo;S SHAPE</div>
+      <div class="sub" style="margin-top:5px">Hers is the firmer drawing, so the night would be hers end to
+        end. <b style="color:#FBFAFF">You&rsquo;d lose the build.</b> Your food, music and look preferences
+        still get served at every stop.</div>
+    </div>
+    <div class="grow"></div>
+    <div class="row2"><div class="btn">TWO ROOMS</div><div class="btn o">ONE NIGHT</div></div>
+  </div>
+  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>16 &middot; The two-rooms offer</b>Fires when two drawings correlate below &minus;0.50 and both
+span 20 points. The app <b>asks instead of deciding</b> &mdash; and names what the one-night option actually
+costs, including whose shape wins and why.</p>
+</div>
+
+<!-- ============================================================ 17 VENUE -->
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd" style="padding-bottom:0">
+    <div style="display:flex;align-items:center;gap:8px">
+      <span class="lab" style="letter-spacing:0;font-size:13px">&#8249;</span>
+      <div class="cap2" style="font-size:24px;flex:1 1 auto">DEPOT 48</div>
+      <span class="lab" style="letter-spacing:0;font-size:12px">&#10150;</span></div>
+    <div class="sub" style="font-size:9.5px;margin-top:-4px">a big loud bar &middot; Aerocity &middot;
+      &#8377;&#8377; &middot; 4.2km</div>
+    <div class="card" style="padding:8px 10px;border-color:rgba(255,46,122,.4);display:flex;
+         align-items:center;gap:8px;box-shadow:0 0 16px rgba(255,46,122,.12)">
+      <span style="color:#FF2E7A;font-size:12px">&#9733;</span>
+      <div class="sub" style="font-size:9.5px;color:#FBFAFF;flex:1 1 auto">Strongly recommended &mdash;
+        <b>this is your 11pm</b></div>
+      <div class="cap2" style="font-size:16px;color:#FF2E7A">94</div></div>
+    <div class="vrail">
+      <div style="background:linear-gradient(150deg,#FF2E7A,#3A0A1C)"></div>
+      <div style="background:linear-gradient(150deg,#24E0FF,#07303B)"></div>
+      <div style="background:linear-gradient(150deg,#FFC247,#4A3200)"></div>
+      <div style="background:linear-gradient(150deg,#9B6BFF,#2E1A55)"></div>
+    </div>
+    <div class="sub" style="font-size:8.5px;margin-top:-4px;color:#6C6880">Posted from inside SHUFFL
+      &middot; 11 tonight</div>
+    <div class="card" style="padding:10px 11px;display:flex;align-items:center;gap:12px">
+      <svg viewBox="0 0 42 42" style="width:52px;height:52px;flex:0 0 auto">
+        <circle cx="21" cy="21" r="15.9" fill="none" stroke="#FF2E7A" stroke-width="7"
+                stroke-dasharray="44 56" stroke-dashoffset="25"/>
+        <circle cx="21" cy="21" r="15.9" fill="none" stroke="#24E0FF" stroke-width="7"
+                stroke-dasharray="29 71" stroke-dashoffset="-19"/>
+        <circle cx="21" cy="21" r="15.9" fill="none" stroke="#FFC247" stroke-width="7"
+                stroke-dasharray="27 73" stroke-dashoffset="-48"/>
+      </svg>
+      <div style="flex:1 1 auto">
+        <div class="lab">WHO GOES HERE</div>
+        <div class="sub" style="font-size:9px;margin-top:4px">
+          <span style="color:#FF2E7A">&#9679;</span> Night Climbers 44%<br>
+          <span style="color:#24E0FF">&#9679;</span> Floor Fillers 29%<br>
+          <span style="color:#FFC247">&#9679;</span> Front Row 27%</div></div>
+    </div>
+    <div>
+      <div class="lab">YOU&rsquo;D ENJOY THIS WITH</div>
+      <div style="display:flex;gap:8px;margin-top:6px">
+        <div style="display:flex;align-items:center;gap:6px;background:#131318;border-radius:99px;
+             padding:4px 9px 4px 4px;border:1px solid rgba(255,255,255,.08)">
+          <div class="dp" style="width:20px;height:20px;background:linear-gradient(140deg,#FF2E7A,#7A1038)"></div>
+          <span style="font-size:9.5px">Aarav</span></div>
+        <div style="display:flex;align-items:center;gap:6px;background:#131318;border-radius:99px;
+             padding:4px 9px 4px 4px;border:1px solid rgba(255,255,255,.08)">
+          <div class="dp" style="width:20px;height:20px;background:linear-gradient(140deg,#9B6BFF,#2E1A55)"></div>
+          <span style="font-size:9.5px">Kabir</span></div>
+        <span class="chip" style="align-self:center">Big Room, Loud Night</span></div>
+    </div>
+    <div>
+      <div class="lab">WHAT PEOPLE LEFT</div>
+      <div style="display:flex;gap:7px;margin-top:6px">
+        <div class="note" style="background:#FFC247;flex:1 1 0">&ldquo;Go upstairs. The whole room is
+          different after midnight.&rdquo;</div>
+        <div class="note" style="background:#24E0FF;flex:1 1 0;transform:rotate(1.2deg)">&ldquo;Loud, but
+          there are booths at the back.&rdquo;</div>
+      </div>
+    </div>
+    <div class="sub" style="font-size:9.5px;color:#FF7FAC">&#9906; Aerocity, New Delhi &#8250;</div>
+    <div class="card" style="padding:0">
+      <div class="listrow" style="border-top:0;padding:8px 11px">
+        <div style="flex:1 1 auto;font-size:10px">Open tonight</div>
+        <div class="lab" style="letter-spacing:.06em">18:00 &ndash; 02:30</div></div>
+      <div class="listrow" style="padding:8px 11px">
+        <div style="flex:1 1 auto;font-size:10px">Menu</div>
+        <span class="lab" style="letter-spacing:0;font-size:12px">&#8250;</span></div>
+      <div class="listrow" style="padding:8px 11px">
+        <div style="flex:1 1 auto;font-size:10px">Been here before?</div>
+        <span class="chip">Y</span><span class="chip" style="margin-left:5px">N</span></div>
+    </div>
+  </div>
+  <div class="sticky">
+    <div class="row2"><div class="btn">GO HERE</div><div class="btn o">FIND ROOMS</div></div></div>
+  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>17 &middot; The venue screen</b>The recommendation carries the user's V5 name and a match
+number. Stories are in-app only. The donut is who actually goes. The two buttons stay pinned as the page
+scrolls, over a fade.</p>
+</div>
+
+<!-- ============================================================ 18 GO-HERE CARD -->
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd blur deep" style="padding-bottom:0">
+    <div class="cap2" style="font-size:24px">DEPOT 48</div>
+    <div class="sub" style="font-size:9.5px;margin-top:-4px">a big loud bar &middot; Aerocity &middot;
+      &#8377;&#8377; &middot; 4.2km</div>
+    <div class="card" style="height:40px;border-color:rgba(255,46,122,.4)"></div>
+    <div class="vrail">
+      <div style="background:linear-gradient(150deg,#FF2E7A,#3A0A1C)"></div>
+      <div style="background:linear-gradient(150deg,#24E0FF,#07303B)"></div>
+      <div style="background:linear-gradient(150deg,#FFC247,#4A3200)"></div>
+      <div style="background:linear-gradient(150deg,#9B6BFF,#2E1A55)"></div></div>
+    <div class="card" style="height:70px"></div>
+    <div class="sec">YOU&rsquo;D ENJOY THIS WITH</div>
+    <div class="card" style="height:36px"></div>
+    <div class="sec">WHAT PEOPLE LEFT</div>
+    <div style="display:flex;gap:7px">
+      <div class="note" style="background:#FFC247;flex:1 1 0;height:58px"></div>
+      <div class="note" style="background:#24E0FF;flex:1 1 0;height:58px;transform:rotate(1.2deg)"></div></div>
+    <div class="card" style="height:62px"></div>
+    <div class="grow"></div>
+  </div>
+  <div class="scrim"></div>
+  <div class="sheet" style="top:92px;display:flex;flex-direction:column">
+    <div style="display:flex;align-items:baseline;gap:8px">
+      <div class="cap2" style="font-size:21px;flex:1 1 auto">DEPOT 48</div>
+      <span class="lab" style="letter-spacing:0;font-size:12px">&#10005;</span></div>
+    <div class="sub" style="font-size:9.5px">a big loud bar &middot; &#8377;&#8377;</div>
+    <div class="card" style="padding:9px 10px;margin-top:9px;background:#1B1B21;display:flex;gap:9px">
+      <div style="width:34px;height:34px;border-radius:6px;flex:0 0 auto;
+           background:linear-gradient(150deg,#FFC247,#6B4A00)"></div>
+      <div style="flex:1 1 auto"><div style="font-size:10px;font-weight:600">Smoked old fashioned</div>
+        <div class="sub" style="font-size:8.5px">slow and strong &mdash; suits a night that builds</div></div>
+      <div class="cap2" style="font-size:14px;color:#FF2E7A">91</div></div>
+    <div style="margin-top:10px">
+      <div class="lab">FOR YOUR GROUP</div>
+      <div class="sub" style="font-size:9.5px;margin-top:6px;line-height:1.55">
+        <b style="color:#FBFAFF">Aarav</b> &mdash; the room goes where you want it<br>
+        <span style="color:#6C6880">&nbsp;&nbsp;&nbsp;&nbsp;the look of the place is right</span><br>
+        <b style="color:#FBFAFF">Zoya</b> &mdash; room to move once it fills<br>
+        <span style="color:#6C6880">&nbsp;&nbsp;&nbsp;&nbsp;nobody&rsquo;s been here</span><br>
+        <b style="color:#FBFAFF">Bela</b> &mdash; <span style="color:#FFC247">you came out to talk</span><br>
+        <span style="color:#6C6880">&nbsp;&nbsp;&nbsp;&nbsp;the food&rsquo;s good</span></div>
+    </div>
+    <div class="card" style="padding:9px 10px;margin-top:10px;background:#1B1B21;
+         border-left:2px solid #FFC247;border-radius:4px">
+      <div class="sub" style="font-size:9.5px"><b style="color:#FFC247">Bela won&rsquo;t hear anyone
+        here.</b> Build the night around it anyway?</div></div>
+    <div class="row2" style="margin-top:11px"><div class="btn o" style="font-size:12px">LOCK JUST THIS</div>
+      <div class="btn" style="font-size:12px">BUILD MY NIGHT</div></div>
+  </div>
+  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>18 &middot; The Go-here card, warning state</b>Two lines per person, and the one that will
+not be served is <b>in amber inside the list</b>, not hidden. Since 2026-09-30 this is a
+<b>warning, not a veto</b> &mdash; both buttons stay live and the choice is the user's.</p>
+</div>
+
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd">
+    <div class="lab">&#8249; YOUR SHAPE &middot; STOP 2 OF 3</div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:baseline">
+        <div class="cap2" style="font-size:19px">A BIG LOUD BAR</div>
+        <div class="lab" style="font-size:9px;color:#FF2E7A">22:30</div></div>
+      <div class="sub" style="margin-top:3px">you can still hear each other &mdash; what you drew</div>
+    </div>
+    <div style="display:flex;align-items:baseline;justify-content:space-between">
+      <div class="sec">10 PLACES FIT</div>
+      <div class="lab">OPEN AT 22:30</div></div>
+    <div class="card" style="padding:0 11px">
+      <div class="listrow" style="border-top:0">
+        <div style="width:30px;height:30px;border-radius:7px;background:linear-gradient(150deg,#FF2E7A,#3A0A1C)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:11px;font-weight:600">Depot 48</div>
+          <div class="sub" style="font-size:9px">a big loud bar &middot; &#8377;&#8377; &middot; 400m</div></div>
+        <div class="cap2" style="font-size:15px;color:#FF2E7A">94</div></div>
+      <div class="listrow goldrow" style="padding:8px 7px;border-radius:7px">
+        <div style="width:30px;height:30px;border-radius:7px;background:linear-gradient(150deg,#24E0FF,#07303B)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:11px;font-weight:600">Summer House</div>
+          <div class="sub" style="font-size:9px">a cafe &amp; live room &middot; &#8377;&#8377; &middot; 1.2km</div>
+          <div style="margin-top:3px"><span class="chip au">GOLD &middot; &#8377;865 &middot; 2 HRS LEFT</span></div></div>
+        <div class="cap2" style="font-size:15px;color:#FF2E7A">91</div></div>
+      <div class="listrow">
+        <div style="width:30px;height:30px;border-radius:7px;background:linear-gradient(150deg,#9B6BFF,#2E1A55)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:11px;font-weight:600">Hauz Khas Social</div>
+          <div class="sub" style="font-size:9px">a big loud bar &middot; &#8377; &middot; 2.1km</div></div>
+        <div class="cap2" style="font-size:15px;color:#FF2E7A">88</div></div>
+      <div class="listrow">
+        <div style="width:30px;height:30px;border-radius:7px;background:linear-gradient(150deg,#FFC247,#4A3200)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:11px;font-weight:600">Imperfecto HKV</div>
+          <div class="sub" style="font-size:9px">a big loud bar &middot; &#8377;&#8377; &middot; 2.3km</div></div>
+        <div class="cap2" style="font-size:15px;color:#FF2E7A">84</div></div>
+      <div class="listrow">
+        <div style="width:30px;height:30px;border-radius:7px;background:linear-gradient(150deg,#3BD1A0,#06342A)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:11px;font-weight:600">Soi 7</div>
+          <div class="sub" style="font-size:9px">a pub &middot; &#8377;&#8377;&#8377; &middot; 6km</div></div>
+        <div class="cap2" style="font-size:15px;color:#FF2E7A">81</div></div>
+      <div class="listrow">
+        <div style="width:30px;height:30px;border-radius:7px;background:linear-gradient(150deg,#E8743B,#3A1605)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:11px;font-weight:600">Prankster</div>
+          <div class="sub" style="font-size:9px">a big loud bar &middot; &#8377;&#8377; &middot; 11km</div></div>
+        <div class="cap2" style="font-size:15px;color:#FF2E7A">78</div></div>
+      <div class="listrow">
+        <div style="width:30px;height:30px;border-radius:7px;background:linear-gradient(150deg,#6B8BFF,#111C3E)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:11px;font-weight:600">Raasta HKV</div>
+          <div class="sub" style="font-size:9px">a big loud bar &middot; &#8377;&#8377; &middot; 2.0km</div></div>
+        <div class="cap2" style="font-size:15px;color:#FF2E7A">76</div></div>
+    </div>
+    <div class="sub" style="font-size:9.5px;color:#6C6880;text-align:center">3 more below &middot;
+      nothing here is booked &mdash; they are open, that is all</div>
+    <div class="grow"></div>
+  </div>
+  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>19 &middot; The stop list</b>The core loop of the first release. The stop the user drew is restated at the top <b>in their own words, never as a score</b>, then the venues that fit it <b>and are open at 22:30</b>. Picking one fills the stop and returns. The footer says the only thing the app is claiming: <b>nothing here is booked.</b> One row is gold.</p>
+</div>
+
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd">
+    <div class="tile au" style="height:132px;background:linear-gradient(150deg,#24E0FF,#07303B);border:1px solid rgba(255,194,71,.45)">
+      <span class="live"><i></i>GOLD</span>
+      <span class="pct" style="font-family:var(--mono);font-size:8px;letter-spacing:.12em;color:#FFC247">2 HRS LEFT</span>
+      <div class="cap2" style="font-size:24px">SUMMER HOUSE</div>
+      <div class="sub" style="font-size:9.5px;color:#D8D4E4">Aurobindo Place &middot; a cafe &amp; live room</div>
+    </div>
+    <div style="display:flex;align-items:flex-end;gap:9px">
+      <div class="big" style="font-size:40px;color:#FFC247">&#8377;865</div>
+      <div class="sub" style="font-size:9.5px;padding-bottom:4px">one person per slot<br>
+        <span style="color:#FFC247">this one is yours if you go</span></div>
+    </div>
+    <div class="card au">
+      <div class="sub" style="font-size:10px;color:#D8D4E4">Be there tonight inside your window, with this stop
+        in your plan. <b style="color:#FBFAFF">The capture opens when you arrive</b> &mdash; a few photos and
+        six swipes, under a minute.</div>
+    </div>
+    <div class="card" style="padding:0 11px">
+      <div class="listrow" style="border-top:0;padding:8px 0">
+        <span class="chip au">1</span><div class="sub" style="flex:1 1 auto;font-size:10px">In tonight&rsquo;s plan</div>
+        <div class="lab" style="color:#FFC247">ADDED</div></div>
+      <div class="listrow" style="padding:8px 0">
+        <span class="chip">2</span><div class="sub" style="flex:1 1 auto;font-size:10px">Location on, at the venue</div>
+        <div class="lab">NEEDED</div></div>
+      <div class="listrow" style="padding:8px 0">
+        <span class="chip">3</span><div class="sub" style="flex:1 1 auto;font-size:10px">Photos, then the swipes</div>
+        <div class="lab">AT 22:30</div></div>
+    </div>
+    <div class="sub" style="font-size:9px;color:#6C6880">Paid on verification. If we cannot verify a capture we
+      ask for another at your next stop &mdash; we never withhold without saying why.</div>
+    <div class="grow"></div>
+    <div class="row2"><div class="btn au">I&rsquo;M GOING</div><div class="btn o">NOT NOW</div></div>
+  </div>
+  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>20 &middot; The gold offer</b>What a gold venue opens. <b>&#8377;865, one person per slot, two hours left</b> &mdash; the time box is stated here rather than discovered at the end. The three numbered rows are the conditions, and the first is already met because <b>the venue had to be in a plan the user built</b> before any of this appeared. The retry rule is in the fine print, not hidden.</p>
+</div>
+
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd">
+    <div class="card au">
+      <div class="lab au">BEFORE YOU START</div>
+      <div style="font-size:11.5px;line-height:1.45;margin-top:5px">Make sure you complete this carefully
+        &mdash; <b>we&rsquo;ll be verifying whether what you give us is real.</b></div>
+    </div>
+    <div class="frame">
+      <i style="top:9px;left:9px;border-right:0;border-bottom:0"></i>
+      <i style="top:9px;right:9px;border-left:0;border-bottom:0"></i>
+      <i style="bottom:9px;left:9px;border-right:0;border-top:0"></i>
+      <i style="bottom:9px;right:9px;border-left:0;border-top:0"></i>
+      <div style="position:absolute;inset:0;display:grid;place-items:center">
+        <div style="text-align:center">
+          <div class="lab au" style="font-size:9px">LIVE CAMERA ONLY</div>
+          <div class="sub" style="font-size:9px;margin-top:4px">point at the room, not at yourself</div></div></div>
+    </div>
+    <div style="display:flex;gap:6px">
+      <span class="chip au">1 &middot; WIDE FRAME</span>
+      <span class="chip">2 &middot; THE CROWD</span>
+      <span class="chip">3 &middot; THE BAR</span>
+    </div>
+    <div class="prog"><b style="width:33%"></b></div>
+    <div class="sub" style="font-size:9.5px">No gallery uploads. <b style="color:#FBFAFF">A photo from another
+      night is evidence about another night</b>, which is the whole reason this happens here rather than at home.</div>
+    <div class="grow"></div>
+    <div class="shutter"></div>
+    <div class="lab" style="text-align:center;margin-top:7px">PHOTO 1 OF 3 &middot; SUMMER HOUSE &middot; 23:40</div>
+  </div>
+  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>21 &middot; The capture, photos</b><b>The warning comes before anything else</b> &mdash; it sets the terms while the user has invested nothing, which is the only moment it reads as fair rather than as an accusation. <b>Live camera only</b>, three framings, and the reason given in one line.</p>
+</div>
+
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd">
+    <div style="display:flex;justify-content:space-between;align-items:baseline">
+      <div class="lab au">SWIPE 3 OF 6</div><div class="lab">SUMMER HOUSE &middot; 23:40</div></div>
+    <div class="prog"><b style="width:50%"></b></div>
+    <div class="card au" style="padding:0;overflow:hidden">
+      <div class="tile" style="height:242px;background:linear-gradient(155deg,#FF2E7A 0%,#9B6BFF 48%,#1A0B2E 100%)">
+        <div class="cap2" style="font-size:21px">PACKED, AND<br>ON THEIR FEET</div>
+      </div>
+      <div style="padding:10px 11px">
+        <div class="sub" style="font-size:10.5px;color:#D8D4E4">Is this the room you are standing in
+          <b style="color:#FBFAFF">right now</b>?</div>
+        <div class="swipe">
+          <div class="s no">NOT IT</div><div class="s yes">THAT&rsquo;S IT</div></div>
+      </div>
+    </div>
+    <div class="sub" style="font-size:9.5px">Six cards, about forty seconds.
+      <b style="color:#FBFAFF">The swipes are the part we actually store</b> &mdash; the photographs only
+      corroborate them.</div>
+    <div class="grow"></div>
+    <div class="lab" style="text-align:center">&#8377;865 RELEASES WHEN THIS IS VERIFIED</div>
+  </div>
+  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>22 &middot; The capture, swipes</b>Compulsory, and the actual data &mdash; the photographs only corroborate. One factor card at a time, asking about <b>the room they are standing in right now</b>. Six cards, about forty seconds, because the whole capture has to finish inside a minute at 23:40 in a bar somebody came to enjoy.</p>
+</div>
+
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd">
+    <div class="grow"></div>
+    <div style="text-align:center">
+      <div class="lab au">VERIFIED</div>
+      <div class="big" style="font-size:52px;color:#FFC247;margin-top:6px">&#8377;865</div>
+      <div class="sub" style="font-size:10.5px;margin-top:7px">To your UPI within 24 hours.</div>
+    </div>
+    <div class="card au" style="margin-top:14px">
+      <div class="lab au">WHAT YOU JUST FILLED IN</div>
+      <div class="cap2" style="font-size:18px;margin-top:5px">SUMMER HOUSE</div>
+      <div class="sub" style="font-size:10px;margin-top:2px">Friday &middot; 22:00&ndash;02:00</div>
+      <div class="listrow" style="margin-top:8px;padding-top:9px">
+        <div class="sub" style="flex:1 1 auto;font-size:10px">was <span style="color:#6C6880">estimated from
+          its venue type</span></div>
+        <div class="lab au">NOW MEASURED</div></div>
+    </div>
+    <div class="sub" style="font-size:9.5px;margin-top:10px;text-align:center;color:#9C98AE">
+      <b style="color:#FBFAFF">You were the only capture for this slot.</b><br>
+      Nobody else was asked, and nobody else will be.</div>
+    <div class="grow"></div>
+    <div class="btn au" style="text-align:center">DONE</div>
+  </div>
+  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>23 &middot; Verified and paid</b>The payoff is stated twice: the money, and <b>the slot moving from estimated by its venue type to measured</b>. The last line is the gamble made explicit &mdash; one capture per slot, so nobody else was asked. <b>The failure state is one screen different:</b> &ldquo;We couldn&rsquo;t verify this one &mdash; try again at your next stop.&rdquo;</p>
+</div>
+
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd">
+    <div class="srch" style="color:#FBFAFF;border-color:rgba(255,255,255,.18)">
+      <span>&#9906;</span><span style="flex:1 1 auto">summer</span>
+      <span class="lab" style="font-size:7.5px">CANCEL</span></div>
+    <div style="display:flex;align-items:baseline;justify-content:space-between">
+      <div class="sec">PLACES</div>
+      <div class="lab">FIT AGAINST YOUR SHAPE</div></div>
+    <div class="card" style="padding:0 11px">
+      <div class="listrow goldrow" style="border-top:0;padding:9px 7px;border-radius:7px">
+        <div style="width:34px;height:34px;border-radius:7px;background:linear-gradient(150deg,#24E0FF,#07303B)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:11.5px;font-weight:600">Summer House</div>
+          <div class="sub" style="font-size:9px">a cafe &amp; live room</div>
+          <div style="margin-top:4px"><span class="chip au">GOLD &middot; &#8377;865 &middot; 2 HRS</span></div></div>
+        <div style="text-align:right;flex:0 0 auto"><div class="cap2" style="font-size:16px;color:#FF2E7A">91</div>
+          <div class="lab" style="font-size:7px;letter-spacing:.1em;white-space:nowrap">YOUR 22:30</div></div></div>
+    </div>
+    <div class="lab" style="margin-top:2px">SIMILAR, AND OPEN TONIGHT</div>
+    <div class="card" style="padding:0 11px">
+      <div class="listrow" style="border-top:0">
+        <div style="width:30px;height:30px;border-radius:7px;background:linear-gradient(150deg,#9B6BFF,#2E1A55)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:11px;font-weight:600">Piano Man</div>
+          <div class="sub" style="font-size:9px">a live room &middot; Safdarjung</div></div>
+        <div style="text-align:right"><div class="cap2" style="font-size:15px;color:#FF2E7A">84</div>
+          <div class="lab" style="font-size:7px;letter-spacing:.1em;white-space:nowrap">YOUR 22:30</div></div></div>
+      <div class="listrow">
+        <div style="width:30px;height:30px;border-radius:7px;background:linear-gradient(150deg,#FF2E7A,#3A0A1C)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:11px;font-weight:600">Depot 48</div>
+          <div class="sub" style="font-size:9px">a big loud bar &middot; Defence Colony</div></div>
+        <div style="text-align:right"><div class="cap2" style="font-size:15px;color:#FF2E7A">81</div>
+          <div class="lab" style="font-size:7px;letter-spacing:.1em;white-space:nowrap">YOUR 22:30</div></div></div>
+      <div class="listrow">
+        <div style="width:30px;height:30px;border-radius:7px;background:linear-gradient(150deg,#3BD1A0,#06342A)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:11px;font-weight:600">Dear Donna</div>
+          <div class="sub" style="font-size:9px">a buzzy restaurant &middot; Qutub</div></div>
+        <div style="text-align:right;flex:0 0 auto"><div class="cap2" style="font-size:15px;color:#FF2E7A">72</div>
+          <div class="lab" style="font-size:7px;letter-spacing:.1em;white-space:nowrap">YOUR 22:30</div></div></div>
+      <div class="listrow">
+        <div style="width:30px;height:30px;border-radius:7px;background:linear-gradient(150deg,#6B8BFF,#111C3E)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:11px;font-weight:600">Hauz Khas Social</div>
+          <div class="sub" style="font-size:9px">a big loud bar &middot; Hauz Khas</div></div>
+        <div style="text-align:right;flex:0 0 auto"><div class="cap2" style="font-size:15px;color:#FF2E7A">69</div>
+          <div class="lab" style="font-size:7px;letter-spacing:.1em;white-space:nowrap">YOUR 22:30</div></div></div>
+    </div>
+    <div class="card" style="border-style:dashed;border-color:rgba(255,255,255,.13)">
+      <div class="sub" style="font-size:9.5px"><b style="color:#FBFAFF">Gold marks a venue. It never ranks
+        one.</b> Summer House is first because it fits best, and it would sit third if it fitted third.</div>
+    </div>
+    <div class="grow"></div>
+  </div>
+  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>24 &middot; Gold in search</b>A venue carries its gold state into the results exactly as it carries it into a stop list. Two things the screen keeps straight: the number is <b>a fit against the shape drawn tonight, not a vibe score</b>, and <b>gold marks a venue without ranking one</b> &mdash; Summer House is first because it fits best, and the dashed note says so, because the moment gold moves a venue up a list the fit number stops being true.</p>
+</div>
+
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd">
+    <div class="grow"></div>
+    <div>
+      <div class="lab">COULDN&rsquo;T VERIFY THIS ONE</div>
+      <div class="big" style="font-size:31px;margin-top:7px">TRY AGAIN AT<br>YOUR NEXT STOP</div>
+      <div class="sub" style="font-size:10.5px;margin-top:9px">This capture didn&rsquo;t come through clearly
+        enough to count. <b style="color:#FBFAFF">That happens to about one in seventy genuine ones</b> &mdash;
+        it isn&rsquo;t a judgement about you.</div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <div style="display:flex;align-items:baseline;justify-content:space-between">
+        <div class="cap2" style="font-size:17px">SUMMER HOUSE</div>
+        <div class="lab au">BACK ON THE BOARD</div></div>
+      <div class="sub" style="font-size:9.5px;margin-top:3px">Friday &middot; 22:00&ndash;02:00</div>
+      <div class="listrow" style="margin-top:8px;padding-top:9px">
+        <div class="sub" style="font-size:9.5px">The slot is open again. <b style="color:#FBFAFF">Take it
+          tonight if you&rsquo;re still out</b> &mdash; otherwise somebody else can.</div></div>
+    </div>
+    <div class="card quiet" style="background:#131318;border:1px solid rgba(255,255,255,.08);
+         border-radius:10px;padding:11px;margin-top:9px">
+      <div class="lab">WHAT USUALLY FIXES IT</div>
+      <div class="sub" style="font-size:9.5px;margin-top:4px">A wider frame, and the swipes answered about
+        <b style="color:#FBFAFF">the room you are standing in</b> rather than the night overall.</div>
+    </div>
+    <div class="grow"></div>
+    <div class="row2"><div class="btn au">TONIGHT&rsquo;S GOLD</div><div class="btn o">NOT NOW</div></div>
+  </div>
+  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>25 &middot; The verification failure</b>It fires about <b>1.4% of the time on captures that are perfectly genuine</b>, so it never says the user did anything wrong, and it <b>gives the rate in plain words</b> rather than hiding a number they would be right to want. <b>The slot goes back on the board and says so.</b> And it is quiet &mdash; the paid screen spends the gold, this one does not, because a failure rendered at the volume of a payment reads as a penalty.</p>
+</div>
+
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd">
+    <div class="tile" style="height:104px;background:linear-gradient(120deg,#FF2E7A,#9B6BFF 52%,#24E0FF)">
+      <span class="live"><i></i>3 STOPS &middot; 6 HRS</span>
+      <div class="cap2" style="font-size:25px">BIG ROOM,<br>LOUD NIGHT</div>
+    </div>
+    <div class="card" style="padding:9px 11px">
+      <div class="lu" style="padding-bottom:7px"><span class="t">20:00</span>
+        <div style="flex:1 1 auto"><div class="n">CIRRUS 9</div>
+          <div class="m">a rooftop bar &middot; &#8377;&#8377;</div>
+          <div class="sub" style="font-size:9.5px;color:#FBFAFF;margin-top:3px">Aarav &mdash; it builds from here</div>
+        </div></div>
+      <div class="lu goldrow" style="margin:0 -5px;padding:8px 5px;border-radius:7px"><span class="t">22:30</span>
+        <div style="flex:1 1 auto"><div class="n">SUMMER HOUSE</div>
+          <div class="m">a cafe &amp; live room &middot; &#8377;&#8377;</div>
+          <div style="margin-top:4px"><span class="chip au">GOLD &middot; &#8377;865 &middot; YOURS ONLY</span></div>
+          <div class="sub" style="font-size:9.5px;color:#FBFAFF;margin-top:4px">Zoya &mdash; this is your line</div>
+        </div></div>
+      <div class="lu"><span class="t">01:00</span>
+        <div style="flex:1 1 auto"><div class="n">KITTY SU</div>
+          <div class="m">a club &middot; &#8377;&#8377;&#8377;</div>
+          <div class="sub" style="font-size:9.5px;color:#FBFAFF;margin-top:3px">Aarav &mdash; the floor at the end</div>
+        </div></div>
+    </div>
+    <div class="card au" style="padding:9px 11px">
+      <div class="sub" style="font-size:9.5px"><b style="color:#FBFAFF">The gold on Summer House is yours
+        alone.</b> Nobody else in this room can see it or take it &mdash; <b style="color:#FFC247">one person
+        per slot</b> means one person, not one room.</div>
+    </div>
+    <div class="grow"></div>
+    <div class="sub" style="text-align:center;font-size:10px;color:#FF7FAC">&#8646; Change a stop
+      <span class="lab" style="font-size:7px">&middot; YOU ARE THE HOST</span></div>
+    <div class="row2"><div class="btn">LOCK THIS</div><div class="btn o">HOST THIS</div></div>
+  </div>
+  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>26 &middot; Gold inside a room&rsquo;s plan</b>The third of the three surfaces. The stop renders gold in the plan the room is going to run, and the note under it carries the thing a shared screen makes ambiguous: <b>one person per slot means one person, not one room.</b> Nobody else here can see it or take it. The <b>Change a stop</b> control is labelled with why it is live &mdash; this is the host.</p>
+</div>
+
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd">
+    <div class="lab">&#8249; TONIGHT&rsquo;S PLAN &middot; STOP 2 OF 3</div>
+    <div class="bar">
+      <div class="dp" style="width:26px;height:26px;border-radius:50%;flex:0 0 auto;
+           background:linear-gradient(150deg,#9B6BFF,#2E1A55)"></div>
+      <div class="k">AARAV IS PICKING YOUR 22:30</div>
+      <div class="v">LIVE</div>
+    </div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:baseline">
+        <div class="cap2" style="font-size:19px">A BIG LOUD BAR</div>
+        <div class="lab" style="font-size:9px;color:#FF2E7A">22:30</div></div>
+      <div class="sub" style="margin-top:3px">you can still hear each other &mdash; what the room drew</div>
+    </div>
+    <div style="display:flex;align-items:baseline;justify-content:space-between">
+      <div class="sec">10 PLACES FIT</div>
+      <div class="lab">READ ONLY</div></div>
+    <div class="card" style="padding:0 11px">
+      <div class="listrow" style="border-top:0;padding:8px 0">
+        <div style="width:30px;height:30px;border-radius:7px;background:linear-gradient(150deg,#FF2E7A,#3A0A1C)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:11px;font-weight:600">Depot 48</div>
+          <div class="sub" style="font-size:9px">a big loud bar &middot; &#8377;&#8377; &middot; 400m</div>
+          <div style="margin-top:3px"><span class="chip hot">AARAV&rsquo;S PICK</span></div></div>
+        <div class="cap2" style="font-size:15px;color:#FF2E7A">94</div></div>
+      <div class="listrow" style="opacity:.55">
+        <div style="width:30px;height:30px;border-radius:7px;background:linear-gradient(150deg,#24E0FF,#07303B)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:11px;font-weight:600">Summer House</div>
+          <div class="sub" style="font-size:9px">a cafe &amp; live room &middot; &#8377;&#8377; &middot; 1.2km</div></div>
+        <div class="cap2" style="font-size:15px;color:#9C98AE">91</div></div>
+      <div class="listrow" style="opacity:.55">
+        <div style="width:30px;height:30px;border-radius:7px;background:linear-gradient(150deg,#9B6BFF,#2E1A55)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:11px;font-weight:600">Hauz Khas Social</div>
+          <div class="sub" style="font-size:9px">a big loud bar &middot; &#8377; &middot; 2.1km</div></div>
+        <div class="cap2" style="font-size:15px;color:#9C98AE">88</div></div>
+      <div class="listrow" style="opacity:.55">
+        <div style="width:30px;height:30px;border-radius:7px;background:linear-gradient(150deg,#FFC247,#4A3200)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:11px;font-weight:600">Imperfecto HKV</div>
+          <div class="sub" style="font-size:9px">a big loud bar &middot; &#8377;&#8377; &middot; 2.3km</div></div>
+        <div class="cap2" style="font-size:15px;color:#9C98AE">84</div></div>
+      <div class="listrow" style="opacity:.55">
+        <div style="width:30px;height:30px;border-radius:7px;background:linear-gradient(150deg,#3BD1A0,#06342A)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:11px;font-weight:600">Soi 7</div>
+          <div class="sub" style="font-size:9px">a pub &middot; &#8377;&#8377;&#8377; &middot; 6km</div></div>
+        <div class="cap2" style="font-size:15px;color:#9C98AE">81</div></div>
+    </div>
+    <div class="sub" style="font-size:9.5px;color:#6C6880">You can see everything Aarav can.
+      <b style="color:#9C98AE">The pick is his because the room is.</b></div>
+    <div class="grow"></div>
+    <div class="btn o" style="text-align:center;font-size:12px">ASK AARAV TO CHANGE THIS</div>
+  </div>
+  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>27 &middot; The member&rsquo;s stop list, read-only</b>The same screen as 19 with the decision removed and nothing else. The header names who is choosing, the host&rsquo;s pick is marked, the rest are visible but dimmed, and <b>the affordance is a request rather than a greyed button</b>. The footer states the rule in one line: <b>you can see everything Aarav can; the pick is his because the room is.</b></p>
+</div>
+
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd">
+    <div class="lab">&#8249; PRESETS</div>
+    <div class="btn" style="position:relative;overflow:hidden;background:#24E0FF;color:#042630;box-shadow:0 0 15px #24E0FF66;font-size:15px;padding:13px 16px"><span style="position:absolute;inset:0"><span style="position:absolute;left:66%;top:-4px;font-size:21px;transform:rotate(-14deg);filter:grayscale(1) brightness(.10);opacity:.34;line-height:1">&#127866;</span><span style="position:absolute;left:82%;top:11px;font-size:16px;transform:rotate(12deg);filter:grayscale(1) brightness(.10);opacity:.34;line-height:1">&#127867;</span><span style="position:absolute;left:93%;top:-2px;font-size:13px;transform:rotate(-6deg);filter:grayscale(1) brightness(.10);opacity:.34;line-height:1">&#129347;</span></span><span style="position:relative;z-index:1;padding-right:14px">SOUTH DELHI PUB CRAWL</span></div>
+    <div class="sub" style="font-size:10px;color:#9C98AE">Four stops across Hauz Khas and GK, each one
+      louder than the last. <b style="color:#FBFAFF">Nothing is chosen yet</b> &mdash; this is the shape.</div>
+    <div class="card" style="padding:9px 11px">
+      <div class="lu" style="padding-top:0"><span class="t">20:00</span>
+        <div style="flex:1 1 auto"><div class="n">A BUZZY RESTAURANT</div>
+          <div class="m">eat first, while you can still hear each other</div></div></div>
+      <div class="lu"><span class="t">22:00</span>
+        <div style="flex:1 1 auto"><div class="n">A BIG LOUD BAR</div>
+          <div class="m">it starts to go</div></div></div>
+      <div class="lu"><span class="t">23:30</span>
+        <div style="flex:1 1 auto"><div class="n">ANOTHER BIG LOUD BAR</div>
+          <div class="m">a short walk, a fuller room</div></div></div>
+      <div class="lu"><span class="t">01:00</span>
+        <div style="flex:1 1 auto"><div class="n">A CLUB</div>
+          <div class="m">the floor at the end</div></div></div>
+    </div>
+    <div class="card" style="padding:9px 11px">
+      <div class="sub" style="font-size:9.5px">Matched to you on <b style="color:#FBFAFF">POL</b> and
+        <b style="color:#FBFAFF">ENRG</b>. It fits inside tonight&rsquo;s window, 8 to 2.</div>
+    </div>
+    <div class="grow"></div>
+    <div class="sub" style="font-size:9px;color:#6C6880;text-align:center">Lock, host and find rooms
+      come after you have chosen</div>
+    <div class="btn" style="text-align:center">CHOOSE VENUES</div>
+  </div>
+  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>28 &middot; A preset, opened</b>Its shape, and <b>one button</b>. Lock, Host and Find rooms are absent because there is nothing to lock yet &mdash; a plan exists only once every stop has a venue. <b>Choose venues</b> drops into the stop list at 20:00 and the three buttons appear on the finished plan card, where they already live for every other plan.</p>
+</div>
+
+</div></body></html>

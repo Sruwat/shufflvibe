@@ -1,0 +1,9 @@
+# pipeline output and cache - regenerated, never committed
+cache/
+candidates.json
+enriched.json
+venues.json
+gold_list.json
+human_pass.csv
+osm_raw.json
+out.txt

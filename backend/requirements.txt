@@ -1,7 +1,2 @@
-fastapi==0.115.6
-uvicorn[standard]==0.34.0
-pydantic-settings==2.7.1
-sqlalchemy==2.0.36
-alembic==1.14.0
-pytest==8.3.4
-httpx==0.28.1
+# The pipeline uses Python's standard library only.
+# Optional: install requests if you want to replace urllib with a project HTTP client.

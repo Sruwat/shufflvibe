@@ -1,0 +1,6 @@
+staging/
+data/csv_export/
+*.env
+__pycache__/
+node_modules/
+*.inspect.ndjson
