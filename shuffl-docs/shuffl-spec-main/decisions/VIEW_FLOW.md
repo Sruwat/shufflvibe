@@ -1,5 +1,21 @@
 # Front End Final
 
+> **2026-10-10 - THE FLOW CHANGE (entry 190). This banner outranks everything below it that it
+> contradicts.** The Host button, the host room and the separate *Join with friends* door are retired.
+>
+> **THERE IS ONE PATHWAY FOR GOING OUT WITH PEOPLE YOU KNOW, AND IT IS *ADD FRIENDS TO YOUR
+> NIGHT* (confirmed 2026-10-14, entry 204).** There is no *host with friends* and no *join with
+> friends*. One door makes the group, the chat, the room and the wheel; whether the night ends up
+> hosted publicly or joined into somebody else’s room is a **decision made inside it**, not a
+> fork taken before it. **Passages below describing the old two are marked inline, not only by
+> their section banners.**
+> **Going out with people you already know is now one flow: Add friends to your night, driven by one
+> person who holds the wheel.** Three things are added - **Friends that want your kind of night
+> today**, **Build my own night**, and a short ranked room list with **See all rooms** behind it. The
+> gathering's **group chat is created invisibly when the gathering is named**, not at the lock.
+> **Dropped after review and never built:** per-factor sliders on *Reset night shape*, a return of
+> *Give me something else*, and *purpose* as a field - **purpose is the skeleton**.
+>
 > Updated 2026-09-15 to match `ASSESSMENT_ENGINE.md`: adaptive four-way swipe deck, Next/Back,
 > no card count, no emoji, hard pass in red. The Swipe Game Flow section is rewritten; six
 > other lines are edited and marked, and the "group chemistry type" line is dropped from the profile
@@ -233,6 +249,43 @@ not a nag — it is the truth.
 
 ## The SHUFFL Screen
 
+**Rewritten 2026-10-10 (entry 190). This is the canonical order; the 2026-09-30 list below is kept for
+its detail but its ordering and its Host/Join items are superseded.** Top to bottom:
+
+| | |
+|---|---|
+| **1** | **"Add friends to your night!"** top left, and **the filter chip** top right carrying its current values |
+| **2** | **the search bar** - *"Search through venues and rooms here"*. It searches **our own admitted venues** and public rooms, never Google's index |
+| **3** | **"Friends that want your kind of night today"** - friends whose drawn shape is close to tonight's. **New** |
+| **4** | **rooms**, as a short ranked list, with **shuffle** and **"See all rooms"** |
+| **5** | **the night everyone drew** - one row per stop with the count of venues that fit it - and **"Choose venues"** |
+| **6** | **"Redraw skeleton"** |
+| **7** | **"Build my own night"**. **New** |
+| **8** | **presets** |
+
+**Rooms sit above the user's own night, and that is a bet rather than a layout.** `MVP_INSTRUCTIONS.md`
+calls the stop list the core loop and MVP question 3 asks whether drawing beats filtering; putting
+rooms first partly answers that before it is measured. **Watch whether anybody scrolls past the room
+list at all.**
+
+**"See all rooms" opens the existing sequence unchanged**: the room player (five best, rewind / play /
+forward), then the full list, then the **Skipped** divider - and **this is where the Place-or-People
+toggle now lives**. The short list above uses the combined rank of entry 187 (chemistry **and** how
+well the user's shape matches the room's actual plan); the player lets the user re-sort on one axis.
+
+**The shuffle button should render only when there are more rooms than the list shows.** At launch
+volume the measured mean was **0.6 rooms per user** with the gates on. A control that promises new
+options and returns the same five rooms is worse than no control.
+
+**Only this screen is themed. The home screen and messages are the same for everyone now** - the day's
+colour is the user's vibe alone, or the blend once friends have been added.
+
+**"Reset night shape" is just "Redraw skeleton".** A sliders-per-factor version was specified and
+dropped on 2026-10-10: the skeleton tests no factors, it has **two axes per stop**, so sliders would
+have been the identity factors (a self-reported vibe, which the deck exists to prevent), the
+preferences (the filter chip again), or one value per axis - which flattens the time axis, and *a stop
+is a time, not an index*.
+
 **Reorganised 2026-09-30: this screen is now everything about going out, and the home screen is everything
 social.** Top to bottom:
 
@@ -336,6 +389,129 @@ improve on** — a user picking from a list of eight wants options, not an oracl
 **opening and closing hours (must add)**, and the shape-distance ranking of `OUTING_PLAN_ENGINE.md`
 with `SHAPE_GATE` as the cut. Nothing else.
 
+### The room line (2026-10-07)
+
+**Every room shown to a user carries one sentence saying what it is**, under the room name and above
+the match number — in the public rooms list, on the room card, and in the room player.
+
+> **This room has a chill vibe, and they want to see how the night unfolds rather than stick to a
+> plan.**
+
+**It is generated, not written** — from the room's own chemistry vector, by the same two-factor
+selection that names the room. The full clause table and the one way it differs from the name are in
+`CHEMISTRY_LINES_V1.md`.
+
+**Why it earns the space.** A room currently offers a name, a blend-style colour, a match percentage
+and a two-word chemistry chip. **All of those say how well you fit; none says what the room is.** A
+person deciding whether to join is asking the second question, and a number cannot answer it.
+
+**When a room has no character the line says so** rather than inventing one — *“this room has not
+decided what it is yet”* — which is also a useful thing to read before joining.
+
+### You in a room (2026-10-07)
+
+**Under the room line, every room carries a short read of what *you* would be in it** — a headline
+and up to three lines. Specified in `CHEMISTRY_LINES_V1.md`.
+
+> **YOU IN THIS ROOM**
+> **You would barely change it**
+> · You will be the one pushing this room along.
+> · They came to talk. You would take it louder than this.
+
+**The headline comes from `match` and `disturbance` together**, which answer different questions and
+were measured coming apart (`CHEMISTRY_V4.md` §9). **It replaces the standalone disturbance line** on
+the room player — *“you would barely change this room”* is now the headline rather than a footnote.
+
+**The order on the screen is deliberate:** the match ring, then **what the room is**, then **what you
+would be in it**. Everything above the two reads is a number about fit; neither read is a number.
+
+### Inside a room, and what a room is for (2026-10-07)
+
+**A room is not a place you stay. It is the hour before a night, and it ends when the night is
+settled.**
+
+**What is on the screen.** The blend style at the centre with every member's icon around it and the
+chemistry chip beneath, washing the background in the room's own colour; the room's generated
+sentence under it; **the plan as a single `View plan` button, not a list** — it is settled, and the
+room is for the people rather than for re-reading it; the host's track, muted.
+
+**The control is a microphone, and it is the only one.** *Open the chat* and *Active plan* are not
+here — **neither of them exists yet at this point in the night.**
+
+### Voice, and deliberately no camera (2026-10-07)
+
+**Rooms are voice.** One mic, muted until you tap it, and the ring on a person's icon says who is
+speaking.
+
+**Who is on the call (entry 199).** In a **capsule room**, every invited friend who has accepted,
+**including the wheel holder**, who is looking at the SHUFFL screen rather than at the room. In a
+**public room**, the host and everyone admitted.
+
+**Minimising does not leave the call.** The holder is on the SHUFFL screen and the watchers are on the
+waiting screen for most of the night; **if minimising dropped voice, nobody would ever be on it.**
+Leaving is the cross, and only the cross. **The call ends when the plan is locked** — **decided 2026-10-14 (entry 200), not merely
+inherited from *the room ends*.** **The lock is a decision rather than a departure**: a group can
+settle a night at six for a nine o'clock first stop and then go back to work. **Expecting continuous
+co-ordination from the lock to the first stop is a model of a group that has nothing else on.** So
+**voice is relocated rather than removed** — it reappears as the group chat's call, where the
+group persists and people return to it when they want it.
+
+> **This needs something that does not exist yet.** The group chat is specified with a name, a message
+> bar and an insights panel, and **no call option**. The argument only holds if the chat can actually
+> call; otherwise voice is deleted rather than moved. Small to add, and held in `REMINDERS.md`.
+
+**Not specified, and listed so nobody assumes it is:** room capacity as a number (`SIZE_CEILING` caps
+stops, not people), push-to-talk against a toggle, what the ring does when two people speak at once,
+any moderation beyond the holder's remove cross, and recording or consent.
+
+**The transport is unmade and has a privacy edge.** A five-person mesh is the cheap way to carry
+voice, and **peer-to-peer exposes every participant's IP address to every other**. Among friends in a
+capsule room that is roughly what a group call already implies. **In a public room, which is strangers
+who requested to join at midnight, it is not** - so **public rooms need a server mixing the audio**
+whatever the capsule room does. Cheap to decide now, expensive to retrofit.
+
+> **The user: "no camera in my opinion in the beginning until we have some safeguards in place and
+> people are comfortable with the app."**
+
+**This is the right call and it should be written down as a decision rather than a default**, because
+the pressure to add video will come from people who have not thought about who is in a public room
+at midnight. **Voice is a smaller surface than video by a long way**, and a room of five that
+includes strangers is exactly the setting where that matters. Revisit when there is a reporting
+flow, a block list and a moderation path — not before.
+
+### The room ends when the host locks the plan (2026-10-07)
+
+**This is the whole life cycle, and it was never written down:**
+
+| | |
+|---|---|
+| **hosted** | the room exists. Voice, the blend style, the plan being filled stop by stop |
+| **the host locks the plan** | **the room ends** |
+| **after** | **the group chat is created, named after the room**, and **the active plan appears in the bottom bar** |
+
+**Superseded 2026-10-10 (entry 190): the chat is created when the gathering is named, and extended at
+the lock.** One chat object. It is created invisibly as soon as the user names a gathering in *Add
+friends to your night*, and **anybody who joined the public room afterwards is added to that same chat
+when the plan is locked**. A second chat is never created.
+
+**The old rule and why the new one is still safe.** This section used to create the chat *at* the lock,
+so that *nobody is left in a group they did not end up going out with*. **That concern was about
+strangers, and strangers only ever arrive at the lock** - the people in the chat at invite time are the
+user's own friends, for whom being left in a group is harmless. **So the protection survives and
+friends get a chat an hour earlier**, which also fixes the watchlist item *the group chat has nothing
+to say*: it now exists for the hour before the night rather than only after it.
+
+**A night that never settles leaves a chat with your own friends in it. That is acceptable; a chat with
+four strangers would not be.**
+
+**The chat is not created when the room is hosted.** It is created at the lock — so a room that never
+settles on a plan never produces a chat, and nobody is left in a group they did not end up going out
+with.
+
+**That is the argument for the whole design:** the room is a decision-making space with a natural
+end, and the two things that survive it are the two things a night actually needs — **somewhere to
+talk, and somewhere to look at the plan.**
+
 ### The preset shelf (2026-10-06)
 
 **A preset is a shape with a name people recognise.** *South Delhi Pub Crawl*, *Foodie's Day Out*,
@@ -390,6 +566,11 @@ volume there are a handful of live rooms on a Friday, and a third filter stacked
 and the per-member `FLOOR` check returns an empty screen.
 
 ### Presets do not exist in a room (2026-10-06)
+
+> **Narrowed 2026-10-12 (entry 191).** The rule is now: **a preset is never an input to a merge.**
+> Presets *do* appear in a room, as the **Suggested nights** carousel on the waiting screen - but only
+> after everybody has drawn and the merge has run, and a preset that is taken **replaces** the plan
+> rather than being averaged into it. The paragraph below is the reasoning, and it still holds.
 
 **The only place people draw together is a room somebody hosted with friends, and presets are
 excluded there.** Those people are working out the best night *for them as a group*, which is the
@@ -581,7 +762,10 @@ tried and tested one.*
 
 **So drawing stays the only way in, and presets are what you notice once you know what drawing
 costs you.**
-## Host Button Flow
+## Host Button Flow - the button is retired, the mechanism is not
+
+> **Retired 2026-10-10 (entry 190). There is no Host button and no host room.** Hosting now happens from a plan card - **Host this** - or by a group going public from the capsule room. **Gone with the button:** this screen, *Host tonight's plan*, *Host with co-hosts*, **Add co-hosts**, the greyed **Create Plan** with its *n/5* skeleton counter, and the co-host deadlock. **Kept, because a public room still needs all of it:** the request-to-join queue, **Strong Matches / Others** sorting, the silent auto-decline of poor matches, the remove cross, room renaming, the music, and the lock. **Everything below is read as the specification of those surviving parts**, reached from a plan card rather than from a button.
+
 
 **Rewritten 2026-09-25 — the host is asked what they want to host before a room exists.**
 
@@ -605,7 +789,7 @@ through Host is a statement of intent, so there is no second one.
 the custom flow. Now that the flow has already run, the button does exactly what **“Host this”** on the SHUFFL
 screen's plan does — so it is named for what it does. Its sibling is renamed to match: **“Host with co-hosts”**.
 
-**“Host with co-hosts”** (renamed from “Make a custom plan with friends”) opens a screen headed **“Add co-hosts”** with a search bar for usernames.
+**[RETIRED 2026-10-10, entry 190. Not a live pathway — there is one way to go out with people you know and it is *Add friends to your night*. Kept for the surviving mechanics it describes.]** **“Host with co-hosts”** (renamed from “Make a custom plan with friends”) opens a screen headed **“Add co-hosts”** with a search bar for usernames.
 
 **What happens when they confirm (rewritten 2026-09-30):**
 
@@ -644,8 +828,8 @@ do not reset anything.
 Everything below — the room itself, co-hosts, the blend style and its colour, the chemistry chip, notifications,
 requests sorted into Strong Matches and Others, and the lock — is unchanged.
 
-Once a user clicks on the Host button he’s taken to his host room automatically
-Top of the screen: The room name (“User X’s Room) which is editable by clicking on it. Just below the room name will be a floating highlighted button saying “Host Room”. Below that, the main section of the room which includes the icons of all the people (so far only the user in the room) represented by their DP and their vibe for the day below that (their username is also written below that but is only visible to other people in the room and not the user itself). The buttons to Mute/Unmute and Open/Close Camera will be present just below this icon. At the bottom of the room is the “Create Plan” button and just above that the Add Co-Hosts button. In the top left corner the music icon to add music and a cross in the top left corner to end/unhost the room. The notifications button to the centre right margin the screen. The background colour of the room will be the colour palette of the vibe of the user.
+**[RETIRED 2026-10-10, entry 190. Not a live pathway — there is one way to go out with people you know and it is *Add friends to your night*. Kept for the surviving mechanics it describes.]** Once a user clicks on the Host button he’s taken to his host room automatically
+Top of the screen: The room name (“User X’s Room) which is editable by clicking on it. Just below the room name will be a floating highlighted button saying “Host Room”. Below that, the main section of the room which includes the icons of all the people (so far only the user in the room) represented by their DP and their vibe for the day below that (their username is also written below that but is only visible to other people in the room and not the user itself). The buttons to Mute/Unmute and Open/Close Camera will be present just below this icon. **(Corrected 2026-10-14, entry 199: there is no camera. Rooms are voice only, 2026-10-07.)** At the bottom of the room is the “Create Plan” button and just above that the Add Co-Hosts button. In the top left corner the music icon to add music and a cross in the top left corner to end/unhost the room. The notifications button to the centre right margin the screen. The background colour of the room will be the colour palette of the vibe of the user.
 If clicked on the Add Co-Hosts Button the user is presented with the option to add people from their SHUFFL Contacts.
 If the user clicks on the Create Plan Button before adding co-hosts they’ll get a message “The Plan being created is catered just to you since you haven’t added any co-hosts, do you wish to continue?” and then a yes or no button. **(2026-09-30: where co-hosts have been invited, Create Plan is instead greyed with an “n/5” counter and this prompt never appears — see the Host Button Flow.)** The outing plan is generated using the vibes/blend style of the person/people in the room and will pop up in a card covering 75% of the screen in the centre of the screen with the background (the room) blurred. This card will have the refresh button at the bottom to regenerate the plan and a customize button at the top right corner to customize the look of the event plan card. The refresh button is available only while the room is private. It disappears the moment the room is hosted, and does not come back: people join a public room on the basis of its plan, and a plan that can change after they have joined is not the one they agreed to. (The customize button stays — it changes the look of the card, not the plan.) When clicked away, the outing plan will minimize into a “View Plan” button at the bottom the screen and the Add Co-Hosts button and the Create Plan button will disappear. If clicked on the view plan button it opens the same card as mentioned before and with the same features.
 If the user clicks on the Host room button it makes the room public and available for people to view in the list of available rooms and join. If the user clicks on the host room button before adding any co-hosts they’ll be given a prompt which will say “You won’t be able to add any of your friends as co-hosts after hosting this room! Continue?” and a Yes or No button. The host room button stays unhighlighted till the user doesn’t click on create plan. If the user clicks on the host room button before clicking on the Create Plan button they’re given a message saying “You must create a plan for other people to see in order to host the room”. After the user hosts the room the “Room is Public” will flash above the view plan button and the Host Room Button will disappear, along with the refresh button on the plan card. Hosting freezes the plan; locking (below) freezes the room.
@@ -653,7 +837,10 @@ Once they add co-hosts into the room the background colour of the room will be c
 If clicked on the notifications button an animation plays with the screen getting covered with the notifications screen emerging from the right margin of the screen. The notifications screen will display. If a person requests to join the room the host/co-hosts will be notified in the notifications button and also for 5 seconds a closable notification will also pop up at the top of the screen. they will see the list of users that have requested to join (their username, dp and vibe for the day) with two buttons “Accept” and “Decline” next to the names.The requests will be sorted into two sections “Strong Matches” and “Others” by the match in the plan engine §13.6.3: add the person (or the whole capsule) to the room, re-run the blend, and read how much they would shift it, how much they add to what the room already is, and whether they fit the room’s chemistry (a “great” match is a Strong Match; “alright” goes under Others; “poor” is not shown in the list at all — the request is declined automatically with a soft message to the requester). If the user is alone in the room the same match is run against the user’s own vibe. If a person has requested to join with a capsule (see below) the host and co-hosts will see all the names like this: Name of the user that created the capsule at the top and “Accept” and “Decline” next to the name and below that branched under the name of the capsule creator the names and DPs of the people in the capsule. If the host/co-host accepts the capsule creator he automatically accepts everyone in the capsule too.  Capsule approval rule, stated explicitly: a capsule request is approved or declined as a single unit. The host/co-host can only Accept or Decline the whole capsule and cannot approve some capsule members while rejecting others, so the Accept/Decline buttons only ever appear next to the capsule creator’s name and never next to the branched names below it.  Once a user/users are let into the room they have a cross just above their name which when clicked removes them in an instant with a simple yes or no prompt, only the host and co-hosts have access to this cross.
 Once the user accepts public users into the room a button with a lock icon appears just above the view plan button. If the host (only the host can see and use this button and not the co-hosts) is satisfied with the people in the room he can click on the lock icon and the people in the room are taken to the newly created room GC which will have its home in the messages/social section of the app and the bar just above the task bar — **the status bar (2026-09-30, see The Status Bar)** — will say “[room name]’s outing plan” which when clicked on opens the “active plan screen”. **That bar is live well before this point now**: it carries the room's status, the skeleton counter, the capsule's state and every outstanding approval.
 
-## Join Button Flow
+## Join Button Flow - now "See all rooms"
+
+> **Re-sited 2026-10-10 (entry 190).** There is no Join button. **Rooms are a short ranked list on the SHUFFL screen, and "See all rooms" opens everything below** - the player, then the full list, then the **Skipped** divider - **including the Place-or-People toggle**, which lives here now. The short list uses entry 187's combined rank; the player re-sorts on one axis. **"Join with friends" is gone**: going out with people you know is *Add friends to your night*, and the capsule-with-a-room-request behaviour described below is now part of the capsule room.
+
 
 **Rewritten 2026-09-25.** There is no longer a screen asking “Join Alone” or “Join with Friends”.
 
@@ -698,7 +885,7 @@ for a capsule it opens the capsule-approval flow. *Rewind* is disabled on the fi
 **Forward through all five** and those five, together with the other rooms that match the user's vibe, are shown in
 **the list format as before**. The five they skipped sit at the bottom of that list under a **“Skipped”** divider.
 
-**“Join with friends” sits in the top right corner of the room list.** Tapping it opens the capsule screen; once
+**[RETIRED 2026-10-10, entry 190. Not a live pathway — there is one way to go out with people you know and it is *Add friends to your night*. Kept for the surviving mechanics it describes.]** **“Join with friends” sits in the top right corner of the room list.** Tapping it opens the capsule screen; once
 the capsule is created the room list updates to accommodate it.
 
 **The filters live here, on the Join screen, and there are five of them (2026-09-30): distance, budget, venues,
@@ -709,7 +896,7 @@ The gate and the grading are unchanged (`OUTING_PLAN_ENGINE.md` §13.4a and §13
 plan suits this user, and the rest are ordered by fit. An Open Night has no plan and no gate, so it never enters the
 player — it appears in the list with its “No direction yet” line.
 
-If the user clicks on “Join with Friends” he’s taken to the SHUFFL Capsule screen with the top of the screen saying “Add people to your SHUFFL capsule”; search bar below that; confirm and cancel button at the bottom of the screen. User can use the search bar to search the names of SHUFFL profiles they have added as friends and add them to their “SHUFFL Capsule”.
+**[RETIRED 2026-10-10, entry 190. Not a live pathway — there is one way to go out with people you know and it is *Add friends to your night*. Kept for the surviving mechanics it describes.]** If the user clicks on “Join with Friends” he’s taken to the SHUFFL Capsule screen with the top of the screen saying “Add people to your SHUFFL capsule”; search bar below that; confirm and cancel button at the bottom of the screen. User can use the search bar to search the names of SHUFFL profiles they have added as friends and add them to their “SHUFFL Capsule”.
 
 **Then the join screen goes blank (2026-09-30).** It carries one line:
 
@@ -734,7 +921,382 @@ possibly fire.
 
 **Once every member has drawn**, the creator is taken to the room player as normal — the list of available public rooms that their and their friends’ merged skeleton matches with, the “SHUFFL Capsule” will be visible in the form of a floating capsule with the DPs of the friends the user added in it and “SHUFFL Capsule” written next to it. If the user adds too many members (more than the remaining capacities in all the rooms that match their vibe to any degree) they’re given the message “Sorry, No rooms currently fit your group of [group size]. Try joining with fewer people or host your own room!”. Again the users will only be shown rooms whose event plan has factor scores at least 70% similar to the event plan that would’ve been formed for the people in the capsule and the user, and where every member of the capsule has at least one stop they can live with (the FLOOR check, run per member against the room’s existing plan). How much the capsule would change the room’s blend style is the host’s check, applied when the request arrives, not a filter on this list. Once the user chooses a room to join by clicking on request to join a box pops up saying “Requesting to Join: [Room Name]” below that, “Waiting for Capsule Approval” and just below that the dps of the people in the capsule listed in a row that haven’t approved the room (as people approve the room their dps disappear from this row) and at the bottom of the box a cancel button. If all the people in the capsule approve the room then finally the host of the room is notified of the request of the capsule to join. Once the user creates the SHUFFL capsule and adds their friends into it the friends they added are notified with the notification appearing in **the notifications bar on their home screen (2026-09-30)** at the invites section saying “X user created a capsule and added you into it” and status below saying **“Draw your skeleton”** until they have, then “Searching for rooms”, if clicked on the notification a box will appear that will say “Searching for rooms” with a buffering animation below it. Once the user chooses a room by requesting to join it the friends in the capsule will be notified again with a box popping up in their screen showing the card for the room (event plan with stops and why each stop suits them/doesn’t suit them (pros & cons) with the top of the box saying “X user has requested to join this room with their capsule” and the bottom left of the box saying “Swipe left to decline”, bottom right of the box saying “Swipe right to accept”. If the friend clicks away from this box will minimize into the notifications section of the messages/social screen. The notification in the messages/social screen of the app will still say “X user created a capsule and added you into it” but the status below that will now say “Requested to join [room name], clicking on this notification will open the same box as mentioned just before this with the option to decline/accept. If the friend declines the room, the user that’s searching for rooms will have the box mentioned earlier (the one that displays the Room name and the dps of the people in the capsule that haven’t joined) disappear from the screen and a message displayed at the top of the screen saying “[name of friend that declined] declined this room”. If the friend ignores the notification for more than 3 minutes they are removed from the capsule and the user that created the capsule sees a message at the top of the screen saying “[name of user removed from the capsule] has been removed from the SHUFFL capsule”. If all the users accept the room the host of the room is notified and if they are accepted they enter the room.
 At the top of the list of available public rooms will be a search bar where users can search for names of places, so for example if they search for Big Chill the app will shortlist the rooms which have an outing plan that includes big chill in it. The rooms displayed for the users in the list of available public rooms (whether they join alone or with friends are displayed in the following way: Room name first, blend style of the room next to it with the chemistry word as a chip beside the style (e.g. “Big Room, Loud Night · Got Your Back”; an Open Night shows just “Open Night” in grey with the line “No direction yet — whoever joins with one, sets it”), then the dps of 3 people in the room (or 2 or 1 if there are less than 3 but 3 is the maximum) with a + next to it if there are more than 3 people in the room which when clicked on opens a box which displays all the people in the room with just their username and dp (so if there are 5 people in the room the user would see the dp of 3 people with a “+2” next to it which when clicked on would open a box with the list of all 5 people’s usernames and dps). Then finally a view plan button which displays the stops and why each stop is suitable and not suitable to the user viewing the plan (pros & cons) along with a few photos/videos of each stop.
-Whenever a user joins a room (alone or with friends) , they see the room name at the top, with a cross in the top left corner to exit the room and the name of the blend style in the centre of the screen with the icons of all the users present in the room surrounding it and a flashing message at the bottom of the screen saying “Waiting for Host to lock the scene” and just above that the view plan button which when clicked on displays the stops and why each stop is suitable and not suitable to the user (pros & cons) along with a few photos/videos of each stop. With the mute/unmute and open/close camera buttons just below their icon.
+Whenever a user joins a room (alone or with friends) , they see the room name at the top, with a cross in the top left corner to exit the room and the name of the blend style in the centre of the screen with the icons of all the users present in the room surrounding it and a flashing message at the bottom of the screen saying “Waiting for Host to lock the scene” and just above that the view plan button which when clicked on displays the stops and why each stop is suitable and not suitable to the user (pros & cons) along with a few photos/videos of each stop. With the mute/unmute button just below their icon. **(Corrected 2026-10-14, entry 199: the open/close camera button is gone — rooms are voice only, 2026-10-07.)**
+
+## Add Friends to Your Night - the capsule room and the wheel
+
+**New 2026-10-10 (entry 190). This replaces both the co-host flow and the separate *Join with friends*
+door.** One person drives one screen; everybody else watches and can ask to take over.
+
+**The capsule is not obsolete - it is promoted and renamed.** Mechanically this *is* the capsule flow:
+a creator, invited members who must draw, members who see the creator's view as a pop-up, swipe-right
+to approve, unanimity before a join request leaves the group. What dies is **co-hosts** and the
+**separate door**.
+
+### Creating the night
+
+1. **"Add friends to your night!"**, top left of the SHUFFL screen, opens the friend list: each friend
+   with **today's vibe**, a **green dot for online / grey for offline**, and **whether they have drawn
+   their skeleton**. *(The online dot is the first presence system in the app - nothing else in the
+   spec needs one.)*
+2. **Continue** prompts **"Name this gathering"**. With no name the group is named from its members -
+   *username1, username2, username3 + 3 others*.
+3. **A group chat is created in the background and the user never sees it happen.** They land back on
+   the SHUFFL screen with the members' **DPs above the search bar** - grey until each person accepts,
+   full colour after - and the status bar reading **"[group name]'s room: active"**.
+4. **Each invited friend gets a phone notification** - *"[user] has invited you to be a part of their
+   night, open the app to accept or decline"* - and the invite sits with every other invite on their
+   home screen. **Accepting puts them on the skeleton**, and then into the capsule room.
+
+### The screen is locked until everybody has drawn
+
+**Nothing on the SHUFFL screen can be browsed or scrolled until every invited friend has accepted and
+drawn.** The waiting state is the old capsule's: the outstanding DPs, dropping off one at a time.
+
+**This is not politeness, it is the only thing that keeps the ranking honest.** The room list, the
+suggested venues and the group's night are all computed from the **merged skeleton**, and
+`SKELETON_MERGE_V1.md` §6 is categorical - **drawers only, there is no inference from cards, ever.**
+Ranking against people who have been *invited* rather than *drawn* would mean inventing a skeleton for
+somebody who has not drawn one. **Gating the screen makes invited and drawn the same set by the time
+anything is ranked.**
+
+**The two gates and their timers are the ones already specified**, pointed at this flow:
+
+| gate | timer |
+|---|---|
+| **no vibe today** - they have not played the deck | **five minutes** from the notification, then they are dropped. The app cannot read them at all, so waiting is pointless |
+| **an ignored invite** | **five minutes** (entry 192), then they leave the group. One person who never opens the app would otherwise hold the night forever |
+| **accepted but has not drawn** | **no timer.** The wheel holder removes them with the cross on their row. A plan is worth waiting for; the wait needs an exit, not a clock |
+
+**If two members drew opposed nights, the two-rooms offer fires here** (`SKELETON_MERGE_V1.md` §5a) and
+**the wheel holder chooses.** The wheel is exactly the mechanism that was missing when that screen was
+drawn - it had no answer for *who decides*.
+
+### The capsule room
+
+**The wheel holder sees the SHUFFL screen and browses it normally.** Everybody else sees the capsule
+room: the blend theme, the group name and its blend-style name, every member's DP in a group-call
+layout, the **microphone**, a **wheel icon with "request to take the wheel"**, and a cross to leave.
+
+**Everything the wheel holder opens is mirrored to the others as a pop-up:**
+
+| the wheel holder does | the others see |
+|---|---|
+| opens a venue or a room | the same details, headed **"[name] is viewing [venue/room]"** |
+| picks a venue for a stop | **"[name] selected [venue] for your night"**, one stop at a time |
+| finishes choosing | the final night-shape card |
+
+**Every pop-up minimises into a "View updates" button**, which appears whenever the wheel holder is
+looking at something.
+
+**Requesting the wheel.** The holder gets **"[name] has requested to take the wheel"** with yes / no.
+On yes the requester gets the SHUFFL screen and the former holder joins the watchers. **One wheel at a
+time**, and a handover is the only way it moves.
+
+### Minimising, and the waiting screen
+
+**Rewritten 2026-10-12 (entry 191). Every room screen in the app minimises into the status bar**,
+which reads **"[room/group name]: active, Click to open!"** (see The Status Bar).
+
+- **The wheel holder** minimises to the **SHUFFL screen** and builds the night there.
+- **Everybody else** minimises to **the waiting screen**, below.
+
+Home and messages work normally for both.
+
+#### The waiting screen
+
+**What a member sees when they are not driving. It is not a blank page.** Three carousels, each
+**three to five items**, each with a **Refresh** at the end:
+
+| | |
+|---|---|
+| **Suggested rooms** | public rooms the group could join |
+| **Suggested venues** | places that fit the group's night |
+| **Suggested nights** | presets that suit the group |
+
+**All three are ranked against the whole group's merged skeleton, never against the person looking.**
+Four people see the same shelf, which is what makes proposing from it a conversation rather than five
+private searches. **"You don't have the wheel for [group name]" and "request to take the wheel" sit at
+the bottom of this screen** - still true, no longer the content.
+
+**Refresh re-draws from the ranked list. It generates nothing**, and it should only render when the
+carousel is not already showing everything that exists - which at launch volume is usually the case
+for **rooms** and never for **venues** or **presets**.
+
+#### Propose - the one verb a member has
+
+**Opening anything from a carousel gives the member the same view the wheel holder would get, with
+every control replaced by a single Propose button.** Proposing sends it to the holder.
+
+**The holder gets a Proposals button top right, beside the filters.** Each proposal expands to the
+full room, venue or preset, and from there they can **host, join, find rooms or lock** as if they had
+found it themselves. **Requesting the wheel is unchanged and still available.**
+
+**This adds a verb, not a second driver** - which is the distinction that makes the wheel work and
+made co-hosts incoherent.
+
+**The cap is five live proposals per person (entry 199)**, of any kind - venue, room or preset.
+Per person rather than per room, so no single watcher can flood the panel. **A proposal needs no
+answer**: it sits in the panel until it is used or the night ends, because **everybody in a capsule
+room is already on a call together** and the coordination an answer would provide is being done out
+loud. **Dismissing stays available to the holder as a way to clear the panel and is not required.**
+**There is no expiry** - see the lock, below.
+
+**Three more rules the queue needs.** **Dedupe** - two people proposing the same venue is one proposal with
+two names on it, ordered by how many are behind it. **The match number shown is the group's**, not the
+proposer's, because the shelf is group-ranked and two copies of the same card must not disagree. And
+**a leaver's proposals leave with them**, unless somebody else is behind the same one.
+
+#### A proposed preset replaces the night; it never merges into it
+
+**This narrows the rule in *Presets do not exist in a room* rather than breaking it.** That rule
+carries one load: **a preset-filled skeleton and a drawn one must never meet in a merge**, because
+`SKELETON_MERGE_V1.md` §5a resolves opposed drawings by whose drawing is **firmer** and a tapped
+preset has no firmness to measure.
+
+**By the time the carousels exist, everybody has drawn and the merge has already run.** A proposed
+preset is ranked *against* the merged shape and, if taken, **replaces** the plan. It is never an input
+to a merge.
+
+**So the holder must be told what accepting costs**, in plain words on the proposal:
+
+> **This replaces the night you all drew.**
+
+Four people's drawings disappear otherwise, silently. **Adopting a preset also loses stop
+provenance**, so the plan card can no longer say *"this is your line"* against a stop.
+
+#### The locked state, and when it lifts
+
+**Until every invited member has accepted and drawn, both the SHUFFL screen and the waiting screen
+are locked** - for everybody, the wheel holder included - reading:
+
+> **Waiting for everyone invited to join**
+
+**The capsule room itself is not locked.** Whoever is in can unmute and talk, and can leave for home
+or messages. **Only the browsing surfaces wait.**
+
+**Two reasons, and the second is the real one.** Re-ranking three carousels every time a skeleton
+arrives would thrash the screen. And **nothing can be ranked honestly until everyone has drawn** -
+ranking against a member who has told the app nothing would mean inventing a shape for them, which is
+exactly what `SKELETON_MERGE_V1.md` §6 forbids. **The lock is not politeness; it is the only state in
+which the numbers mean anything.**
+
+**Leaving is the deadlock exit.** If four of five have drawn and the fifth leaves - or the holder
+removes them - everyone remaining has drawn and **the lock lifts**. That is the same mechanism as the
+remove-cross arrived at from the other side, and it is why the skeleton gate has no timer.
+
+**When somebody leaves after the lock has lifted**, the merge re-runs and both screens re-rank against
+who is left (`SKELETON_MERGE_V1.md` §7).
+
+#### The invite, and the three ways to answer it
+
+**New 2026-10-12 (entry 192). Tapping an invite — from the phone notification or from the
+notifications bar, the same screen either way — opens an interstitial before anything else
+happens:**
+
+> **[Host] has invited you to their night**
+> **[ Accept ]  [ Decline ]**, and a **&#10005;** in the corner to ignore it
+
+| | |
+|---|---|
+| **Accept** | the swipe game, or **the skeleton directly if they have already swiped today**. **The clock stops here.** Then the capsule room |
+| **Decline** | **removed from the room immediately**, and sent to **the locked home screen** — not to the deck |
+| **&#10005; ignore** | the invite goes back to the **notifications bar on the home screen**, and the five-minute clock keeps running |
+
+**Why declining does not open the deck.** *The user, 2026-10-12: "declining the request should lead
+the user to somewhere and not the swipe game directly since it may be that they don't want to use the
+app at the moment."* **A person who has been invited and does not want to go out tonight needs a way
+to say so that does not then ask them for something.**
+
+**This replaces the old room-invite behaviour**, which dropped an accepter straight into the room with
+the deck over a blurred background and **offered no third option at all** — so the only answers
+were *yes* and *silence*. **Decline now frees both sides**: the invitee gets their evening back, and
+the room's lock lifts at once instead of waiting out a countdown on somebody who already knows the
+answer.
+
+**Where they land, and what is still reachable.** The locked home screen is **not a new screen** —
+it is the state a returning user without today's vibe already sees, every vibe-gated feature blurred
+under *"Play the swipe game and get your vibe for the day to use this feature"*. **Messages stay open;
+so do profile and settings**, because somebody who has just declined an invite may well want to turn
+off the notification that brought them there. **Tapping Play from here asks for the vibe first, before
+any filter and before the skeleton**, which is the two-layer gate this document already describes
+rather than a new rule.
+
+**An invite that expires while it is sitting in the bar** should go to a visible **expired** state
+— *"this night started without you"* — rather than vanishing. Held in `REMINDERS.md`.
+
+#### A friend who has not opened the app yet
+
+**Three screens, in this order, and nothing else is asked of them:**
+
+1. **the vibe deck** - they have no vibe today, so the app cannot read them at all;
+2. **the skeleton**, headed **"Draw the shape of your night to join [host]'s night"**;
+3. **the capsule room**, directly. From there they can minimise, talk, or go to home and messages.
+
+**They are never asked for distance, budget or time** - those belong to whoever started the night
+(`SKELETON_MERGE_V1.md` §1).
+
+**Five minutes to respond, never to finish (decided 2026-10-12, entry 192).** The clock runs from
+the invite and **stops the moment they enter the swipe game** — or **the skeleton, if they have
+already swiped today**. It never overlaps the deck.
+
+**This removes the problem rather than trading it off.** A clock running during the deck either
+*shows*, breaking the rule that the card screen must never mention time or speed, or it *hides* and
+ejects somebody silently mid-deck. Both corrupt card latency, which feeds firmness, the daily name
+and the merge.
+
+**After they accept there is no clock at all.** Somebody who starts the deck and wanders off, or
+draws half a skeleton and stops, is removed by **the wheel holder's cross**, exactly as the skeleton
+gate already specifies. **The invite path has one timer and it measures one thing: did they
+answer.**
+
+#### Changing the filters from inside
+
+**Distance and budget re-rank the carousels and nothing else.** **The time window does not re-rank
+anything - it invalidates every drawing in the room** (`SKELETON_MERGE_V1.md` §7), so the group drops
+back into the locked state above and everybody redraws.
+
+**This has to be said on the control itself.** A carousel refresh and a full reset must not be reached
+by two controls that look alike; the window is the most destructive thing in the room and the
+gentlest-sounding.
+
+### Hosting, joining and locking from the capsule room
+
+| | |
+|---|---|
+| **the wheel holder hosts a plan or a venue** | the capsule room becomes public: a **View plan** button and a flashing **"This room is now public"** tag under the room name. Strangers can now request to join |
+| **the wheel holder requests to join a room** | the room's details pop up for every member with **swipe right to approve**. **All members must approve**, then the request goes to that room's host. On acceptance the capsule room disappears for everyone and the joined room takes its place. A request made with a group is **accepted or declined as one unit** by the receiving host |
+| **the plan is locked** | everyone goes to the **Active Plan Screen**. The group chat already exists |
+
+**A ditch is the lock's one exception (entry 201, 2026-10-14).** The plan is not editable while
+dormant - **it is repairable when somebody breaks it.** Nobody can change their mind about a venue;
+somebody can leave, and leaving is the only thing that reopens anything. **A ditch removes them from
+the members list, the group chat, the chemistry lines, the insights and the distance figure** - the
+chat included, because otherwise they sit in a conversation about a night they have opted out of.
+**The host then gets three ways on**, in the chat and on the dormant screen until the night starts:
+
+| | |
+|---|---|
+| **Host to fill the gap** | the active plan screen disappears and **a hosted room takes its place** - voice back on, joiners entering the chat, **and a second lock**. Ranked, not gated: the join gates are off |
+| **Rebuild the night** | back to the capsule. **Only the skeletons survive**; the venues and the plan are gone. The remaining members are **invited rather than dragged in**, because many will be offline |
+
+**That rule is general, not specific to the Rebuild button (entry 201).** **Any change to the set of
+drawers re-runs the merge, and everything downstream of the merge is invalid** - the merged shape, the
+stop count, and every venue picked against it. **Skeletons are per person and survive; nothing else
+does.** So **adding a friend mid-build discards the picks exactly as a rebuild does**, and the SHUFFL
+screen re-locks until the new arrival has drawn.
+
+> **And the host should be told what a late invite costs, when it costs anything (corrected
+> 2026-10-14, entry 202).** **Stops are drawn, not assumed** - the merge takes each person's own
+> number and compromises between them. It then caps the result by the window and by `SIZE_CEILING`
+> (**5 for a pair, 4 for three or four, 3 for five; a solo drawer is capped by the window alone**).
+> **So the ceiling only bites when the merged count already exceeds it**: adding a fifth to a group of
+> four costs a stop *only if they had merged to four*. **The line on the add-friends sheet is
+> conditional** - shown when it would really cost a stop, and not otherwise.
+| **Continue** | the people, the chemistry lines, the insights and the figure update. The stops do not |
+
+**So the lock is reversible exactly once, by the host, only after a ditch, and only before the night
+starts.** Once live, nothing changes it.
+
+**The lock is terminal (entry 199).** It **ends the capsule room and the voice call with it**, and
+**the plan cannot be changed afterwards** - there is no re-open. What survives is the **active plan
+screen** and the **group chat**: somewhere to look and somewhere to talk. **A different night starts
+over from Add friends to your night.** This is the 2026-10-07 room life cycle extended to the capsule
+room, and it is why proposals need no expiry: they cannot outlive the thing they were for.
+
+## Build My Own Night
+
+**New 2026-10-10 (entry 190).** The third way to get a night, alongside drawing one and taking a
+preset. **The user takes full control: a collection of venues they like, with the factor scores shown
+so they can adjust.**
+
+1. **A blank screen with a circle on a grid.** **Meters across the top** and **Next** at the bottom.
+2. **Tapping the circle** opens a sheet below it: **"search venues"** and a default list under it.
+3. **Adding a venue** replaces the circle with that venue's image and name.
+4. **An arrow beside the venue** drags forward to add a stop - a new circle - and the loop repeats.
+5. **The meters fill as stops are added**, reading the plan rather than the person.
+6. **Next** shows the full outing-plan card with **Lock this** and **Host this**.
+
+**It also applies inside a group**, driven by whoever holds the wheel.
+
+### A built night has no skeleton, and that is the point
+
+**`plan.skeleton = null` is a legal state.** Everything that reads a skeleton must tolerate its
+absence:
+
+| | |
+|---|---|
+| *[group]'s ideal night shape* | does not render |
+| the two-rooms offer | cannot fire - there are no drawings to disagree |
+| `SIZE_CEILING` | not applied. Dragging arrows has no stop cap |
+| the time window | not enforced. A built night may fall outside its own filters, and other users' window filter will then correctly hide it |
+| **other users ranking the room** | **works** - and only because entry 187 ranks a room on its **actual plan** rather than its merged shape. Under shape-ranking a built night would have been unrankable |
+
+### Rules this surface needs
+
+- **The meters are not the factor set (entry 198, 2026-10-13).** A factor is what the engine reasons
+  with; **a meter is a sentence a person would say about a night.** Five meters - **how loud, how
+  busy, how it looks, how dressed up, what it costs**; three exact readouts - **how late it runs, how
+  far it travels, the arc**; and badges for what a place either has or has not - **a live act, a
+  floor, outdoors, a proper meal, something to play**.
+- **`TALK` and `MOVE` are not meters.** They describe a room rather than a night, and entry 197
+  measured them as read from the venue's type rather than its reviews **78%** and **96%** of the
+  time. **They are unchanged everywhere else in the app** - the deck, the talk warning on the Go-here
+  card, the venue pros and cons, chemistry.
+- **A factor with only one working direction is a badge, not a scale.** `FOCUS` and `GAMES` have no
+  low keyword list at all, so they can say *yes* and never *not much*. `SCEN` can say both, and only
+  because the Kwality test forced the lo list open.
+- **Three rows are exact and never carry the hollow mark** - how late, how far and what it costs come
+  from opening hours, coordinates and price level rather than reviews. All three are computed at
+  render time from a live fetch, so `VENUE_DATABASE_V1.md` §0 holds.
+- **The meters are bands, not numbers.** The lexicon's mean error is **7.1 points** and `FOCUS` and
+  `GAMES` have no low-keyword list at all. A numeric meter is a precision claim we cannot back.
+- **Each meter shows a span across the stops, not a mean - because a mean loses the night's range.**
+  **Measured (entry 197, `simulations/meterband.py`):** on nights with near-identical means and
+  clearly different ranges, the mean renders them alike **20.6%** of the time and the span **never**
+  does. **Direction is carried by the arc and only by the arc** - reversing a night changes it 99.9%
+  of the time - so **the arc is load-bearing, not decoration.**
+- **`CROWD` carries two coarse slots and one row.** The cut is **22:00**, and **Fri-Sat against the
+  rest**. **Each stop takes the value for its own hour and day, and the span is taken afterwards** -
+  the split lives in the data, not on the screen.
+- **A meter says where its band came from: hollow, with one footer line** - *"hollow bands are read
+  from the venue's type, not from what people wrote about it"* - rather than a label on every row.
+- **There is no preference ticks row.** `POL` and `SCEN` are meters, `FOOD`, `LIVE` and `GAMES` are
+  badges, so a ticks row would draw each of them twice. **Somewhere new** and **somewhere old** have
+  no home on this screen and are unchanged elsewhere.
+- **The search hits our own admitted database only**, never Google's index. A venue from outside it has
+  no factor scores, so the meters cannot move, and it has not passed the six admission criteria.
+- **Blocking depends on the listing being true, and for a club it is not (entry 203).** Delhi clubs
+  list 01:00 and run to 03:00 or 04:00 on Friday and Saturday. **We do not know when a venue closes,
+  we know what Google says** - and for the one type that matters after midnight the two differ by
+  hours. **Block on the listing only where the listing is reliable for that type**: a cafe listed shut
+  at 23:00 really is shut; a `night_club` listed shut at 01:00 on a Friday is a data artefact.
+  **Until a per-type close confidence exists, late stops at late venue types warn rather than block.**
+- **A venue closed at that stop's hour is BLOCKED, not warned (entry 199).** It is unselectable for
+  that stop, greyed with the reason - *"closes at 23:00 — your 01:30 is shut"*. **This is the one
+  place the house warn-don't-veto pattern does not apply, and the distinction decides the next case
+  too: warn where we are guessing about the user, block where we know a fact they do not.** The talk
+  floor is a judgement they may overrule; an opening hour is not.
+- **The default list under the search bar** - venues the user has looked at before, or ones that fit
+  their shape and preferences - is deferred. Most users will type.
+
+### Venue images on this screen, and everywhere else
+
+**We store nothing of Google's but the `place_id`** (`VENUE_DATABASE_V1.md` §0), so every Google photo
+impression is a live, billed fetch. **Verified 2026-10-10: Place Details Photos is $7.00 per 1,000
+requests**, 1,000 free a month, and Google requires the photo's author attribution to be shown.
+
+**Thumbnails in lists never come from Google.** They come from our own library, in order: **venue-owner
+media**, then **in-app user content**, then **a branded placeholder**. **Google photos are fetched live
+on the venue screen only** - two or three, on open, never for an off-screen row. Thumbnails everywhere
+would cost roughly **$2,500 a month at 300 users**; the venue screen alone is about **$380**.
+
+**At launch most venues have no photograph and the design must not need one.** It does not: these
+screens are built on poster type, colour and the blend wash. **A venue name in caps with its fit number
+and a colour block reads better than a grey photograph of an empty dining room.** The thing that fills
+the library is the **gold capture flow** - 578 slots of people photographing venues with a consent flow
+already drawn, which is a licensed set of roughly 1,500 photos. **Gold is a December item, so the
+placeholder is the launch state.**
 
 ## Create Button Flow — retired
 
@@ -758,6 +1320,27 @@ tappable, and **tapping it always opens the thing it is talking about.**
 | **capsule has requested a room** | **“[Room name]: awaiting approval from capsule”** | the room, **blurred**, with the approval box over it |
 | **request sent to the host** | **“[Room name]: awaiting the host”** | the room with the *Requesting to Join* box |
 | **plan locked** | **“[Room name]'s outing plan”** | the **Active Plan Screen** |
+
+**Six states added 2026-10-10 (entry 190), and three retired with the host room.** The bar is also
+where **every** room screen now minimises - capsule room, hosted room, joined room - reading
+**"[room/group name]: active, Click to open!"**
+
+| state | the bar says | tapping it opens |
+|---|---|---|
+| **a gathering, members outstanding** | **"[group name]'s room: awaiting [n] friends"** | the locked SHUFFL screen with the outstanding DPs |
+| **a gathering, everyone drawn** | **"[group name]'s room: active, Click to open!"** | the capsule room, or the SHUFFL screen if you hold the wheel |
+| **the wheel holder is looking at something** | **"View updates"** *(a button on the capsule room, not the bar)* | what they are looking at |
+| **you do not hold the wheel and have minimised** | **"[group name]'s room: active, Click to open!"** | the no-wheel screen |
+| **a wheel request is outstanding, to the holder** | **flashes "[name] wants the wheel"**, then settles | the yes / no prompt |
+| **the group is approving a room** | **"[room name]: awaiting approval from the group"** | the room, blurred, with the approval box |
+
+**Retired with the host room:** *"[Room name]: 2/5 skeletons"*, and the two capsule rows, whose
+behaviour the gathering rows above replace.
+
+**Precedence is unchanged - a locked plan beats everything, then the most recent state wins - with one
+addition: a wheel request outranks anything that is not a locked plan**, because it is the only state
+in the bar that another person is actively waiting on.
+
 
 **Every box in the app can now be minimised into this bar and reopened from it.** That is the point of the section:
 the user is never trapped in a waiting screen, and never loses track of a wait they walked away from. The two boxes
@@ -791,11 +1374,83 @@ When the capsule creator taps **request to join** on a room:
 4. **If one member declines**, the creator's box disappears and a line shows at the top of their screen: *“[Name]
    declined this room”*. The capsule stays intact and browsing resumes where it left off.
 
-**The three-minute removal rule still applies to the capsule invite, not to this.** A member who ignores the
-*invite* for three minutes is removed from the capsule; a member who ignores a *room* is simply waited on, because
+**The removal rule still applies to the invite, not to this — and it is five minutes (entry
+192, was three).** A member who ignores the *invite* for five minutes is removed from the capsule; a member who ignores a *room* is simply waited on, because
 by then they are committed and the creator can cancel and pick another room.
 
 ## Active Plan Screen
+
+> **The dormant state, drawn 2026-10-14 (entry 201, screen 53).** Between the lock and the night the
+> screen **reads rather than tracks**: the stops with the plan card's **pros and cons**, the members,
+> the **plan insights**, a **countdown**, and **Ditch**. **Nothing live is rendered** - the user
+> distance figure and the directions appear when the plan does.
+>
+> **The diagram is called the user distance figure.** Not a map: entry 183 is titled *SHUFFL renders
+> no map*, and the eight sectors and rounded distances exist so there is no position to leak.
+>
+> **Plan insights** sits below the figure once live, and inline while dormant: **where to sit** (from
+> the group's `AFFIL`), **who needs what and where** (the plan card's two lines per person, gathered
+> so they read across the night), and **the drink of the night** - one per plan, never per venue.
+> **It is read from chemistry and vibes, and chemistry never picked the venues**; advising how to use
+> a room already chosen is not choosing it.
+>
+> **Ditch** lives here and only here. Before the lock you leave the room; after it, this is the exit.
+>
+> *(Was: "it has no *not yet* state, and it needs one", entry 200.)* This screen becomes the
+> bottom bar's destination **the instant the plan locks**, and it is drawn as though the night is
+> running — the **LIVE** tag, the distance rings, *who is coming from where*. **A group that locks
+> at six for a nine o'clock first stop would spend three hours looking at compass sectors for five
+> people sitting at home.** It is not wrong, it is early. **The screen wants a dormant state** —
+> the plan, the time, and nothing live about it — waking at some sensible distance from the first
+> stop. Screen **11** draws the live state and stays correct for what it is.
+
+
+> **SHUFFL renders no map (2026-10-07).** The active plan shows **the night as a diagram**: **the next
+> stop is the hub**, distance rings around it, and the rest of the night chaining off it. **Every
+> member sits on their distance ring, in their compass sector** — so you can see who is close and
+> which side they are coming from.
+>
+> **Direction is deliberately coarse, and this is the safeguard rather than a detail.** A bearing plus
+> an exact distance from a known point **is a position**. So the sector is one of **eight**, and the
+> distance is **rounded to a band**. An icon therefore means *about two kilometres, roughly south* —
+> enough to know who is near and from where, **never enough to find anybody.** A room can hold
+> strangers, and that is the case this rounding exists for.
+>
+> **A dot on an abstract diagram could be anywhere in the city.** There is no position to leak, no
+> geography to reverse-engineer, and nothing a stranger in a public room can act on. The privacy rule
+> below is not amended; it is satisfied by having no positions to govern.
+>
+> **Navigation is a deep link and nothing else.** *Directions to stop 1* opens Google Maps with the
+> stop as the destination, which is one tap and the thing people would do anyway.
+>
+> **Three things follow, and they all point the same way:**
+>
+> | | |
+> |---|---|
+> | **no Maps SDK in the app** | no map view, no tile loading, no map styling, no attribution surface |
+> | **no metered map calls** | **tile loads and Directions requests are both billable. A URL is not.** The one view that looked like it needed Maps turns out not to |
+> | **nothing stored** | use `query_place_id` in the link, so navigation runs off the one Google field we are allowed to keep |
+>
+> **The distances are computed on the device**, from coordinates the app already holds in memory for
+> the live display fetch, and are **never written down.** A distance is our own derived number; the
+> coordinate it came from is Google's and does not persist.
+
+> **Revised 2026-10-07 — relative distance replaces position, and the privacy rule survives intact.**
+>
+> **The map shows the stops, the route, and your own position to you. Nobody else's position is shown
+> to anybody.** What the group gets instead is **how far each member is from the next stop** — *at the
+> stop · 900 m away · 2.3 km away · not sharing.*
+>
+> **The user's own correction, and it is better than what it replaced.** A map of everyone's dots was
+> the obvious design and it answers a question nobody asks. **The question people actually ask is
+> “is everyone nearly there?”, and a distance answers it exactly** — while a position answers it and
+> also tells a room of five, which may include strangers, precisely where somebody is standing.
+>
+> **`Not sharing` is a state and is shown plainly**, so nobody has to ask and nobody is singled out.
+>
+> **And an `Add to Google Maps` button sits at the bottom**, because the one thing this app should not
+> try to be is a navigator. It is a deep link, so it stores nothing and raises no licensing
+> question.
 
 If opened the Active Plan Screen after locking the plan (alone or with friends) the full Active Plan Screen opens up: At the top- [The name of the room]’s/ [The name of the vibe]’s plan; below that, a map displaying the stops in the outing plan along with the location of the user and the other people in the room (in case of join/host) in the form of anonymised icons on the map not meant to represent a singular person. Location sharing rules: live location sharing is opt-in and off by default, and the opt-in prompt appears at the moment the plan is locked. Exact location is never shown to users in a public/hosted SHUFFL room; those rooms show approximate group presence only, meaning an area level cluster indicating the group is near a stop, never individual positions. Individual live tracking is not shown to anyone, in public or private rooms. Any user can turn their own location sharing off at any time from the Active Plan Screen or from Settings, and when they do their icon simply drops off the map without notifying the room. When clicked on a stop, the venue’s page opens up [as mentioned in the venue flow] in a small box just above the stop with why this place is suited to the user along with pros & cons and when clicked on this box it expands to cover the whole screen with a cross button in the top right corner of it to close it; below this, the distance to the first stop (“2.3km to Stop 1”); below that the list of people in the room and their vibe written beside it (if host/join)
 Once a user enters a location mentioned in the stops in the event plan and open the active plan screen they’ll see a bouncing camera icon next to the stop which would allow them to open the camera and click a photo/video to post to their story
@@ -816,6 +1471,12 @@ Two buttons at the bottom of the screen over the venue page, side by side, which
 *THIS SCREEN WILL APPEAR EACH TIME A USER CLICKS ON A PLACE IN THE APP*
 
 ## Add People Flow
+
+> **Re-pointed 2026-10-14 (entry 204).** There is one list of people and one door: **Add friends
+> to your night**. The two passages below describe adding to a **capsule** and adding
+> **co-hosts**, neither of which exists. **What survives, and is why the section is kept, is the
+> two-gate rule**: the **vibe** gate has a five-minute response clock (entry 192), the **skeleton**
+> gate has no clock at all and the wheel holder removes instead. Read it for that.
 
 If a user is about to add someone into their SHUFFL Capsule a box will pop up just above the SHUFFL button with a search bar at the top of the box and the list of all their friends on the app along with their vibe for the day besides their name below it. The friends that haven’t completed their swipe game for the day their names will appear at the bottom of the list with a red message saying “Not Completed Swipe” besides their name and the user will be unable to add them.
 If a user adds friends into their room as Co-Hosts again a box will pop up this time covering most of the screen with a search bar at the top and they’ll again see the list of all their added friends along with their vibe for the day besides their name but the friends that haven’t completed the game can still be added into the room and they will be notified from their phone’s notification saying “X User has invited you to their room, Open the app and find your vibe today to join” and they will be prompted to complete the swipe game before they can join the room. If they don’t open the app and complete the game within 5 minutes they’ll automatically be removed from the room.
@@ -845,7 +1506,14 @@ Once the user selects a song that song starts playing in the room and represente
 
 1. **A search bar**, searching **through messages** — DMs and group chats, by person, group name or message text.
 2. **DMs, Instagram style**, from the user's friends, and the SHUFFL group chats.
-3. **The animated SHUFFL button**, top right, which still starts a group — the group-chat flow below is unchanged.
+3. ~~**The animated SHUFFL button**, top right~~ — **CUT from the MVP, 2026-10-14 (entry 203).**
+   **Messages is a point of contact and nothing else in the first release.** The button, the
+   *SHUFFL with friends* picker, the second *Name this gathering* prompt, **the insights panel** and
+   **the group's learned preferences** all go with it. Every path it offered exists in a better place:
+   making a group is **Add friends to your night** (which also makes the chat), group chemistry is on
+   the **capsule room** and in **Plan Insights**, and a venue the group would like is the **Suggested
+   venues carousel** — ranked against the merged skeleton rather than guessed from a history the
+   first release will not have. **This also settles *one gathering or two*: there is one door.**
 
 **Moved to the home screen:** the stories rail, the notifications bar (friend requests, room invites, capsule
 invites) and the “what your friends are up to” carousel. **Why:** the three-screen split is now clean — **home is
@@ -857,7 +1525,7 @@ Everything below describes the group-chat flow, which is unchanged and still liv
 *(retained for reference — the stories rail and notifications bar described in the next paragraph now render on the
 home screen, not here)*
 
-Below that, notifications bar: Where all the friend requests and active room invites and and everything sit as follows- The capsule invite has been described previously; The room invite will say “X User Invited you to their room [room name” and if the user clicks accept and hasn’t completed their swipe game today, they will be taken to the room and they’ll see the room blurred in the background with the swipe game in the foreground. Once they’ve completed the swipe game the room flow for them will start. If they’ve already completed the swipe game they’ll directly be taken to the room and the room flow will start.
+Below that, notifications bar: Where all the friend requests and active room invites and and everything sit as follows- The capsule invite has been described previously; **(Superseded 2026-10-12, entry 192 — see “The invite, and the three ways to answer it”. An invite now opens an interstitial with Accept, Decline and ignore; accepting opens the deck or the skeleton on its own rather than over a blurred room, and declining removes them from the room and lands them on the locked home screen.)** The room invite will say “X User Invited you to their room [room name” and if the user clicks accept and hasn’t completed their swipe game today, they will be taken to the room and they’ll see the room blurred in the background with the swipe game in the foreground. Once they’ve completed the swipe game the room flow for them will start. If they’ve already completed the swipe game they’ll directly be taken to the room and the room flow will start.
 Below that, DMs instagrams style from the user’s friends
 Top right corner of the screen just above the stories, an animated SHUFFL button which when clicked on opens a screen. Top of the screen says “SHUFFL with friends” and a list of their friends below that and a continue button at the bottom. Once they’ve selected the friends they want to add and clicked on the continue button they’re then taken to the next screen where they’re prompted to “Name this gathering” and give the group a name. After they’ve done that a gc is created with the group name which is visible in the overall list of dms. Once this gc is opened it has the group name at the top, a message bar at the bottom, and **an insights panel in place of the old Create button (2026-10-06)**.
 
@@ -877,7 +1545,8 @@ If clicked on this search icon it opens up a up a search screen with a search ba
 Once a user searches the name of a person their profile pops up as normal with a new “Add to [group name]” as a hovering button at the top of the screen. If clicked on it sends an invite to the user: “[user name] has added you to their gc- [gc name]” and then a decline/accept button below that is the same as room invitations in the messages and social of the invited user.
 If they search the name of the place, the same venue flow pops up of that place but instead of the pros & cons of the user, the pros & cons for the gc are shown and the vibe score for the gc is shown instead of just the user. A new “Go here” hovering button will be at the top of the venue screen now which when clicked on makes a room with all the people in the GC same as a normal room when a user clicks on “host”. This time with the outing plan in the view plan button only containing the venue they chose and the lock plan button in the same place which when clicked on would not create any GC since the GC already exists and the outing plan would become active in the outing plan screen. The host button will be at the top and the user can choose to host the room for other people to view and join. Once the user clicks on host a new edit icon will appear next to the room name (which would’ve originally been the name of the SHUFFL GC) for the user to change the room name. The blend style of the room originally will be the blend style of the SHUFFL GC but when the room is hosted and other people join the blend style will change to the blend style of the vibes of the other people in the room along with the one’s in the original SHUFFL GC. In this scenario once the plan is locked a new gc will be created with the new room name and with the other people that join once the room is hosted.
 So let’s say I make a SHUFFL gc with 3 friends and click on the search icon. I search the name Bohca and the venue name comes up. I click on the venue and in the venue screen I click on “Go here”, a room will be made with the people in the GC and I can choose to host this room for other people to join with the outing plan just containing Bohca.
-**The Go-here card (2026-09-23).** “Go here” no longer drops the venue straight into the active plan. It opens a card for that venue first: the venue name and type in plain words, its **pros and cons for the group** in the two-lines-per-person form the plan card uses (a vibe line and a preference line each), the price rating, and the dish and drink recommendation if there is one. Two buttons at the bottom:
+**The Go-here card (2026-09-23).** “Go here” no longer drops the venue straight into the active plan. It opens a card for that venue first: the venue name and type in plain words, its **pros and cons for the group** in the two-lines-per-person form the plan card uses (a vibe line and a preference line each), and the price rating. **(The dish and drink recommendation was cut from the MVP on 2026-10-14,
+entry 201.)** Two buttons at the bottom:
 **Lock** — the plan is this one venue, and it goes to the Active Plan Screen. This is the old behaviour of “Go here”, unchanged: the room is created from the people in the GC, the host button sits at the top, and the user may host it for others to join.
 **“Build my night around this”** — the app generates a full outing plan **with this venue kept as one of the stops** (plan engine §14.6). The card refreshes into the normal plan card with the pinned venue marked by a small pin, and the lock button then locks the whole night. Where the pinned venue falls in the order is decided by its energy, like any other stop — a restaurant opens the night, a club closes it.
 Two honest cases the card has to handle rather than hide. **(Revised 2026-09-30.)** If the room's **merged skeleton
@@ -957,7 +1626,23 @@ places. Everything below applies to both bars; only the result types differ.
 Users can use the search bar to look for other users, locations and heatmaps
 Once a user clicks on the search bar the screen changes to only occupy the search bar at the top which will now be highlighted and the rest of the screen blank.
 As the user begins to type in their search terms the app will start narrowing down the results as is done in other search bars
-The results that show up will have a score next to them, and **what the score means depends on what was found (2026-10-01)**. For a **person**, it is the vibe match — how similar their identity factors are to the user's today. For a **place**, it is **not a vibe score at all**: it is how well that venue fits **the shape the user drew tonight**, at the hour it would fall, plus their preferences. The two numbers look alike on screen and come from completely different places, and only the first one is about anybody's vibe. Heatmaps appear as is, with the name of the heatmap mentioned, for example, “The Sunlit Brunch Friends Heatmap”Privacy controls: what other people can see about a user is controlled by that user from Settings, with separate toggles for today’s vibe, their vibe score against the viewer, their overall going out type, their vibe history and their past events. Each toggle can be set to Everyone, Friends only, or Nobody. If a user hides their vibe they still appear in search results, just without a vibe score attached, rather than disappearing from search. These settings apply consistently everywhere the same data surfaces: search results, the Profile Flow, the View Profile Flow, and the “Friends you vibe the most with” section.
+The results that show up will have a score next to them, and **what the score means depends on what was found (2026-10-01)**. For a **person**, it is the vibe match — how similar their identity factors are to the user's today. For a **place**, it is **not a vibe score at all**: it is how well that venue fits **the shape the user drew tonight**, at the hour it would fall, plus their preferences. The two numbers look alike on screen and come from completely different places, and only the first one is about anybody's vibe. Heatmaps appear as is, with the name of the heatmap mentioned, for example, “The Sunlit Brunch Friends Heatmap”**Privacy, rewritten 2026-10-14 (entry 205). The vibe stats are not optional.** Today's vibe, the
+vibe score against the viewer, the overall going-out type and the vibe history are **public, with no
+toggle** - *"that's the part of the experience of using the app and one of our selling points"*. **A
+vibe you can hide is a product you cannot demonstrate**: the home screen, the friend list and every
+profile are built out of other people's vibes, and a user who hides theirs is invisible in the half
+of the app that is social.
+
+**Tonight's shape gets a different kind of control.** *Friends that want your kind of night* is
+**public to all friends by default**, with **an exclusion list in the shape of Instagram's Hide Story
+From** - the user names the people who do not see it. **Not a visibility level, a per-person block**,
+because a shape is usually hidden from somebody specific rather than from everybody.
+
+> **Past events keeps its toggle (decided 2026-10-14, entry 206).** It is the one of the four that is
+> **a list of places you have physically been** rather than a statement about what you are like
+> — a location history, visible to everyone a user has accepted as a friend. **In a nightlife app
+> that is a safety question rather than a preference**, and it is also the weakest of the four as a
+> selling point: nobody is sold by an archive. **Everyone / Friends only / Nobody, as before.** If a user hides their vibe they still appear in search results, just without a vibe score attached, rather than disappearing from search. These settings apply consistently everywhere the same data surfaces: search results, the Profile Flow, the View Profile Flow, and the “Friends you vibe the most with” section.
 
 ## Outing Plan Flow
 
@@ -994,12 +1679,21 @@ Below that, their overall going out type mentioned
 Relevant Settings for this app suggested by AI
 Privacy settings that must exist (required by the flows above): live location sharing, off by default with a per-plan opt-in; heatmap contribution opt-out; visibility toggles set to Everyone / Friends only / Nobody for past events; story and venue-post visibility plus a report/remove option for stories you appear in; and controls over who can add you to a SHUFFL capsule or invite you to a room.
 
-## Dish/Drink Recommendations
+## Dish/Drink Recommendations - CUT FROM THE MVP (2026-10-14, entry 201)
 
-The database of vibes will also contain a fixed recommended dishes/drinks alongside them.
-The outing plan is generated for the user and it’s reflected in the active plan screen, after that once the user enters the location of any of the stops in the outing plan a box pops up in his screen that says “you have arrived at [location name] and below that “We strongly recommend you try the [dish name] and wash it down with a [cocktail/mocktail name] for your vibe!” and an Order Now button at the bottom which will take them to the payment gateway allowing them to order it in advance if the restaurant is registered on SHUFFL for business. The dish and drink will be presented side by side in sort of a tabular format with the name and photo of the dish/drink and a description of why it suits their vibe below it and the percentage match score.
-This will be done by the program going through the menu for the location and finding the same or similar drink/dish for the vibe of the user as mentioned in the vibes database.
-This dish and drink recommendation will now be found by clicking on a new drink and dish emoji next to the stop in the active plan screen which opens up a box that has the “[user’s vibe]’s recommended dish and drink at [location name]’ at the top and a picture of the dish and drink along with its name below that and a description of why it suits their vibe.
+> **Removed entirely.** The arrival pop-up, the per-stop emoji on the active plan screen, the Go-here
+> card's line, the Order Now button and the payment gateway, and the venue screen's **Menu** row.
+>
+> **The user: "we don't have the resources for it, it shouldn't be included in the mvp."**
+>
+> **It rested on a database that does not exist.** The section said it would work *"by the program
+> going through the menu for the location"* - **we hold no menu data for any venue and nothing in the
+> pipeline fetches any.**
+>
+> **What survives is the drink of the night**, in Plan Insights: **one per plan, never per venue**,
+> matching the night's character rather than a menu. A button - *Get my drink of the night* - an
+> animation, and then a line. **It is cheap precisely because it claims nothing about any bar**, which
+> is why it survives the cut that killed the thing it came from.
 
 ## Filter Settings
 
@@ -1012,7 +1706,7 @@ further without redrawing:
    the user's budget clears **the lowest budget of anyone in it**.
 3. **Venues** — filter to rooms whose outing plan contains a particular venue.
 4. **Time** — **the start and end window** (2026-09-30). A room is shown only if its window overlaps the user's.
-5. **Place or People** (2026-09-30) — the two-way toggle described in the Join Button Flow. Not a filter that
+5. **(Re-sited 2026-10-10: this toggle lives behind "See all rooms", with the player and the full list. The four filters above it live on the filter chip at the top right of the SHUFFL screen.)** **Place or People** (2026-09-30) — the two-way toggle described in the Join Button Flow. Not a filter that
    removes rooms: it changes **what the remaining rooms are sorted by**, `fit` or `match`. It sits with the filters
    because that is where the user is already deciding what they want, and it is the only one of the five that
    changes the order rather than the set.

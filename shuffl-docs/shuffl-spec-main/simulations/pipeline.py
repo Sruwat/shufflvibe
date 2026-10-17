@@ -153,8 +153,36 @@ def discover(key, out='candidates.json', dry=False, districts=None):
     print('\n%d unique venues -> %s' % (len(rows), out))
 
 # ---------------------------------------------------------------- stage: enrich
+def load_candidates(src):
+    """candidates.json from our own discover, or any CSV carrying a place_id column.
+
+    Added 2026-10-08: the developer runs his own discovery and exports CSV. Requiring a conversion
+    step before enrich invites a hand-rolled script and a silently dropped column, so enrich reads
+    his file directly.
+    """
+    if src.lower().endswith('.csv'):
+        rows = []
+        with open(src, encoding='utf-8-sig', newline='') as fh:
+            for r in csv.DictReader(fh):
+                pid = (r.get('google_place_id') or r.get('place_id') or '').strip()
+                if not pid:
+                    continue
+                rows.append(dict(place_id=pid,
+                                 name=(r.get('name') or pid),
+                                 district=(r.get('discovered_area') or r.get('district') or ''),
+                                 address=(r.get('address') or '')))
+        seen, out_rows = set(), []
+        for r in rows:                                  # dedupe, since two districts can overlap
+            if r['place_id'] in seen:
+                continue
+            seen.add(r['place_id']); out_rows.append(r)
+        print('%d rows read from %s, %d unique place_ids' % (len(rows), src, len(out_rows)))
+        return out_rows
+    return json.load(open(src, encoding='utf-8'))
+
+
 def enrich(key, src='candidates.json', out='enriched.json', limit=0, dry=False):
-    cands = json.load(open(src, encoding='utf-8'))
+    cands = load_candidates(src)
     if limit: cands = cands[:limit]
     todo = [c for c in cands if not os.path.exists(os.path.join(CACHE, c['place_id'] + '.json'))]
     print('%d candidates, %d already cached, %d to fetch, ~$%.2f'
@@ -358,6 +386,8 @@ def main():
     ap.add_argument('stage', choices=['discover', 'enrich', 'build'])
     ap.add_argument('--key'); ap.add_argument('--limit', type=int, default=0)
     ap.add_argument('--dry-run', action='store_true')
+    ap.add_argument('--src', default='candidates.json',
+                    help='enrich only: candidates.json, or a CSV with a google_place_id column')
     ap.add_argument('--catchment', choices=sorted(CATCHMENTS), default='south-delhi',
                     help='which district list to search (default: south-delhi)')
     a = ap.parse_args()
@@ -366,7 +396,7 @@ def main():
     if a.stage == 'discover':
         print('catchment: %s' % a.catchment)
         discover(a.key, dry=a.dry_run, districts=CATCHMENTS[a.catchment])
-    elif a.stage == 'enrich': enrich(a.key, limit=a.limit, dry=a.dry_run)
+    elif a.stage == 'enrich': enrich(a.key, src=a.src, limit=a.limit, dry=a.dry_run)
     else: build()
 
 if __name__ == '__main__':

@@ -1,26 +1,10 @@
 # Profiles V1 — going-out personality as rules, not as a type library
 
-> **2026-10-05 — read this before the body. This document predates the split and has not been
-> rewritten.**
->
-> **Six identity factors, and only these:** `ENRG` 18 · `AFFIL` 16 · `TALK` 14 · `FOCUS` 14 ·
-> `MOVE` 12 · `SPONT` 10 (`FACTORS_V6.md`, 2026-09-30). **`CROWD`, `ROAM` and `RAMP` left the deck
-> for the skeleton** — the user draws them — and **`GAMES` became a preference**, making seven:
-> `FOOD` `LIVE` `POL` `SCEN` `NOV` `HERIT` `GAMES`.
->
-> **The identity factors no longer plan anything.** The skeleton does (`SKELETON_MERGE_V1.md`,
-> `OUTING_PLAN_ENGINE.md` §15), and **the vibe never touches a venue** (`VENUE_DATABASE_V1.md`
-> §0, 2026-10-01). What the room vector still drives: the room's name and blend style, `match`,
-> `disturbance`, the `SPONT` join window, and the profile chemistry read.
->
-> **Current successors:** names `VIBE_NAMES_V5.md`, chemistry `CHEMISTRY_V4.md`, cards
-> `CARD_SET_V10.md` (**itself stale — see its own banner**). **Where the body below disagrees with
-> this note, this note wins.**
-
-
 **Status: adopted 2026-09-23, prototyped in `profiles.py` and `readings.py`. Every rule and every
 magnitude is judgement, to be validated against real rooms.** This is a layer *on top of*
 `OUTING_PLAN_ENGINE.md` §14.3's readings, never a replacement for them.
+
+> **2026-10-14.** `ROAM` appears eight times below and **is not a factor** — it left the deck on 2026-09-30 and became the skeleton's stop count (`FACTORS_V6.md`). The rules here read against **six identity factors**. Everything else stands.
 
 ---
 

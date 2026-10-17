@@ -1,29 +1,10 @@
 # Collective V1 — group psychology and "collective consciousness", against the vibe factors
 
-> **2026-10-05 — read this before the body. This document predates the split and has not been
-> rewritten.**
->
-> **Six identity factors, and only these:** `ENRG` 18 · `AFFIL` 16 · `TALK` 14 · `FOCUS` 14 ·
-> `MOVE` 12 · `SPONT` 10 (`FACTORS_V6.md`, 2026-09-30). **`CROWD`, `ROAM` and `RAMP` left the deck
-> for the skeleton** — the user draws them — and **`GAMES` became a preference**, making seven:
-> `FOOD` `LIVE` `POL` `SCEN` `NOV` `HERIT` `GAMES`.
->
-> **The identity factors no longer plan anything.** The skeleton does (`SKELETON_MERGE_V1.md`,
-> `OUTING_PLAN_ENGINE.md` §15), and **the vibe never touches a venue** (`VENUE_DATABASE_V1.md`
-> §0, 2026-10-01). What the room vector still drives: the room's name and blend style, `match`,
-> `disturbance`, the `SPONT` join window, and the profile chemistry read.
->
-> **Current successors:** names `VIBE_NAMES_V5.md`, chemistry `CHEMISTRY_V4.md`, cards
-> `CARD_SET_V10.md` (**itself stale — see its own banner**). **Where the body below disagrees with
-> this note, this note wins.**
+**Status: research + one proposal, 2026-09-23. Nothing here is adopted.** The proposal at §4 (an
+eighth vibe factor, `FOCUS`) needs the user's decision, and §5 is the test that argues against
+adopting it on its own. `CHEMISTRY_V3.md` holds the rules that are in force.
 
-
-**Status: research + one proposal, 2026-09-23. §4 WAS ADOPTED (2026-09-30).** `FOCUS` is now one
-of the six identity factors, weighted 14, and `CHEMISTRY_V4.md` gives it **the strongest pull in
-the model at 0.80** — above `ENRG`, on this document's own argument that shared attention is
-reflexive rather than affective. **§5's test argued against adopting it *on its own*, and it was
-adopted as part of a wider split instead**, which is a different question and the right one.
-`CHEMISTRY_V4.md` holds the rules in force; `CHEMISTRY_V3.md` is superseded.
+> **2026-10-14. Two things here are settled and the page does not say so.** **§4's proposal was adopted** — `FOCUS` is a factor, weight 14 (`FACTORS_V6.md`). And the rules in force are **`CHEMISTRY_V4.md`**, not V3. **§6.2's clock-anchored stops are out of the MVP** (entry 205): `FOCUS` selects venues that reliably have something on, and never claims a start time.
 
 ---
 

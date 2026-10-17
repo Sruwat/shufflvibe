@@ -43,6 +43,7 @@ class GeminiClient:
                 "priceLevel", "regularOpeningHours", "servesDinner", "servesBrunch", "servesDessert",
                 "servesVegetarianFood", "servesBeer", "servesWine", "servesCocktails", "outdoorSeating",
                 "reservable", "liveMusic", "goodForGroups", "businessStatus",
+                "goodForWatchingSports",
             )},
             "reviews": reviews,
             "summaries": summaries,

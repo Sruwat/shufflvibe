@@ -42,7 +42,8 @@ literal stops instead of a 0–100 axis, which is what it always wanted to be.
 
 ```python
 COUNT_PULL = 0.50
-SIZE_CEILING = {2: 5, 3: 4, 4: 4, 5: 3}     # Steiner: getting five people out of a bar is not linear
+SIZE_CEILING = {1: 99, 2: 5, 3: 4, 4: 4, 5: 3}   # Steiner: getting five people out of a bar
+                                                 # is not linear. 1 is uncapped - see 2b
 
 def merge_count(drawings, window_len):
     ns = [d.n for d in drawings]
@@ -69,6 +70,22 @@ def merge_count(drawings, window_len):
 | 2, 3 | **3** | one apart, so the clamp never fires |
 | 2, 2, 2 | **2** | unanimous |
 | **3, 3, 3, 1** | **2** | **the known flaw — see below** |
+
+### 2b. One drawer is not a group of five (corrected 2026-10-14)
+
+**`SIZE_CEILING.get(len(drawings), 3)` had no entry for a single drawer, so it fell to the default of
+3.** A person drawing alone was being handed **the coordination penalty of a group of five**.
+
+**Steiner's cost is about getting five people out of a bar. There is no group.** A solo drawer's stop
+count is their own, capped by **the window alone** - roughly ninety minutes a stop. Draw five stops
+inside 20:00-03:30 and you get five.
+
+**It matters more now than when this was written.** The app is solo-first since the MVP cut: you draw,
+you get a stop list, you pick. **Most first-release nights are one person**, and every one of them was
+meeting a ceiling built for a problem they do not have.
+
+**Fixed by giving 1 its own entry** rather than by special-casing the call, so the table says what it
+means and the default of 3 still catches a group of six or more.
 
 **Steiner belongs on the ceiling, not on the pull.** `CHEMISTRY_V3.md` §7 damped `ROAM`'s pull by
 `2/n`, which made bigger groups stick near their own mean — that is not a coordination cost, it is
@@ -138,11 +155,19 @@ unset"* for a week. It is not a multiplier. It is one row of the ladder:
 |---|---|---|
 | 0–20 / 80–100 | 1.00 | **1.00** |
 | 21–30 / 70–79 | 0.50, or 0.75 if fast | **0.75** — a drag is always deliberate; there is no latency to read |
-| **31–69** | **0.00** | **0.25** |
+| **31–49 / 51–69** | **0.30** — for the side it leans toward (2026-10-07) | **0.25** |
+| **exactly 50** | **0.00** — the two cards disagreed | **0.25** — a deliberate medium |
 
-**The last row is the whole of it. A swiped 50 means "this card did nothing for me". A drawn 50
-means "I want this stop at exactly medium".** The skeleton has no true neutrals, because nothing
-on it happens by accident. That, and not a blanket multiplier, is what "firmer" amounts to.
+**The last row is the whole of it. A swiped exact 50 means "the two cards disagreed". A drawn 50
+means "I want this stop at exactly medium".** The skeleton has no true neutrals, because nothing on
+it happens by accident.
+
+**Corrected 2026-10-07.** This row used to read *a swiped 50 means this card did nothing for me*,
+and the swiped column used to be **0.00 across the whole of 31–69**. Both were too broad: a swiped
+62 comes from one card and is a real mild want. The people side now advocates at **0.30** through
+that band and reserves 0.00 for an exact 50, which can only come from a disagreeing pair
+(`CHEMISTRY_V4.md` §0.0a). **The two columns have moved closer together, and the drawn column is
+still firmer** — which is what this section was always for. That, and not a blanket multiplier, is what "firmer" amounts to.
 
 ### 4b. The consequence, which runs the other way from the phrase
 

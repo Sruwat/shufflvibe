@@ -20,6 +20,9 @@ import {
 } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import * as WebBrowser from "expo-web-browser";
+import * as Google from "expo-auth-session/providers/google";
+import { ResponseType } from "expo-auth-session";
 import { colors, radius } from "../src/theme";
 
 import { factorCopy, factors, venues } from "../src/data";
@@ -48,6 +51,9 @@ import {
 import { hydrateDemoState, useApp } from "../src/store";
 import { FeatureScreen } from "../src/featureScreens";
 import { getService } from "../src/services";
+import { assertReleaseScope } from "../src/releaseScope";
+
+WebBrowser.maybeCompleteAuthSession();
 import {
   dressSenseArtwork,
   homeCityArtwork,
@@ -73,19 +79,23 @@ function Button({
   children,
   onPress,
   kind = "primary",
+  disabled = false,
 }: {
   children: React.ReactNode;
   onPress: () => void;
   kind?: "primary" | "secondary" | "ghost";
+  disabled?: boolean;
 }) {
   return (
     <Pressable
       accessibilityRole="button"
       onPress={onPress}
+      disabled={disabled}
       style={[
         styles.button,
         kind === "secondary" && styles.secondary,
         kind === "ghost" && styles.ghost,
+        disabled && { opacity: 0.45 },
       ]}
     >
       <Text
@@ -111,11 +121,21 @@ function commitAssessment(next: ReturnType<typeof createAssessment>) {
     latencyFirmness(next),
     next.chosenTop,
   );
+  const shape = chemistryV2([next.scores]);
+  const skeleton = {
+    stops: shape.stopCount,
+    energy: Math.round(next.scores.ENRG ?? 50),
+    crowd: Math.round(next.scores.CROWD ?? 50),
+    tags: shape.tags,
+    stopDurations: shape.stopDurations,
+    updatedAt: localDateKey(),
+  };
   state.set({
     assessment: next,
     scores: next.scores,
     actions: next.answers,
     assessmentIndex: next.cursor,
+    skeleton,
     reuseLastVibe: false,
     ...(completed
       ? {
@@ -126,6 +146,26 @@ function commitAssessment(next: ReturnType<typeof createAssessment>) {
         }
       : {}),
   });
+  if (completed) {
+    const service = getService();
+    void Promise.all([
+      service.completeAssessment({
+        scores: Object.fromEntries(Object.entries(next.scores).map(([key, value]) => [key, value ?? 50])),
+        vibe_name: resultName,
+        chosen_top: next.chosenTop,
+        latency_firmness: latencyFirmness(next) as Record<string, number>,
+        actions: next.answers,
+      }),
+      service.saveSkeleton({
+        scores: Object.fromEntries(Object.entries(next.scores).map(([key, value]) => [key, value ?? 50])),
+        stops: skeleton.stops,
+        energy: skeleton.energy,
+        crowd: skeleton.crowd,
+        tags: skeleton.tags,
+        stop_durations: skeleton.stopDurations,
+      }),
+    ]).catch((error) => console.warn("Could not sync assessment shape.", error));
+  }
 }
 function Brand() {
   return (
@@ -602,46 +642,80 @@ function Intro() {
 }
 function Login() {
   const { set } = useApp();
-  const [step, setStep] = useState<"identifier" | "otp">("identifier");
+  const [step, setStep] = useState<"identifier" | "password">("identifier");
   const [identifier, setIdentifier] = useState("");
-  const [otp, setOtp] = useState("");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const sendOtp = () => {
+  const googleClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID?.trim();
+  const [googleRequest, googleResponse, promptGoogle] = Google.useAuthRequest({
+    webClientId: googleClientId,
+    iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID?.trim(),
+    androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID?.trim(),
+    responseType: ResponseType.IdToken,
+    scopes: ["openid", "profile", "email"],
+  });
+  useEffect(() => {
+    const idToken = googleResponse?.type === "success"
+      ? googleResponse.params?.id_token
+      : undefined;
+    if (!idToken || busy) return;
+    let active = true;
+    setBusy(true);
+    setError("");
+    getService().loginWithGoogle(idToken)
+      .then((session) => { if (active) set({ screen: "profile", userName: session.user.name || "" }); })
+      .catch((cause) => { if (active) setError(cause instanceof Error ? cause.message : "Could not sign in with Google."); })
+      .finally(() => { if (active) setBusy(false); });
+    return () => { active = false; };
+  }, [googleResponse]);
+  const continueToPassword = () => {
     if (!identifier.trim()) {
       setError("Enter your phone number or email.");
       return;
     }
     setError("");
-    setStep("otp");
+    setStep("password");
   };
-  const verify = () => {
-    if (otp.trim() !== "123456") {
-      setError("Use the demo OTP 123456.");
+  const verify = async (createAccount = false) => {
+    if (password.length < 8) {
+      setError("Use a password with at least 8 characters.");
       return;
     }
+    setBusy(true);
     setError("");
-    set({ screen: "profile" });
+    try {
+      const service = getService();
+      const session = createAccount
+        ? await service.register(identifier.trim(), password)
+        : await service.login(identifier.trim(), password);
+      set({ screen: "profile", userName: session.user.name || "" });
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Could not sign you in.");
+    } finally {
+      setBusy(false);
+    }
   };
   return (
     <SafeAreaView style={styles.safe}>
       <Header
         label="Sign in"
         onBack={() =>
-          step === "otp" ? setStep("identifier") : set({ screen: "welcome" })
+          step === "password" ? setStep("identifier") : set({ screen: "welcome" })
         }
       />
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.kicker}>
-          {step === "otp" ? "VERIFY YOUR ACCOUNT" : "WELCOME BACK"}
+          {step === "password" ? "SECURE SIGN IN" : "WELCOME BACK"}
         </Text>
         <Text style={styles.h2}>
-          {step === "otp"
-            ? "Enter the code we sent."
+          {step === "password"
+            ? "Use your account password."
             : "Find your way back in."}
         </Text>
         <Text style={styles.body}>
-          {step === "otp"
-            ? `Demo code sent to ${identifier}.`
+          {step === "password"
+            ? `Account: ${identifier}`
             : "Use your phone number or email to sign in to SHUFFL."}
         </Text>
         {step === "identifier" ? (
@@ -656,25 +730,35 @@ function Login() {
               keyboardType="email-address"
               style={artworkStyles.profileInput}
             />
-            <Button onPress={sendOtp}>Send OTP</Button>
+            <Button onPress={continueToPassword}>Continue</Button>
+            <Button
+              kind="secondary"
+              disabled={!googleRequest || busy}
+              onPress={() => {
+                if (!googleClientId) {
+                  setError("Google login is not configured for this build.");
+                  return;
+                }
+                promptGoogle();
+              }}
+            >
+              Continue with Google
+            </Button>
           </>
         ) : (
           <>
             <TextInput
-              accessibilityLabel="One-time password"
-              value={otp}
-              onChangeText={setOtp}
-              placeholder="Enter 123456"
+              accessibilityLabel="Account password"
+              value={password}
+              onChangeText={setPassword}
+              placeholder="Enter your password"
               placeholderTextColor={colors.muted}
-              keyboardType="number-pad"
-              maxLength={6}
+              secureTextEntry
               style={artworkStyles.profileInput}
             />
-            <Text style={styles.small}>Demo OTP: 123456</Text>
-            <Button onPress={verify}>Verify & continue</Button>
-            <Button kind="secondary" onPress={() => setStep("identifier")}>
-              Change phone or email
-            </Button>
+            <Button onPress={() => void verify()}>{busy ? "Signing in…" : "Sign in"}</Button>
+            <Button kind="secondary" onPress={() => void verify(true)}>{busy ? "Please wait…" : "Create account"}</Button>
+            <Button kind="ghost" onPress={() => setStep("identifier")}>Change email</Button>
           </>
         )}
         {error ? (
@@ -907,8 +991,14 @@ function Profile() {
     ["NOV", "Somewhere new"],
     ["HERIT", "Somewhere old"],
   ];
-  const finish = () => {
+  const finish = async () => {
     const current = useApp.getState();
+    try {
+      await getService().saveProfile({ name: current.userName.trim(), city: "New Delhi", pronouns: current.userPronouns, bio: current.userBio, preferences: Object.fromEntries(Object.entries(current.preferences.readings).map(([key, value]) => [key, value?.score ?? 0])) });
+    } catch (cause) {
+      setNameError(cause instanceof Error ? cause.message : "Profile could not be saved. Try again.");
+      return;
+    }
     set({
       screen: "discover",
       locked: false,
@@ -1613,13 +1703,13 @@ function Reveal() {
   );
 }
 function Discover() {
-  const { set, locked, scores, assessment, userName } = useApp();
+  const { set, locked, scores, assessment, userName, skeleton } = useApp();
   const todayName = vibeName(
     scores,
     latencyFirmness(assessment),
     assessment.chosenTop,
   );
-  const shape = chemistryV2([scores]);
+  const shape = skeleton.updatedAt ? { tags: skeleton.tags, stopCount: skeleton.stops } : chemistryV2([scores]);
   const vibeImage = resolveVibeArtwork(scores);
   return (
     <SafeAreaView style={styles.safe}>
@@ -1632,7 +1722,7 @@ function Discover() {
           </View>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Search people, places and heatmaps"
+            accessibilityLabel="Search people, places and rooms"
             onPress={() => set({ screen: "search" })}
             style={styles.iconButton}
           >
@@ -1800,16 +1890,24 @@ function Discover() {
   );
 }
 function HomeDashboard() {
-  const { set, locked, scores, assessment, userName, userPronouns, avatarUri, lastVibeName, plan } = useApp();
+  const { set, locked, scores, assessment, userName, userPronouns, avatarUri, lastVibeName, plan, skeleton } = useApp();
+  const [venueFeed, setVenueFeed] = useState(venues);
+  useEffect(() => {
+    let alive = true;
+    getService().getDiscovery().then((items) => {
+      if (alive && items.length) setVenueFeed(items);
+    }).catch(() => undefined);
+    return () => { alive = false; };
+  }, []);
   const todayName = vibeName(scores, latencyFirmness(assessment), assessment.chosenTop);
   const currentName = lastVibeName || todayName;
-  const shape = chemistryV2([scores]);
+  const shape = skeleton.updatedAt ? { tags: skeleton.tags, stopCount: skeleton.stops } : chemistryV2([scores]);
   const vibeImage = resolveVibeArtwork(scores);
   const gated = () => set({ screen: lastVibeName ? 'dailyCheckin' : 'instructions' });
   const openVibe = () => locked ? gated() : set({ screen: 'reveal' });
   const initials = (userName || 'You').trim().split(/\s+/).map(part => part[0]).join('').slice(0, 2).toUpperCase();
   const recommendation = (venue: typeof venues[number], index: number) => <Pressable key={venue.name} accessibilityRole="button" accessibilityLabel={`Open ${venue.name} venue detail`} onPress={() => set({ screen: 'feature', featureMode: 'venue', selectedVenueName: venue.name })} style={artworkStyles.homeVenueCard}>
-    <Image source={venueArtwork[venue.name]} style={artworkStyles.homeVenueImage} accessibilityLabel={`${venue.name} artwork`} />
+    <Image source={venueArtwork[venue.name] ?? homeCityArtwork} style={artworkStyles.homeVenueImage} accessibilityLabel={`${venue.name} artwork`} />
     <View style={artworkStyles.homeVenueShade} />
     <View style={artworkStyles.homeVenueContent}>
       <View style={artworkStyles.homeVenueTop}><Text style={artworkStyles.homeVenueArea}>{venue.area.toUpperCase()}</Text><Text style={[artworkStyles.homeVenueMatch, { color: [colors.mint, colors.cyan, colors.pink, colors.amber][index] }]}>{92 - index * 5}% MATCH</Text></View>
@@ -1835,7 +1933,7 @@ function HomeDashboard() {
       </Pressable>
       {locked ? <View style={artworkStyles.dashboardLocked}><Text style={styles.cardTitle}>Tonight’s picks are locked</Text><Text style={styles.small}>Play the swipe game and get your vibe for the day to unlock this feature.</Text><Button onPress={gated}>Play today</Button></View> : <>
         <View style={artworkStyles.homeSectionHeader}><View><Text style={styles.sectionTitle}>TONIGHT’S PICKS</Text><Text style={artworkStyles.shelfSubhead}>Picked for your vibe</Text></View><Pressable accessibilityRole="button" onPress={() => set({ screen: 'search' })}><Text style={artworkStyles.homeShelfLabel}>SEE ALL</Text></Pressable></View>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={artworkStyles.venueShelf}>{venues.map(recommendation)}</ScrollView>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={artworkStyles.venueShelf}>{venueFeed.map(recommendation)}</ScrollView>
         <View style={artworkStyles.dashboardSectionHeader}><View><Text style={styles.sectionTitle}>TONIGHT’S LINE-UP</Text><Text style={artworkStyles.shelfSubhead}>Built around your vibe</Text></View><Ionicons name="map-outline" size={20} color={colors.pink} /></View>
         {plan.exists ? <><Pressable accessibilityRole="button" onPress={() => set({ screen: 'feature', featureMode: plan.locked ? 'activePlan' : 'customOuting' })} style={artworkStyles.dashboardPlanCard}><View style={artworkStyles.dashboardPlanTop}><Text style={styles.cardTitle}>{plan.title || plan.style}</Text><Text style={artworkStyles.homeShelfLabel}>{plan.locked ? 'LOCKED' : 'DRAFT'}</Text></View>{plan.stops.slice(0, 2).map((stop, index) => <Text key={`${stop}-${index}`} style={styles.small}>{index + 1}. {stop}</Text>)}<Text style={styles.small}>{plan.durationHours} hours · Delhi NCR · {plan.locked ? 'Tap to view active plan' : 'Tap to review'}</Text><View style={artworkStyles.dashboardPlanActions}><Text style={artworkStyles.venueFooterText}>VIEW PLAN</Text><Ionicons name="arrow-forward" size={18} color={colors.pink} /></View></Pressable><View style={artworkStyles.planQuickActions}><Pressable accessibilityRole="button" onPress={() => set({ screen: 'feature', featureMode: 'customOuting' })}><Text style={artworkStyles.planActionText}>CUSTOM</Text></Pressable>{!plan.locked && <Pressable accessibilityRole="button" onPress={() => set({ screen: 'shuffl', plan: { ...plan, exists: false, locked: false, stops: [] } })}><Text style={artworkStyles.planActionText}>SHUFFLE</Text></Pressable>}<Pressable accessibilityRole="button" onPress={() => set({ screen: 'feature', featureMode: 'hostRoom' })}><Text style={artworkStyles.planActionText}>HOST THIS</Text></Pressable></View></> : <View style={artworkStyles.dashboardEmpty}><Text style={styles.cardTitle}>No plan yet</Text><Text style={styles.small}>Build your night from your vibe.</Text><Button onPress={() => set({ screen: 'shuffl' })}>Build my night</Button></View>}
         <View style={artworkStyles.dashboardSectionHeader}><View><Text style={styles.sectionTitle}>ROOMS LIVE NOW</Text><Text style={artworkStyles.shelfSubhead}>Find a night already forming</Text></View><Ionicons name="people-outline" size={20} color={colors.pink} /></View>
@@ -1851,214 +1949,61 @@ function HomeDashboard() {
 }
 
 function ShufflScreen() {
-  const { set, locked, scores, preferences, assessment, plan, room, selectedVenueName } = useApp();
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
-  const autoPlanStarted = useRef(false);
-  const build = useCallback(async () => {
-    if (busy || locked) return;
-    setBusy(true);
-    setError("");
-    try {
-      const generated = await getService().generatePlan({
-        scores: Object.fromEntries(
-          factors.map((factor) => [factor, scores[factor] ?? 50]),
-        ),
-        preferences: Object.fromEntries(
-          ["FOOD", "LIVE", "POL", "SCEN", "NOV", "HERIT"].map((factor) => [
-            factor,
-            preferences.readings[factor as keyof typeof preferences.readings]
-              ?.score ?? 50,
-          ]),
-        ),
-        pol_sense: preferences.sense ?? "both",
-        members: room.members,
-        selectedVenueName: selectedVenueName || undefined,
-      });
-      set({
-        plan: {
-          ...plan,
-          id: generated.id,
-          exists: true,
-          locked: false,
-          style: generated.style,
-          stops: generated.stops,
-          chemistry: generated.chemistry,
-        },
-      });
-    } catch (cause) {
-      setError(
-        cause instanceof Error ? cause.message : "Could not refresh the plan.",
-      );
-    } finally {
-      setBusy(false);
-    }
-  }, [busy, locked, plan, preferences, room.members, scores, set]);
-  useEffect(() => {
-    if (!locked && !plan.exists && !autoPlanStarted.current) {
-      autoPlanStarted.current = true;
-      void build();
-    }
-  }, [build, locked, plan.exists]);
-  const lock = async () => {
-    if (!plan.id || busy) return;
-    setBusy(true);
-    try {
-      await getService().lockPlan(plan.id);
-      set({
-        plan: { ...plan, locked: true },
-        screen: "feature",
-        featureMode: "activePlan",
-      });
-    } catch (cause) {
-      setError(
-        cause instanceof Error ? cause.message : "Could not lock this plan.",
-      );
-    } finally {
-      setBusy(false);
-    }
-  };
-  const host = async () => {
-    if (!plan.id || busy) return;
-    setBusy(true);
-    setError("");
-    try {
-      const created = room.id
-        ? { id: room.id }
-        : await getService().createRoom(room.name, room.members);
-      await getService().hostRoom(created.id, plan.id);
-      set({
-        room: { ...room, id: created.id, public: true },
-        plan: { ...plan, locked: true },
-        screen: "feature",
-        featureMode: "hostRoom",
-      });
-    } catch (cause) {
-      setError(
-        cause instanceof Error ? cause.message : "Could not host this plan.",
-      );
-    } finally {
-      setBusy(false);
-    }
-  };
-  const name = vibeName(
-    scores,
-    latencyFirmness(assessment),
-    assessment.chosenTop,
-  );
-  const chemistryTag = Array.isArray(plan.chemistry?.tags)
-    ? String(plan.chemistry.tags[0] ?? "In Sync")
-    : "A plan shaped by tonight’s vibe";
+  const { set, locked, plan, skeleton } = useApp();
+  const openPicker = useCallback(() => {
+    if (locked) return;
+    set({ screen: "feature", featureMode: "customOuting" });
+  }, [locked, set]);
   return (
     <SafeAreaView style={styles.safe}>
       <Header label="SHUFFL" onBack={() => set({ screen: "discover" })} />
       <ScrollView contentContainerStyle={styles.content}>
-        <View style={artworkStyles.hostJoinRow}>
-          <Pressable
-            style={artworkStyles.hostJoinButton}
-            onPress={() => set({ screen: "feature", featureMode: "hostRoom" })}
-          >
-            <Text style={artworkStyles.hostJoinText}>HOST</Text>
-          </Pressable>
-          <Pressable
-            style={[artworkStyles.hostJoinButton, artworkStyles.joinButton]}
-            onPress={() => set({ screen: "feature", featureMode: "joinRoom" })}
-          >
-            <Text style={artworkStyles.hostJoinText}>JOIN</Text>
-          </Pressable>
-        </View>
-        <Text style={styles.kicker}>YOUR NIGHT, LINED UP</Text>
-        <Text style={styles.h1}>
-          {locked ? name : plan.style || "Building your night"}
-        </Text>
-        {plan.exists ? (
-          <Pressable
-            onPress={() =>
-              set({ screen: "feature", featureMode: "activePlan" })
-            }
-            style={artworkStyles.lineupCard}
-          >
-            <View style={artworkStyles.lineupHeader}>
-              <Text style={artworkStyles.venueFooterText}>
-                TONIGHT’S LINE-UP
-              </Text>
-              <Ionicons name="sparkles" size={20} color={colors.pink} />
-            </View>
-            {plan.stops.map((stop, index) => (
-              <View key={`${index}-${stop}`} style={artworkStyles.lineupStop}>
-                <Text style={artworkStyles.lineupTime}>{`0${index + 1}`}</Text>
-                <View style={artworkStyles.lineupRule} />
-                <View style={{ flex: 1 }}>
-                  <Text style={artworkStyles.lineupVenue}>
-                    {stop.toUpperCase()}
-                  </Text>
-                  <Text style={styles.small}>
-                    {index === 0 ? "Start the night" : "Then, keep it moving"}
-                  </Text>
-                </View>
-              </View>
-            ))}
-            <Text style={styles.small}>{chemistryTag}</Text>
-          </Pressable>
-        ) : (
-          <View style={styles.surface}>
-            <Text style={styles.cardTitle}>
-              {locked
-                ? "Play today’s vibe to build your line-up"
-                : "Putting your plan together"}
-            </Text>
-            <Text style={styles.small}>
-              {locked
-                ? "Your plan follows your daily vibe."
-                : "A few Delhi places, shaped around your night."}
-            </Text>
-          </View>
-        )}
-        {error ? (
-          <Text accessibilityRole="alert" style={styles.small}>
-            {error}
-          </Text>
-        ) : null}
-        <View style={artworkStyles.planActions}>
-          <Button onPress={lock} kind="secondary">
-            Lock this
-          </Button>
-          <Button onPress={host}>Host this</Button>
-        </View>
         <Pressable
-          disabled={busy || locked}
-          onPress={build}
-          style={artworkStyles.textAction}
+          accessibilityRole="button"
+          accessibilityLabel="Add friends to your night"
+          onPress={() => set({ screen: "feature", featureMode: "hostRoom" })}
+          style={artworkStyles.lineupCard}
         >
-          <Ionicons name="shuffle" size={18} color={colors.pink} />
-          <Text style={artworkStyles.textActionLabel}>
-            {busy ? "Updating…" : "Give me something else"}
-          </Text>
+          <Text style={styles.kicker}>TONIGHT</Text>
+          <Text style={styles.h1}>Add friends to your night</Text>
+          <Text style={styles.small}>Bring people into the same night after you shape it.</Text>
         </Pressable>
-        <Button
-          kind="secondary"
-          onPress={() =>
-            set({ screen: "feature", featureMode: "customOuting" })
-          }
+        <Pressable
+          accessibilityRole="search"
+          accessibilityLabel="Search through venues and rooms"
+          onPress={() => set({ screen: "search" })}
+          style={styles.input}
         >
-          Customize this outing
-        </Button>
-        <View style={artworkStyles.heatmapCard}>
-          <Text style={styles.kicker}>CHARTS · DELHI NCR</Text>
-          <Text style={styles.cardTitle}>Where the city is gathering</Text>
-          <View style={styles.map}>
-            <View style={styles.mapPulse} />
-            <Text style={styles.small}>
-              Neighbourhood-level activity only · no live individual locations
-            </Text>
-          </View>
-          <Text style={styles.small}>
-            Heatmap contribution can be turned off in Settings.
-          </Text>
+          <Ionicons name="search" size={20} color={colors.muted} />
+          <Text style={[styles.small, { flex: 1 }]}>Search through venues and rooms here</Text>
+          <Ionicons name="arrow-forward" size={18} color={colors.pink} />
+        </Pressable>
+        <Text style={styles.sectionTitle}>Friends that want your kind of night today</Text>
+        <View style={styles.surface}>
+          <Text style={styles.cardTitle}>Your people appear here</Text>
+          <Text style={styles.small}>Invite friends or start with your own shape.</Text>
+          <Button kind="secondary" onPress={() => set({ screen: "feature", featureMode: "hostRoom" })}>Add friends</Button>
         </View>
-        <Button kind="ghost" onPress={() => set({ screen: "plans" })}>
-          Past plans
-        </Button>
+        <Text style={styles.sectionTitle}>Ranked rooms</Text>
+        <Pressable onPress={() => set({ screen: "rooms" })} style={styles.surface}>
+          <Text style={styles.cardTitle}>Rooms that match your vibe</Text>
+          <Text style={styles.small}>Browse public rooms and see the night they are shaping.</Text>
+          <Text style={[styles.small, { color: colors.pink }]}>See all rooms →</Text>
+        </Pressable>
+        <Text style={styles.sectionTitle}>The night everyone drew</Text>
+        <View style={styles.surface}>
+          <Text style={styles.cardTitle}>{plan.exists ? plan.title : "No night selected yet"}</Text>
+          <Text style={styles.small}>
+            {plan.exists ? `${plan.stops.length} stop${plan.stops.length === 1 ? "" : "s"} · choose one venue per stop` : `${skeleton.stops} stop${skeleton.stops === 1 ? "" : "s"} · draw your shape first`}
+          </Text>
+          {plan.exists ? (
+            <Button onPress={() => set({ screen: "feature", featureMode: plan.locked ? "activePlan" : "customOuting" })}>Choose venues</Button>
+          ) : (
+            <Button onPress={openPicker} disabled={locked}>Build my night</Button>
+          )}
+        </View>
+        <Button kind="secondary" onPress={openPicker} disabled={locked}>Redraw skeleton</Button>
+        <Button kind="ghost" onPress={() => set({ screen: "plans" })}>Past plans</Button>
       </ScrollView>
       <Nav />
     </SafeAreaView>
@@ -2076,7 +2021,7 @@ function Search() {
   const { set } = useApp();
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<string[]>([]);
-  const [items, setItems] = useState<SearchVenue[]>(venues);
+  const [items, setItems] = useState<SearchVenue[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState(false);
   useEffect(() => {
@@ -2101,7 +2046,10 @@ function Search() {
         setLoadError(false);
       })
       .catch(() => {
-        if (alive) setLoadError(true);
+        if (alive) {
+          setItems([]);
+          setLoadError(true);
+        }
       })
       .finally(() => {
         if (alive) setLoading(false);
@@ -2170,15 +2118,14 @@ function Search() {
           </Pressable>
         ))}
         <Text style={styles.small}>
-          Live opening hours and proximity need venue data and optional location
-          access; they are not enabled in this demo.
+          Opening hours are checked live when a venue is opened. Distance stays approximate unless you enable location access.
         </Text>
         <Text style={styles.sectionTitle}>
           {loading ? "Finding places…" : `${results.length} places`}
         </Text>
         {loadError && (
-          <Text style={styles.small}>
-            Showing saved demo places — the service could not refresh.
+          <Text accessibilityRole="alert" style={styles.small}>
+            We could not refresh venues right now. Check your connection and try again.
           </Text>
         )}
         {results.map((venue) => (
@@ -2263,7 +2210,7 @@ function Plans() {
         <Text style={styles.sectionTitle}>Past plans</Text>
         <View style={styles.surface}>
           <Text style={styles.small}>
-            No completed plans have been saved in this demo.
+            No completed plans have been saved yet.
           </Text>
         </View>
       </ScrollView>
@@ -2344,6 +2291,14 @@ function ProfileHome() {
     .slice(0, 2)
     .toUpperCase();
   const openEdit = () => set({ screen: "profile", postVibeProfile: true });
+  useEffect(() => {
+    let active = true;
+    getService().getProfile().then((profile) => {
+      if (!active) return;
+      set({ userName: profile.name, userPronouns: profile.pronouns ?? "", userBio: profile.bio ?? "" });
+    }).catch(() => undefined);
+    return () => { active = false; };
+  }, [set]);
   return (
     <SafeAreaView style={styles.safe}>
       <Header label="You" />
@@ -2835,11 +2790,25 @@ function AssessmentStrict() {
   );
 }
 function AppContent() {
+  assertReleaseScope();
   const screen = useApp((s) => s.screen);
   const featureMode = useApp((s) => s.featureMode);
   const hydrated = useApp((s) => s.hydrated);
   useEffect(() => {
     void hydrateDemoState();
+    void getService().getLatestSkeleton().then((latest) => {
+      if (!latest) return;
+      useApp.getState().set({
+        skeleton: {
+          stops: latest.stops,
+          energy: latest.energy,
+          crowd: latest.crowd,
+          tags: latest.tags,
+          stopDurations: latest.stop_durations,
+          updatedAt: latest.created_at,
+        },
+      });
+    }).catch(() => undefined);
   }, []);
   if (!hydrated)
     return (

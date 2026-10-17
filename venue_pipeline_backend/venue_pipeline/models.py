@@ -14,6 +14,7 @@ class Area:
     radius_meters: int = 3000
     priority: str = "normal"
     geocode_source: str = "manual"
+    geocode_attempts: list[str] | None = None
 
     def as_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -33,4 +34,5 @@ def row_to_area(row: dict[str, str]) -> Area:
         longitude=number("longitude"),
         radius_meters=int(float(radius)),
         priority=(row.get("priority") or "normal").strip() or "normal",
+        geocode_attempts=None,
     )

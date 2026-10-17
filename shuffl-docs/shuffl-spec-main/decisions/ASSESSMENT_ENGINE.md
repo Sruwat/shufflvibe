@@ -662,6 +662,26 @@ Store both. They differ only by a divisor, so there is nothing to recompute from
 users, maintained like the population centre in §9; `position_baseline[i]` is the same thing by
 deck position. Both start at 0 and self-correct.
 
+**And they are not made redundant by the personal centre, which is the obvious thing to assume.**
+The centre is **one number for the whole session**, so subtracting it removes whatever shifts all of
+that person's cards together — their pace, their tiredness, the metro. **It cannot touch anything
+that varies between cards inside that same session**, and a visually busy image is exactly that: it
+reads slow against the person's own median even though they were no less decisive about it.
+
+**The two normalisations fix different comparisons, and only one of them is the comparison we make.**
+
+| | removes | fixes |
+|---|---|---|
+| `card_baseline`, `position_baseline` | what belongs to the **card** and the **slot** | **within one person, between their factors** |
+| the centre and the personal scale (§6.2a) | what belongs to the **person** | **between people** |
+
+Every consumer of `firmness_latency` ranks one person's factors against each other — the name's
+tie-break (§7.1) and `CHEMISTRY_V4`'s fast flag both ask *did they mean this one more than that
+one*. **So the between-card confound is the one that actually corrupts the output, and the centre is
+blind to it by construction.** The adaptive deck sharpens this rather than softening it: the
+baseline is keyed by `(factor, side)`, and a decisive user sees only A cards while a mild one sees
+A and B, so deck composition differs both between people and within one person's own session.
+
 **`card_baseline` is now load-bearing, and it is cold at launch.** If people swipe on appeal then
 a better photograph is swiped faster, and its factor reads as firmer — the image would be
 measuring itself. The card baseline removes exactly that, because a card's average speed across

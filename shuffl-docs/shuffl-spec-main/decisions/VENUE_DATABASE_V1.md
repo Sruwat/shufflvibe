@@ -754,6 +754,59 @@ where group size forces it.
 
 ---
 
+# 4a2. Coordinate tags instead of factor scores — tested, not adopted (2026-10-07)
+
+> **The user: "explore whether the venues can be tagged with their best co-ordinate in a skeleton as
+> a replacement to tagging them with factor scores, and then checking whether that venue matches the
+> plan according to the timing and placement."**
+
+**The proposal:** stop storing a venue's energy and crowd, and store **where in a night it belongs**
+— an opener, a middle, a closer, at a level — then match a stop's own coordinate to it.
+
+**The implicit argument is robustness, and it is a good one.** Our venue scores carry about **7
+points of error**, and a coarse tag may be a more honest statement of what we actually know than a
+distance computed to two decimals. **Quantising is the right move when the noise is large relative
+to the resolution you are pretending to have.** So the question is not elegance, it is where the
+crossover sits. Tested in `simulations/coordtag.py`: 400 venues, 3,000 drawn nights, every stop put
+through both methods and **both judged against the venue's true scores, which neither can see.**
+
+### The result
+
+| score error | scores | coordinate | scores better by |
+|---|---|---|---|
+| 0 points | 8.62 | 15.05 | 6.43 |
+| **7.1 points — ours** | **11.21** | **16.36** | **5.15** |
+| 14 points | 15.12 | 18.35 | 3.23 |
+| 25 points | 20.88 | 22.15 | 1.28 |
+| **40 points** | 26.33 | **25.66** | **−0.67 — the coordinate finally wins** |
+
+**The mechanism is real and the crossover exists — it sits at about five times our current error.**
+At 7.1 points the scores are better by 5.15, and the quantised list is also **less selective**: 77
+venues against 51, because matching a cell admits everything in a band regardless of how close it
+actually is.
+
+**So: not adopted, and for a measured reason rather than a preference.** If the lexicon ever
+degrades past roughly 25–40 points — which would mean the scoring had largely failed — quantising
+becomes the better answer, and this test says so.
+
+### What the test cannot settle
+
+**Whether a venue has a *role in a night* that is genuinely independent of its energy, crowd and
+hours.** A heritage restaurant and a quiet cafe can score the same and still be a dinner-first place
+and an afternoon place. If that is real, **it is an extra tag rather than a replacement**, and it
+would sit beside the scores rather than instead of them.
+
+**The simulation cannot answer it**, because its venues have no role beyond their hours and energy
+— the answer would have to be seeded in to come out. **It is a question for the first real database**,
+and the way to find it is to look for venues the shape ranking places wrongly in a way their scores
+do not explain.
+
+**And note how much placement the hours already do.** A venue that closes at 23:00 cannot be a
+closer, and the stop list already filters on opening hours, so *"timing and placement"* is partly
+enforced before any tag is consulted.
+
+---
+
 # 4b. Preferences are preferences — feasibility, not a multiplier (2026-10-05)
 
 > **The user: "preference factors are what the name suggests — preferences. They never come above

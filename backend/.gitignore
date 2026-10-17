@@ -4,3 +4,4 @@ data/csv_export/
 __pycache__/
 node_modules/
 *.inspect.ndjson
+data/shuffl_admin.db*

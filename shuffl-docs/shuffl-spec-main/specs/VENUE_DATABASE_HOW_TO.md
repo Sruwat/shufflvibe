@@ -66,6 +66,23 @@ What Place Details returns that we use:
 **Five reviews is a hard cap.** You cannot get more, however much you pay. Everything about how the
 scoring works follows from that.
 
+### What we deliberately do not call
+
+**No Maps SDK, no map tiles, no Directions API.** SHUFFL does not render a map anywhere. The active
+plan draws the night as a diagram, and navigation is a **deep link** into Google Maps:
+
+```
+https://www.google.com/maps/dir/?api=1&destination=<name>&destination_place_id=<place_id>
+```
+
+**A link costs nothing.** Tile loads and Directions requests are both metered; this is neither. It
+also stores nothing, and it runs off `place_id`, which is the one Google field we are allowed to
+keep.
+
+**Distances between a person and a stop are computed on the device** from coordinates already in
+memory for the live display fetch. The distance is ours; the coordinate is Google's and is not
+persisted.
+
 ### What no API will give you
 
 | | what to do instead |
@@ -135,6 +152,29 @@ appear without anyone naming them. The website-based pass missed all five.
 python pipeline.py enrich --key $PLACES_KEY --limit 20   # try twenty first
 python pipeline.py enrich --key $PLACES_KEY              # then the rest
 ```
+
+### If you already have a list of your own
+
+**`enrich` does not insist on `candidates.json`.** Point `--src` at any CSV with a
+`google_place_id` column and it will read that instead:
+
+```bash
+python pipeline.py enrich --dry-run --src candidates_south_delhi.csv   # count and cost, spends nothing
+python pipeline.py enrich --key $PLACES_KEY --src candidates_south_delhi.csv
+```
+
+It also accepts a `place_id` column, takes `name` and `discovered_area` when they are there, and
+**drops repeated place_ids before spending anything**. Excel's byte-order mark is handled, so a sheet
+saved as CSV works without being cleaned up first.
+
+**Always run `--dry-run` first.** It prints the row count, the unique place_id count and the cost:
+
+```
+561 rows read, 561 unique place_ids, ~$14.03
+```
+
+If those two counts differ, the difference is duplicates that have already been removed - not an
+error.
 
 One Place Details call per venue. Roughly **$25–50** depending on how many candidates you have.
 

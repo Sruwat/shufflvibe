@@ -55,6 +55,48 @@ A split axis reports `split`, not a number. It is not a failure state: *"this ro
 These three are about people influencing people, so nothing about the architectural split touches
 them.
 
+### 0.0a A value is never an absence (2026-10-07)
+
+> **The user: "no factor is uncertain, it just says how much you want that. A drawn `ENRG` of 50
+> means they want a venue with energy but not a lot. A vibe 50 means it is not something they
+> completely identify with but identify to a certain degree."**
+
+**`strength()` used to return 0.00 across the whole 31–69 band**, and those members were then
+counted as **side-less neutrals**. Measured consequence: *four people at 62 behind a leader at 85*
+and *four people at 38 behind the same leader* produced an identical share — 1.00 against 0.57 —
+because the model could not tell which way eight mid people were leaning.
+
+**The mid band now advocates for its own side at `MID_W` = 0.30.**
+
+| value | advocates |
+|---|---|
+| 0–20 / 80–100 | 1.00 |
+| 21–30 / 70–79 | 0.50, or 0.75 if fast |
+| **31–49 / 51–69** | **0.30, for the side it leans toward** |
+| **exactly 50** | **0.00 — the only true neutral there is** |
+
+**Why exactly 50 is the exception.** On a swiped factor it can only arise from a pair that
+disagreed — *up for it* then *not for me* — and that is ambiguity rather than a want. On the
+**skeleton** there is no such thing: `SKELETON_MERGE_V1.md` §4a already gives a drawn mid band 0.25
+on exactly this argument, and says *the skeleton has no true neutrals, because nothing on it
+happens by accident.* **This section makes the people side agree with it.**
+
+### 0.0b The split test keeps the firm threshold — and that is not a nicety
+
+**`room()` decides a split with the same call it uses for advocacy, so the change had to be made in
+two places, not one.** A split is both poles being **enacted** in one room, and a mild lean enacts
+nothing — one person at 62 and one at 38 is not a split.
+
+**And a one-function patch does not merely mis-model it.** `halves()` averages the members at each
+pole; a split declared from mid-band leans has nobody at 70+ or 30−, so it divides by an empty
+list. Measured over 1,500 rooms, **`match()` crashed in 1,119 of them — 75%.** `firm()` exists for
+this one caller.
+
+**A third edit came with it:** `neutrals` narrowed from 31–69 to exactly 50. Leaving it would have
+counted a mid member as an advocate *and* as a neutral, damping their own contribution.
+
+---
+
 ### 0.1 Influence grows sublinearly (Latané 1981)
 
 ```python
@@ -316,7 +358,7 @@ disturbance(user, room) = weighted_mean(|after[f] − before[f]|) / 100
 
 | room size | 2 | 3 | 4 | 5 |
 |---|---|---|---|---|
-| mean disturbance a joiner causes | **0.111** | 0.067 | 0.055 | **0.046** |
+| mean disturbance a joiner causes | **0.113** | 0.073 | 0.060 | **0.050** |
 
 A pair is transformed by a third person; a five absorbs a sixth. That is §0.1 one level up. An
 un-normalised *least-disturbed* sort would therefore just surface **the biggest rooms in the
@@ -336,17 +378,19 @@ Not levels — consequences, carried on the room:
 
 # 9. Point 6, tested — and I overstated it
 
+> **Every figure in this section was re-measured on 2026-10-07 after §0.0a.** The directions and the argument are unchanged; the magnitudes moved a little, and **the headline finding survived**: the two sorts are correlated and are not the same sort. The share of best-matched rooms that are also least-disturbed fell from 40% to **34%**, which strengthens rather than weakens the point.
+
 The claim was that *rooms whose chemistry barely changes when I join* and *rooms whose identity is
 closest to mine* are nearly the same sort. **They are correlated, but they are not the same sort,
 and the gap is big enough to matter.** 4,000 synthetic rooms of 2–5 people:
 
 | | |
 |---|---|
-| correlation of `match` against `disturbance`, pooled | **r = −0.59** |
-| same, after size normalisation | **r = −0.61** |
-| within rooms of 3 | r = −0.67 |
-| **of the 400 best-matched rooms, how many are in the 400 least-disturbed** | **158 (40%)** |
-| same, size-normalised | **174 (44%)** |
+| correlation of `match` against `disturbance`, pooled | **r = −0.527** |
+| same, after size normalisation | **r = −0.534** |
+| within rooms of 3 | r = −0.587 |
+| **of the 400 best-matched rooms, how many are in the 400 least-disturbed** | **134 (34%)** |
+| same, size-normalised | **150 (38%)** |
 
 The sign is right — a better match does disturb less. But **fewer than half the top rooms are
 shared**, so the two sorts hand the user materially different lists.
@@ -363,7 +407,7 @@ the most volatile. They are the **least**:
 
 | | mean disturbance a joiner causes |
 |---|---|
-| rooms with an `AFFIL` split | **0.044** |
+| rooms with an `AFFIL` split | **0.047** |
 | rooms without | **0.078** |
 
 A split room is already at both extremes, so one more person cannot move it. The flag's wording in
@@ -389,6 +433,7 @@ different property from volatility, and conflating the two was the error.
 | `SPONT` leads low | **structural** — a commitment binds, an openness does not | 0.55 is mine |
 | `AFFIL` non-averaging | **evidenced** (circumplex) | — |
 | `FOCUS` → `ENRG` +5 | **evidenced** (Shteynberg; Boothby) | +5 is mine |
+| the mid band advocates | **the user, 2026-10-07** — a value says how much you want a thing, and is never an absence | **`MID_W` 0.30 is mine**, and it is now the third unevidenced constant alongside `FOCUS` 0.80 and `SPLIT_COST` 35 |
 | `SPONT` → the join window | **mine**, and it is a product rule dressed as a finding | mine |
 | size-normalising `disturbance` | **measured** (§8.3) | the divisors need real data |
 

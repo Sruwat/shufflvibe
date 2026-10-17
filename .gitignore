@@ -22,6 +22,12 @@
 **/build/
 **/dist/
 **/.shuffl-native-build/
+**/.expo/
+**/*.log
+**/backups/
+**/data_auto_only_final/
+**/data_auto_only_final_v2/
+shuffl-spec-exact/
 
 # Local artifacts, renders and temporary files
 artifacts/

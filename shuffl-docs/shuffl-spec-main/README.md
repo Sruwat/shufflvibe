@@ -19,6 +19,7 @@
 | `design/` | `THEME_LINEUP.md` — the adopted look, and why; `design/lineup/` — the three screens at 3x plus a live page |
 | `frontend/` | every screen (`VIEW_FLOW.md` and the same as `.docx`), and the swipe-game change record |
 | **`specs/VENUE_DB_REVIEW_01.md`** | **the brief to the developer** - what pass 1 got right, the licence clarification that unblocks it, and what to run |
+| **`specs/TESTING_WATCHLIST.md`** | **everything that is a guess, a substitute or an open question** - the numbers to re-tune, what cannot be calibrated until there are users, and what would prove each design decision wrong |
 | **`specs/SCORING.md`** | **start here for the algorithms** - SHUFFL has seven scorers, and this says what each takes, what it returns, where it is specified and which file runs it |
 | **`specs/VENUE_DB_INSTRUCTIONS_02.md`** | **the brief to the developer, 2026-10-06** - what is wrong with the OSM pass, exactly which API calls to make instead, and the acceptance tests |
 | **`specs/VENUE_DATABASE_HOW_TO.md`** | **start here for the venue database** - the whole build in one file, plainly written: which APIs, what they cost, every rule, and what a human still has to do |

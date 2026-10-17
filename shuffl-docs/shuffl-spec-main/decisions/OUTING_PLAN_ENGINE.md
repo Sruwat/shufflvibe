@@ -1,5 +1,29 @@
 # Outing Plan Engine — Backend Specification
 
+> ## READ THIS FIRST — 2026-10-14. The banner below it is from 2026-09-17 and is wrong.
+>
+> **That banner names seven vibe factors including `CROWD` and `ROAM`, and says they "give the shape
+> of the night".** Two decisions removed that architecture and nothing came back to this page:
+>
+> | | |
+> |---|---|
+> | **`FACTORS_V6.md`, 2026-09-30** | the deck is **six identity factors** — `ENRG` `AFFIL` `TALK` `FOCUS` `MOVE` `SPONT`. **`CROWD`, how many places and where the peak sits left the deck entirely**; the user draws them on the skeleton. `ROAM` became the skeleton's stop count. `GAMES` became a preference |
+> | **the MVP cut, 2026-10-05** | **the app does not generate an outing plan. It offers.** For each drawn stop it shows 5–10 venues that fit and are open, and the user picks |
+>
+> **So the single most important thing to know about this document is that its central subject —
+> generating a plan from vibe factors — is not what the app does.** `ROAM` appears 49 times
+> below and is not a factor. **Read §5–§13 as history, §14 as the last state of the
+> generator, and `MVP_INSTRUCTIONS.md` for what is actually being built.**
+>
+> **What survives and is still authoritative here:** the per-stop readings and their words
+> (§14.3), the pros-and-cons lines, the plan card's two-lines-per-person, §13.6.3's match
+> and fit definitions, and the venue-type vocabulary. **Those are the parts other live documents
+> point back to.**
+>
+> *(This banner exists because the page opens by addressing "a backend engineer joining SHUFFL with
+> no prior context" and then tells them the wrong architecture. §15.5 was retired for the same
+> reason on 2026-10-14, entry 207.)*
+
 > **2026-09-17 — the factor set is split. Read §14 first.** Seven vibe factors (`ENRG` `AFFIL`
 > `CROWD` `TALK` `ROAM` `MOVE` `GAMES`) give the shape of the night and the venue type at each
 > stop; six preferences (`FOOD` `LIVE` `POL` `SCEN` `NOV` `HERIT`) pick the exact venue of that
@@ -2959,6 +2983,19 @@ Two consequences follow from it being drawn rather than swiped:
   the level and the trajectory; the skeleton **is** the trajectory, stated by the person whose night it is. `RAMP`
   survives only for plans generated from cards alone — the automatic plan on the SHUFFL screen.
 - **The `ROAM` value** is the skeleton's stop count when one exists; the slider otherwise.
+
+## 15.5 The default, and the calibration it buys - RETIRED (2026-10-14, entry 207)
+
+> **This section describes a screen that no longer exists, and it has been quietly wrong for two
+> weeks.** The grid was to open **pre-drawn with the line the generated plan implied**, and the user's
+> correction of it was the calibration data.
+>
+> **Two decisions removed it.** `FACTORS_V6` (2026-09-30) took **`CROWD`, the stop count and the peak**
+> out of the deck, so the cards no longer measure the axes a line would be implied from. The **MVP cut**
+> (2026-10-05) stopped the app generating a plan at all, so there is no line to pre-draw.
+>
+> **The grid opens blank, always.** What replaces the calibration is in `MVP_INSTRUCTIONS.md` §3b
+> item 2: **the chemistry we predicted against what actually happened.**
 
 ## 15.5 The default, and the calibration it buys
 

@@ -5101,3 +5101,2305 @@ migrate it, **acceptance tests to run before spending the enrichment budget**, a
 **The acceptance test that matters: Summer House, Bohca, Dear Donna, Depot 48 and Imperfecto HKV must appear in
 `candidates.json` without anyone naming them.** It is the one check that separates a working discovery pass from
 the two that failed, and it costs $3.50 to run.
+
+## [2026-10-07] The room line, and what in the chemistry model is actually evidenced (entry 174)
+
+### The room line
+
+**Every room now carries one sentence saying what it is**, generated from the vector `CHEMISTRY_V4` already
+produces. **No new engine and nothing extra to collect** - `chem4.py` supplies every input and
+`simulations/roomline.py` renders it.
+
+**It uses the same two-factor selection as the daily name**, as prose rather than two words - with **one
+deliberate difference: the line ranks on weight x distance, the name on distance alone.** Naming dropped the
+weights on 2026-09-23 and that is still right for a name, but **a description is a different job and the weights
+encode how much an axis matters to how a night feels.**
+
+**The user's own example is what settled it.** A room at `ENRG` 23 and `SPONT` 84 is further from the middle on
+`SPONT`, so distance-ranking opens with *deciding it on the night*. Weight-ranking opens with **chill vibe** - and
+produces the user's sentence almost verbatim, which is a good sign that the weighting is the right read. **The line
+and the name can therefore disagree on which factor leads**, and that is accepted.
+
+**A split outranks a second factor**, because *some will hold the table while others work the room* is the most
+useful thing the model knows about a room and **a name cannot say it at all** - a name carries one pole per factor
+and a split has two.
+
+**And a room with no character gets no invented one:** *this room has not decided what it is yet.* Five flat people
+make a shapeless room, and saying otherwise would be the engine making something up.
+
+**Why it earns the space:** a room already shows a name, a colour, a match percentage and a two-word chip.
+**All of those say how well you fit; none says what the room is** - and somebody deciding whether to join is
+asking the second question.
+
+### What in the chemistry model is evidenced
+
+Asked and answered from section 10, which already grades every rule. **The pattern is consistent: the directions
+are evidenced and the magnitudes are mine.**
+
+- **Sublinear influence** - Latane 1981. The exponent 0.6 is mine; his data suggest 0.5-0.7.
+- **`ENRG` spreads upward** - Barsade 2002, a direct experiment: a confederate displaying high-energy affect moved
+  the whole group. Pull 0.75 is mine.
+- **`TALK` recruits upward** - Thorne 1987, introverts talking with extraverts behaved like extraverts.
+- **`FOCUS` pulls hardest** - gaze cueing is **reflexive** (Frischen, Bayliss & Tipper 2007), one of the least
+  voluntary social behaviours there is; Shteynberg on shared attention; Collins' interaction ritual chains makes
+  mutual focus the first ingredient. **0.80 is still mine and section 10 flags it as the most aggressive claim.**
+- **`FOCUS` asymmetry** - *evidenced by absence*: no mechanism un-focuses a room.
+- **`AFFIL` does not average** - the interpersonal circumplex. Communion is matched, not complemented.
+- **`SPONT` leads low** - structural rather than cited: a commitment binds and an openness does not.
+- **A pair reads `AFFIL` high** - Simmel on the dyad.
+
+**Two numbers to distrust first, as the document itself says: `FOCUS` pull 0.80 and `SPLIT_COST` 35.**
+
+## [2026-10-07] You in a room, and the room player rebuilt (entry 175)
+
+**`roomline.py` says what a room is. `roomfit.py` says what you would be in it.** Both run off `chem4.py`; no new
+engine, nothing extra to collect.
+
+### The headline uses two numbers because they answer different questions
+
+`match` is how close you are to the room; `disturbance` is how much the room moves when you join. **Section 9
+measured them coming apart - r = -0.59, and only 40% of the best-matched rooms are also among the least
+disturbed.** Disturbance depends on the room's **structure**, not on your similarity: **a room of neutrals is moved
+by anybody however well matched, and a room already firm on both poles cannot be moved at all however badly
+matched.** So the headline is a 3x3 grid over both, from *you would slot straight in* to *you would change this
+room*.
+
+**A split overrides all nine**: *there is a half of this room for you.* When the room holds both poles there is no
+single answer to how you fit, and giving one would be the only dishonest headline available.
+
+### Eighteen axis lines, not fifty-four
+
+**A room is a level, not a person**, so the useful statement is directional - is the room above you on this axis,
+level, or below. Three relations across six factors. At most three show, ranked by `weight x gap`, and a split
+always takes the first slot.
+
+### Two rules the prototype had to learn
+
+**Never pad a difference with an agreement.** Where the top axes genuinely differ, the third slot does not get
+filled with *you want the same amount of plan* - that is noise beside a real finding.
+
+**And when nothing differs, say it once.** A person matching a room on every axis was getting three near-identical
+agreement sentences. **One is stronger than three.**
+
+### The room player rebuilt
+
+**Screen 08 showed four numbers and no sentences** - a match ring, a disturbance line, a blend colour and a
+two-word chip. **All of them say how well you fit; none says what the room is**, which is the question somebody
+deciding to join is actually asking.
+
+It now carries both reads, in order: **the ring, then what the room is, then what you would be in it.** The
+standalone disturbance line is gone - it is the headline of the second read now rather than a footnote under the
+first. To make space the music card and transport merged into the people row; **nothing was cut.**
+
+## [2026-10-07] Why the card baseline survives the per-person centre (entry 176)
+
+**The user asked a good question that the spec had the answer to but never stated:** if the scale went per-person
+on 2026-09-23, why is `card_baseline` still there?
+
+**Because they fix different comparisons.** The centre is **one number for the whole session**, so subtracting it
+removes whatever shifts all of a person's cards together - their pace, their tiredness. **It cannot touch anything
+that varies between cards inside that same session**, and a visually busy image is exactly that: it reads slow
+against the person's own median even though they were no less decisive about it.
+
+| | removes | fixes |
+|---|---|---|
+| `card_baseline`, `position_baseline` | what belongs to the card and the slot | **within one person, between their factors** |
+| the centre and the personal scale | what belongs to the person | **between people** |
+
+**And only one of those is the comparison we actually make.** Every consumer of `firmness_latency` ranks one
+person's factors against each other - the name's tie-break and `CHEMISTRY_V4`'s fast flag both ask *did they mean
+this one more than that one.* **So the between-card confound is the one that corrupts the output, and the centre is
+blind to it by construction.**
+
+**The adaptive deck sharpens it rather than softening it:** the baseline is keyed by `(factor, side)`, and a
+decisive user sees only A cards while a mild one sees A and B - so deck composition differs between people **and**
+within one person's own session.
+
+**`position_baseline` has its own reason to exist:** it is what replaced the warm-up discard. Dropping the first
+three cards cost the tie-break on 61% of tied sheets, hitting decisive users hardest because their decks are
+shortest. Subtracting a baseline does the same job and keeps the data - and if the first card is not actually
+slower for everyone, the baseline sits at zero and nothing happens.
+
+### And a correction to what I told the user about where latency is consumed
+
+**I listed bend, abstention and the group weighting of wants.** Those are `OUTING_PLAN_ENGINE` consumers from when
+the vibe factors built the plan, and **they went with the split.** The live consumers are two: **the mid band of a
+swiped factor in `CHEMISTRY_V4`**, where 0.50 becomes 0.75 if fast, and **the name's tie-break**, which orders
+within a score step and never changes a score.
+
+**The skeleton reads no latency at all** - `SKELETON_MERGE_V1.md` 4a is explicit that a drag is always deliberate,
+so a drawn mid position is 0.75 flat. **The two halves of the architecture need different firmness measures and
+only the people half needs timing**, which is a cleaner statement of latency's job than the pre-split docs allow:
+**it is a confidence signal whose only purpose is to stop two people being matched on an answer one of them gave
+carelessly.** That is also why it applies only in the mid band - at 88 or 12 you meant it, at 50 the card did
+nothing for you, and 70-79 is the only range where *did they mean this* is a live question.
+
+Written into `ASSESSMENT_ENGINE.md` 6.2a and `SCORING.md`.
+
+## [2026-10-07] A 50 is a reading, not an absence - measured, not yet adopted (entry 177)
+
+**The user: "no factor is uncertain, it just says how much you want that. A drawn `ENRG` of 50 means they want a
+venue with energy but not a lot. A vibe 50 means it is not something they completely identify with but identify to
+a certain degree."**
+
+### Three values, three different things
+
+**62 or 38 come from one card** - *up for it* or *not for me* - and are a real mild want. **An exact swiped 50 can
+only arise from a pair that disagreed**, `up for it` then `not for me`, and that one genuinely is ambiguity.
+**Any drawn mid value is a want**, and `SKELETON_MERGE_V1.md` 4a already says so in the user's own terms: *the
+skeleton has no true neutrals, because nothing on it happens by accident.*
+
+**So the correction lands on the people side, and the spec's phrase *a swiped 50 means this card did nothing for
+me* is true only of an exact 50 - it currently reads as a verdict on the whole 31-69 band.**
+
+### Where the model already honours it, and where it does not
+
+**It does** in three places: the base is the plain mean so a mid person is in the room's number from the start;
+`match` compares raw values with no threshold at all; and the drawn skeleton scores 0.25 rather than 0.00.
+
+**It does not** in `strength()`, which returns 0.00 across 31-69 and then counts those people as side-less
+neutrals. **Measured: four people at 62 behind a leader at 85, and four at 38 behind the same leader, produce the
+identical share - 1.00 against 0.57, share 0.64, in both.** The four leaning with the leader get no credit and the
+four leaning against apply no extra drag.
+
+### The sweep, 4,000 rooms, both ways
+
+Letting the mid band advocate for its own side at 0.30:
+
+| | |
+|---|---|
+| room levels | `FOCUS` **+2.4**, `TALK` +1.6, `MOVE` +1.3, `ENRG` +1.1, `SPONT` **-1.3** (it leads low), `AFFIL` unchanged (pull 0) |
+| mean match | 0.759 -> 0.764, negligible |
+| **mean disturbance** | **0.072 -> 0.061, a 15% fall** - mid advocates stiffen a room |
+| r(match, disturbance) | **-0.616 -> -0.488**, so the two sorts diverge further |
+
+**`FOCUS` moves most because it has the highest pull**, so extra share translates hardest there.
+
+### Two things that must change with it, or it is worse than no change
+
+**1. The split test must stay on the firm threshold, and this is not a nicety.** `room()` decides a split with the
+same `strength` call it uses for advocacy, so a one-function patch lets one person at 62 and one at 38 declare a
+split. **`halves()` then averages the members at each pole, finds nobody at 70+ or 30-, and divides by an empty
+list: match() crashed in 1,119 of 1,500 rooms - 75%.** The naive patch does not mis-model a split, it breaks the
+People sort outright.
+
+**2. The disturbance bands must be re-cut.** `roomfit.py` thresholds 0.07 and 0.10 were set against the old
+distribution. Under the change, **the share of reads opening *you would barely change this room* goes from 41% to
+54%** - more than half of everything, which is the headline losing the thing it was for. New terciles are **0.033
+and 0.073**, and re-cutting there puts it back to 33%.
+
+### Status
+
+**Measured and not adopted.** `chem4.py` is unchanged. `MID_W` 0.30 is invented, and the change touches the
+function every room number flows through - `match`, `disturbance`, the room line, the you-vs-room read and the
+Join sort all run through `strength()`. The evidence is in `midband.py` and `midsweep.py`; the decision is the
+user's.
+
+## [2026-10-07] The mid band adopted - and the preview that predicted it wrong (entry 178)
+
+**Adopted. `chem4.py` changed in three places, and a fourth turned up during implementation.**
+
+| | |
+|---|---|
+| `strength()` | the mid band advocates for **its own side** at `MID_W` 0.30; an exact 50 is the only true neutral |
+| `firm()`, new | the old ladder, for the **split test only** |
+| the split test | moved to `firm()` |
+| **`neutrals`** | **narrowed from 31-69 to exactly 50** - found while implementing |
+
+**The fourth is the one the preview missed.** `axis_level` counted 31-69 as neutrals, so a mid member would have
+been an advocate **and** a neutral, damping their own contribution. The preview sweep patched `strength` only and
+therefore measured a model nobody was proposing.
+
+### The preview's prediction was wrong, in the direction that mattered
+
+**Predicted: mean disturbance falls 15%, 0.072 to 0.061, because mid advocates stiffen a room.** The reasoning was
+right and the measurement was of the wrong model. With the double-count removed, rooms are **less** damped, so a
+joiner moves them **more**: mean disturbance went **0.072 to 0.076**.
+
+**Which made the first re-band wrong too.** Bands cut at 0.033/0.073 from the preview put **11%** of reads in the
+low band where they should hold about a third. Re-cut at the adopted model's terciles over 6,000 joins - **0.047
+and 0.090** - the three bands land at **22% / 33% / 45%.**
+
+**The split fix held: zero `match()` crashes over 4,000 rooms**, against 1,119 in 1,500 for the naive patch.
+
+### Section 9's tables were measured against the old model, so they were re-measured
+
+| | was | now |
+|---|---|---|
+| r(match, disturbance), pooled | -0.59 | **-0.527** |
+| size-normalised | -0.61 | **-0.534** |
+| best-matched also least-disturbed | 158 (40%) | **134 (34%)** |
+| same, size-normalised | 174 (44%) | **150 (38%)** |
+| disturbance by size, 2/3/4/5 | 0.111 / 0.067 / 0.055 / 0.046 | **0.113 / 0.073 / 0.060 / 0.050** |
+| AFFIL-split rooms vs others | 0.044 vs 0.078 | **0.047 vs 0.081** |
+
+**The headline finding survives and strengthens.** Section 9 exists to say match and disturbance are correlated but
+are not the same sort; the share of best-matched rooms that are also least-disturbed **fell from 40% to 34%**, so
+the two sorts hand back even more different lists than when the point was made.
+
+### Regressions
+
+**All ten simulations pass.** `lexicon.py` still 7.1 points mean gap and `realrun.py` still IN 14 / OUT 2 -
+correct, since neither touches chemistry. `SKELETON_MERGE_V1.md` 4a was corrected too: its swiped column was 0.00
+across the whole band and its prose said *a swiped 50 means this card did nothing for me*, which is true only of
+an exact 50.
+
+**`MID_W` 0.30 is mine**, and it is now the third unevidenced constant in the model beside `FOCUS` pull 0.80 and
+`SPLIT_COST` 35. It is in the section 10 evidence table as such.
+
+## [2026-10-07] The testing watchlist (entry 179)
+
+**`TESTING_WATCHLIST.md` collects, in one place, everything in SHUFFL that is a guess, a substitute or an open
+question.** It existed only as flags scattered across eighteen documents and a hundred and seventy decision
+entries, which is the same failure mode as the scoring index: present everywhere, findable nowhere.
+
+**Seven sections.** The numbers that are guesses, ranked with the three to distrust first - **`FOCUS` pull 0.80,
+`SPLIT_COST` 35 and `MID_W` 0.30.** The substitutes that may not work at all, led by **`rating_sd`, which has never
+been validated against anything and is one of six admission criteria.** The things that cannot be calibrated until
+there are users, and the note that **the latency capture must ship first because timings cannot be backfilled.**
+The four questions the MVP tests. Behaviour to watch in the first weeks. Known gaps that block building.
+
+**And section 6, which is the one worth the document: what would prove each decision wrong.** Ten design choices,
+each with the observation that would falsify it - *the app offers rather than generates* is wrong if people pick
+the top option every time; *`match` and `disturbance` are different sorts* is wrong if real users see the overlap
+near 80% rather than the measured 34%; *silence means absence* is wrong if the flag misses more than about one in
+ten.
+
+**The closing line is the honest one.** Every figure in the simulations came from synthetic people drawn from a
+normal distribution. **Real users cluster and will break at least one of these in a way no amount of re-running
+fixes. The first fifty real sessions are worth more than all twenty thousand synthetic ones.**
+
+## [2026-10-07] The room screen regenerated from live output (entry 180)
+
+**Screen 08 was drawn by hand yesterday and the engine moved underneath it.** Re-cutting the disturbance bands
+changed which headline fires, so the screen was showing copy the model would no longer produce.
+
+**Every string on it now comes from the simulations.** The room vector is a real `chem4.room()` over four quiet
+talkers - `ENRG` 27, `AFFIL` 74, `TALK` 86, `MOVE` 19, no splits. The sentence is `roomline.room_line()`. The
+headline and the three lines are `roomfit.read()` for a viewer who wants a bit more go than they do: **match 72%,
+disturbance 0.034, YOU WOULD BARELY CHANGE THIS ROOM.**
+
+**The viewer was chosen to be representative rather than flattering.** A near-clone scores 89% and produces a
+single line, which looks better and shows less; a floor person scores 59% and gets *you would change this room*.
+**72% with three real differences is the common case**, and that is what a browsing screen should be drawn
+against.
+
+**Worth keeping as a practice:** a screen drawn by hand is a guess about what the engine says. Generating the copy
+from the simulations catches the drift the moment a constant moves - which is exactly what happened here, one day
+after the screen was made.
+
+## [2026-10-07] Inside a room (entry 181)
+
+**The set had the room before you join and not the room once you are in.** Screen 08 is a browsing view - a match
+ring, the fit read, *request to join* - and **every one of those answers a question that stops existing the moment
+you join.** Screen 29 is what is left.
+
+**The blend style takes the centre**, with every member's icon around it and the chemistry chip beneath, washing
+the background in the room's own colour. That is `VIEW_FLOW.md`'s own description, drawn for the first time. **It
+is the only element on the screen that is about the group rather than about the night**, and it behaves
+differently from everything else: it updates as people join, while the plan does not.
+
+**The plan keeps its per-stop provenance** - *Zoya, this is your line* - which only the merge makes sayable.
+
+**And one generated sentence survives joining:** *this room came to talk, and nobody is trying to push it harder.*
+It described the room when you were deciding and it still describes it now. **The you-versus-room read does not
+survive**, because it was advice about a decision.
+
+## [2026-10-07] The room has an ending, and the plan shows distance not position (entry 182)
+
+**Five changes from the user, and the fourth is an architectural statement that was never written down.**
+
+### A room is the hour before a night, and it ends
+
+| | |
+|---|---|
+| hosted | the room exists - voice, the blend style, the plan being filled stop by stop |
+| **the host locks the plan** | **the room ends** |
+| after | the group chat is created, **named after the room**, and the active plan appears in the bottom bar |
+
+**The chat is not created when the room is hosted. It is created at the lock** - so a room that never settles on a
+plan never produces a chat, and **nobody is left in a group they did not end up going out with.** That is the
+argument for the whole design: the room is a decision-making space with a natural end, and the two things that
+survive it are the two a night actually needs - somewhere to talk, and somewhere to look at the plan.
+
+### Voice, and deliberately no camera
+
+**Rooms are voice.** One mic, muted until tapped, a ring on an icon for who is speaking. **No camera** - the
+user: *not until we have some safeguards in place and people are comfortable with the app.*
+
+**Written into the flow doc as a decision rather than left as a default**, because the pressure to add video will
+come from people who have not thought about who is in a public room at midnight. Revisit when there is a reporting
+flow, a block list and a moderation path - not before.
+
+### The plan is a button, not a list
+
+On screen 29 the three stops became **`View plan`**. It is settled by then; **the room is for the people.**
+
+### Distance, not position - and the user caught this, not me
+
+**The first draft of screen 11 put everybody's icon on the map, as asked.** I flagged that it reversed a rule
+already in the flow doc - *exact location is never shown to users in a public or hosted room; those rooms show an
+area-level cluster, never individual positions* - and proposed splitting it by whether the other person is a
+friend.
+
+**The user's answer was better: show relative distance to the first stop.** *At the stop. 900 m away. 2.3 km away.
+Not sharing.* **It answers the question people actually ask - is everyone nearly there - and a position answers
+that too while also telling a room of five, which may include strangers, exactly where somebody is standing.**
+The privacy rule survives untouched rather than being amended.
+
+**The map keeps your own position, shown only to you**, because that is what makes it useful for getting to stop
+one. **`Not sharing` is a state and is shown plainly**, so nobody has to ask and nobody is singled out. And **Add
+to Google Maps** sits at the bottom - a deep link, so it stores nothing and raises no licensing question, and the
+one thing this app should not try to be is a navigator.
+
+## [2026-10-07] SHUFFL renders no map (entry 183)
+
+**Three versions of screen 11 in one afternoon, and the user's third idea removed a dependency rather than
+managing it.**
+
+| | |
+|---|---|
+| first | everybody's icon on a map, as asked - **reversed a privacy rule already in the flow doc** |
+| second | the map stayed, icons became **distances to the next stop** - the rule survived |
+| **third** | **the map went.** The night is drawn as the rising chain of stops the user drew, with an approach lane into stop one, and everyone placed on it by how far they are |
+
+**The user's argument: a dot on an abstract diagram could be anywhere, so it breaches nothing.** That is right, and
+it is stronger than the second version - the second had positions and chose not to show them; **the third has no
+positions to govern.**
+
+### And it removes an entire dependency
+
+**Navigation is a deep link and nothing else.** *Directions to stop 1* opens Google Maps with the stop as the
+destination - which is what a person would do anyway.
+
+| | |
+|---|---|
+| **no Maps SDK** | no map view, no tile loading, no styling, no attribution surface |
+| **no metered map calls** | **tile loads and Directions requests are both billable; a URL is not.** The one view that looked like it needed Maps turns out not to |
+| **nothing stored** | the link uses `query_place_id`, so navigation runs off the one Google field we may keep |
+
+**The distances are computed on the device** from coordinates already in memory for the live display fetch, and are
+never written down. **The distance is ours; the coordinate is Google's and does not persist.**
+
+**This is the second time today that the more private design was also the cheaper one** - the first being that a
+relative distance answers *is everyone nearly there* better than a position does. Worth noticing as a pattern
+rather than a coincidence: **the feature that collects less usually also costs less to run.**
+
+## [2026-10-07] Direction as well as distance, snapped to sectors (entry 184)
+
+**The user: an icon should carry direction as well as distance.** Correct - *900 m away* does not tell you whether
+somebody is coming from your side of the city, which is what decides who shares a cab and who arrives first.
+
+**And it is the one addition that needed a guard.** A bearing plus an exact distance from a known point **is a
+position** - a circle of possibilities collapses to a dot. So:
+
+| | |
+|---|---|
+| direction | **one of eight compass sectors**, never a heading |
+| distance | **rounded to a band**, never a figure |
+
+**An icon therefore means *about two kilometres, roughly south*.** Enough to know who is near and from where;
+never enough to find anybody. **A room can hold strangers, and that is the case the rounding exists for.**
+
+**The layout follows from it:** the next stop becomes the hub with distance rings around it, and the rest of the
+night chains off. The night still reads as the rising shape the user drew, and the hub re-anchors to the next stop
+as the night moves.
+
+**Still no map and still no Maps SDK.** Direction and distance are both computed on the device from coordinates
+already in memory for the live display fetch, and neither is written down.
+
+## [2026-10-07] Coordinate tags instead of factor scores - tested, not adopted (entry 185)
+
+**The proposal: store where in a night a venue belongs rather than its energy and crowd, and match a stop's
+coordinate to it.** The implicit argument is robustness, and it is a good one - **our scores carry about 7 points
+of error, and quantising is the right move when the noise is large relative to the resolution you are pretending
+to have.** So the question was never elegance. It was where the crossover sits.
+
+### Measured
+
+400 venues, 3,000 drawn nights, both methods judged against the venue's **true** scores, which neither can see.
+
+| score error | scores | coordinate | scores better by |
+|---|---|---|---|
+| 0 | 8.62 | 15.05 | 6.43 |
+| **7.1 - ours** | **11.21** | **16.36** | **5.15** |
+| 14 | 15.12 | 18.35 | 3.23 |
+| 25 | 20.88 | 22.15 | 1.28 |
+| **40** | 26.33 | **25.66** | **-0.67** |
+
+**The crossover is real and sits at about five times our current error.** The quantised list is also less
+selective - 77 venues against 51 - because matching a cell admits everything in a band regardless of how close it
+actually is.
+
+**Not adopted, for a measured reason.** And the table is worth keeping rather than discarding: **if the lexicon
+ever degrades past 25-40 points, quantising becomes the better answer and this says so.** That is a fallback
+with a trigger rather than an idea that was rejected.
+
+### What the test could not settle, stated rather than fudged
+
+**Whether a venue has a role in a night that is independent of its energy, crowd and hours.** A heritage
+restaurant and a quiet cafe can score the same and still be a dinner-first place and an afternoon place. **If that
+is real it is an extra tag, not a replacement.**
+
+**The simulation cannot answer it** - its venues have no role beyond hours and energy, so the answer would have to
+be seeded in to come out. It is a question for the first real database: look for venues the shape ranking places
+wrongly in a way their scores do not explain.
+
+**And the hours already do much of the placement work.** A venue that closes at 23:00 cannot be a closer, and the
+stop list filters on opening hours before any tag is consulted - so *timing and placement* is partly enforced
+already.
+
+## [2026-10-08] Three screens from the MVP list (entry 186)
+
+**Customising a room, pros and cons on a venue, and what your friends are up to.** The fourth green item - the
+active-plan distances - was drawn yesterday.
+
+**Room customisation is three things and one deliberate absence.** Name, description, and the plan card's theme.
+**The room's own colour stays the blend's and is not editable** - it is the room's identity, not its decoration,
+and letting a host repaint it would break the one thing that tells a browser what kind of room they are looking
+at. The description goes on the room card, and **the plan becomes a themed division inside that card** rather than
+beside it, which is what the list asks for. Music is greyed with its reason rather than hidden.
+
+**Friends' activity is new to the spec set entirely** and is the most privacy-sensitive thing on the list, so the
+screen carries its own safety case: **rooms and venues only, never a position, never a search, never a venue
+merely scrolled past**, and the off switch named on the screen rather than buried in settings.
+
+**Pros and cons reads against the shape and the preferences, never the vibe** - and says so in a footer. The list
+phrases it as *according to your vibe*, which is exactly what section 0 of `VENUE_DATABASE_V1.md` forbids: the
+vibe scores people and rooms, and a venue is reached by the skeleton and chosen by the preferences. **The feature
+is right and the attribution was wrong**, so the screen states its own sources.
+
+## [2026-10-08] Ranking rooms on the plan, the gates off, and gold's real date (entry 187)
+
+### Gold is a December item, and section 2.6 was wrong
+
+**The marketing plan puts the Gold Campaign after funding, in December, alongside the QR pop-up stalls and the
+SHUFFL events.** `MVP_INSTRUCTIONS.md` 2.6 was written on 10-03 saying it runs from launch. Corrected.
+
+**What follows is not small.** The **bands stay on the type curve until December** - there is no cheap band data
+before then. **The only pre-funding capture is posting pictures at a venue in your active plan**, which is
+unverified and unpaid and is now the sole route into the factor engine rather than a second one competing with
+gold. The Rs 5 lakh is a post-funding number. **Screens 20-26 are post-MVP** - drawn and specified, not
+first-release work.
+
+### Rank on the plan, not on the shape
+
+**The user's refinement, and it is sharper than it first sounds.** Comparing your skeleton to the room's *merged
+skeleton* compares what its members **wanted**. Comparing it to the room's **plan** compares what they **got**,
+after the venues that exist at those hours had their say. **Matching the plan asks whether you would enjoy this
+actual night; matching the shape asks whether you draw like they do.**
+
+**Measured over 4,000 users shown 4-8 rooms each:** the two pick **the same top room only 67% of the time**, order
+**13% of pairs differently**, and differ by **3.6 points** on average. Not interchangeable - **and the shape
+version fails exactly where supply is thin**, which is late, on the nights people most want to go out.
+
+Alignment is by the clock, not by index, reusing `SKELETON_MERGE_V1` 1: a stop of yours is compared with their
+nearest within 90 minutes, and one with no counterpart counts as a miss.
+
+### The gates come off, and become labels
+
+**At launch volume the gates do not filter a list, they delete it.** The 70% similarity gate alone cuts **78%** of
+rooms, and **55% of users would see an empty screen** - a mean of **0.6 rooms shown.**
+
+**But the information was real, and the `FLOOR` check is the valuable half: it fires on only 6% of rooms** and
+asks the specific question *is there a single stop in this night you could live with.* Cheap and precise.
+
+**So: not a gate and not nothing - a label.** Rank every room, show every room, and put what the gate would have
+said on the card. **This is the same move already made on the Go-here card**, where the talk floor became a
+warning rather than a veto and both buttons stayed live.
+
+**They come back when the median user has enough rooms that filtering leaves a list rather than a blank** - a
+measured trigger, the same shape as the heatmap threshold.
+
+## [2026-10-08] The room card carries the label (entry 188)
+
+**Screen 08 is now drawn as a room that fails the per-member `FLOOR` check** - one nobody would have been shown
+before the gates came off. **What the gate would have said is an amber label and the room is shown anyway**, with
+`Request to join` live.
+
+> **NOTHING HERE IS PITCHED AT YOUR NIGHT** - not one of these three stops is close to the shape you drew. **You
+> can still join** - you would just be going to their night rather than yours.
+
+**Drawn in the warning state on the same reasoning as screen 18**: the warning is the part that changed and the
+part a developer could get wrong. The clean state differs by the absence of one block.
+
+**Every string on it is engine output.** The room is a real `chem4.room()` over four floor-fillers - `ENRG` 94,
+`MOVE` 86, `TALK` 16 - and the viewer drew a quiet night. Match **55%**, disturbance **0.158**, and the read comes
+out *you would change this room*, which is the honest thing to tell somebody about to walk into it.
+
+**And the card now carries the host's own additions** from the MVP list: the description in quotes above the
+label, and the plan as a themed division in the host's chosen colour.
+
+## [2026-10-09] `enrich` reads whatever list it is given, and the South Delhi shortlist (entry 189)
+
+**Bookkeeping note.** Commit `0ef2f70` carries this entry's number in its message and the entry itself
+was never written - the script that wrote it died on an assertion after the code had already been
+committed. This is the entry, written a day late.
+
+**`pipeline.py enrich` no longer requires `candidates.json`.** A new `--src` flag accepts any CSV with
+a `google_place_id` column, which is the shape the developer's own discovery pass produces:
+
+```bash
+python pipeline.py enrich --dry-run --src candidates_south_delhi.csv
+python pipeline.py enrich --key $PLACES_KEY --src candidates_south_delhi.csv
+```
+
+`load_candidates()` reads either form - JSON straight through, CSV through `DictReader` with a
+`utf-8-sig` encoding so Excel's byte-order mark does not become part of the first column name. It
+accepts `google_place_id` or `place_id`, falls back to the id for a missing name, and **drops
+duplicate `place_id`s on the way in** rather than paying for them twice.
+
+**Why this mattered:** the developer and the pipeline had each built a discovery pass, and the two did
+not speak. Rather than ask him to re-run ours, ours now reads his. **Measured:**
+`561 rows read, 561 unique place_ids, ~$14.03` on the South Delhi shortlist.
+
+**And the shortlist itself.** `candidates_ncr.csv` held **2,815** venues across the whole of NCR;
+cutting it to the South Delhi districts leaves **561**. That is the list the first release is built
+on. The NCR file is kept, not deleted - the districts are a flag, not a rewrite
+(`CATCHMENTS` in `pipeline.py`), so widening the catchment later is one word on the command line.
+
+**The licensing rule is unchanged and the CSV respects it**: a `place_id`, our own derived scores, and
+nothing of Google's. Names, addresses, ratings, review text, photos and hours are fetched live for
+display and never stored.
+
+## [2026-10-10] The front end after the flow change: one screen, the wheel, and a night you can build by hand (entry 190)
+
+**Two documents, nineteen questions answered, and the largest front-end change since the MVP cut.**
+`Flow Change_ 9_10_26` and `Add Friends Flow`, reviewed against `VIEW_FLOW.md` and the engine specs.
+**Six things in the documents were dropped on review and three existing features are retired.**
+
+### 1. The SHUFFL screen, top to bottom
+
+| | |
+|---|---|
+| 1 | **Add friends to your night** (top left) and **the filter chip** (top right) |
+| 2 | **the search bar** - *Search through venues and rooms here* |
+| 3 | **Friends that want your kind of night today** - friends whose drawn shape is close to yours |
+| 4 | **rooms**, as a short ranked list, with **shuffle** and **See all rooms** |
+| 5 | **the night everyone drew**, with **Choose venues** |
+| 6 | **Redraw skeleton** |
+| 7 | **Build my own night** |
+| 8 | **presets** |
+
+**Rooms now sit above the user's own night, and that is a decision rather than a layout.**
+`MVP_INSTRUCTIONS.md` calls the stop list *the core loop of the first release*, and MVP question 3 asks
+whether drawing a skeleton beats a list of filters. **Putting rooms first partly answers that question
+before it is measured.** It is defensible on supply grounds - rooms are scarce and perishable, your own
+night is not - but it should be read as a bet, and the thing to watch is whether anybody scrolls past
+the room list at all.
+
+**The home screen and messages are no longer themed.** Only the SHUFFL screen carries the day's colour
+(the user's vibe alone, or the blend once friends are added).
+
+### 2. Add friends to your night, and the wheel
+
+**This replaces both co-hosts and the separate *Join with friends* door.** One person - **the wheel
+holder** - drives one screen while everybody else watches, and the wheel can be requested and handed
+over.
+
+**It is the best idea in either document, because it answers a question the spec never did.** The
+co-host model had five people each draw a skeleton and then the host pick every venue alone, which is
+one person deciding with none of the honesty. **The wheel names the asymmetry, makes it transferable,
+and gives the other four a reason to be on the screen.**
+
+**The flow:** invite friends from the friend list (their vibe, an online dot, and whether they have
+drawn) -> name the gathering -> their DPs appear above the search bar, grey until they accept -> the
+screen's theme becomes the blend and moves as people accept.
+
+**Browsing is locked until every invited friend has accepted and drawn (the user, on review).** This
+is the old capsule rule kept, and **it is the single most important answer in the set**, because it
+dissolves a hard clash with `SKELETON_MERGE_V1.md` §6 - *drawers only, there is no inference from
+cards, ever*. The documents had said the room list and the suggested venues were computed from
+**invited** rather than joined members, which would have required inventing a skeleton for somebody who
+has not drawn one. **With browsing gated on everyone having drawn, invited and drawn are the same set
+by the time anything is ranked, and nothing is inferred.** The waiting state is the old capsule's blank
+screen with the outstanding DPs dropping off one by one - **screen 09 is not retired after all**.
+
+**What the capsule was, this is.** Mechanically the new flow *is* the capsule flow: a creator, invited
+members who must draw, members who see the creator's room view as a pop-up headed *[name] is viewing
+X*, swipe right to approve, unanimity before a join request reaches the target room's host. **So the
+capsule is not obsolete - it is promoted to the primary flow and renamed the capsule room.** What
+genuinely dies is **co-hosts** and the **separate door**.
+
+**The rules that were attached to the old capsule, resolved:**
+
+| | |
+|---|---|
+| three-minute removal for an ignored **invite** | **kept, and re-set to five minutes by entry 192** - one person who never opens the app would otherwise hold the night forever |
+| the blank waiting screen | **kept** (above) |
+| five-minute drop for a friend with **no vibe today** | **kept** |
+| *No rooms fit your group of N* | **kept** - it fires after the gate lifts |
+| a capsule approved or declined **as one unit** by the target room's host | **kept** |
+| **the two-rooms offer** (§5a) firing on the group | **the wheel holder sees it and chooses.** The wheel is exactly the mechanism that was missing when this screen was drawn |
+
+### 3. The gathering chat: created invisibly, extended at the lock
+
+**One chat object, created when the gathering is named, and the user never sees it being made.** They
+name the gathering and land on the SHUFFL screen with the DPs at the top and the status bar reading
+**"[group name]'s room: active"**. **Anyone who joins the public room afterwards is added to that same
+chat when the plan is locked.**
+
+**This supersedes the rule of 2026-10-07**, which created the chat *at* the lock so that *nobody is
+left in a group they did not end up going out with*. **The new rule is safe, and the reason is worth
+writing down: the people in the chat at invite time are the user's own friends, and the only strangers
+who ever enter arrive at the lock, after they have committed.** The old rule was protecting against
+being stuck in a group with strangers; the new one still does that, and gives friends a chat
+immediately. **It also quietly fixes a watchlist item** - *the group chat has nothing to say* - because
+the chat now exists for the hour before the night rather than only after it.
+
+### 4. Hosting: the entry point dies, the mechanism lives
+
+**The Host button and the host room are retired. Hosting is not.** Every plan card still carries **Lock
+this** and **Host this**, a user can still host a plan or a single venue alone, and the capsule room
+going public still flashes **"This room is now public"** under the room name.
+
+**Retired:** screens **05** and **06**, the *What would you like to host?* screen, **Add co-hosts**, the
+greyed **Create Plan** with its *n/5* skeleton counter, and the co-host deadlock machinery.
+**Kept, because a public room still needs it:** the request-to-join queue, **Strong Matches / Others**
+sorting, the silent auto-decline of poor matches, the remove cross, and room renaming.
+
+### 5. Build my own night: a plan with no skeleton
+
+**A blank grid, a circle, and a search bar.** Tap the circle, search a venue, it becomes a tile; drag
+the arrow to add the next stop. **Meters at the top fill as stops are added**, and the user adjusts the
+night until the meters read the way they want.
+
+**`plan.skeleton = null` is now a legal state and that is the point, not a gap** (the user: *"the user
+taking full control and just forming a collection of venues that they like and seeing the factor scores
+for them and adjusting accordingly"*). **Everything that reads a skeleton has to tolerate its absence:**
+
+| | |
+|---|---|
+| *[group]'s ideal night shape* | cannot render for a built night |
+| the two-rooms offer | cannot fire - there are no drawings to disagree |
+| `SIZE_CEILING` | not applied. The drag-an-arrow model has no stop cap |
+| the time window | not enforced, so a built night can fall outside its own filters - and other users' window filter will then correctly hide it |
+| **ranking by other users** | **works, and only because of entry 187.** Rooms are ranked against the room's *actual plan* rather than its merged shape. Had we kept shape-ranking, a built night would have been unrankable |
+
+**The venue search must hit our own admitted database and never Google's index**, or a user can seat a
+venue that has no factor scores (so the meters cannot move), never passed the six admission criteria,
+and is not in the stop-list universe. **Nothing yet stops a user picking a venue that is closed at that
+hour** - the stop list only ever shows open venues, and this surface drops that guarantee. It needs a
+rule.
+
+**The meters are a precision claim and should be drawn as bands, not numbers.** The lexicon's mean
+error is **7.1 points**, and `FOCUS` and `GAMES` have no low-keyword list at all. A plan's score on a
+factor is also a curve rather than a number, so a meter must show **a span across the stops**: the mean
+of a rising night equals the mean of a falling one.
+
+### 6. Six things in the documents, dropped on review
+
+| | why |
+|---|---|
+| **per-factor sliders** on *Reset night shape* | the skeleton tests no factors - it has two axes per stop. Sliders would have been either the identity factors (self-reported vibe, which the deck exists to prevent), the preferences (the filter chip, duplicated), or one value per axis, which flattens the time axis. **Dropped; the button is just Redraw skeleton** |
+| **Give me something else** | retired with the generator on 2026-10-05 and stays retired. There is no plan to regenerate |
+| **purpose** as a collected field | **purpose *is* the skeleton** (the user). Written as *the filters and the skeleton* so nobody builds a field |
+| *the automatic night shape* | means **the shape everyone drew**. Nothing proposes a shape |
+| the **per-factor sliders**' sibling, *redraw skeleton instead* | redundant once the sliders go |
+| **Place or People**, as a filter | **not dropped - relocated.** It appears behind **See all rooms**, where the player and the full list live. The short list on the SHUFFL screen uses entry 187's combined rank; the player lets the user re-sort on one axis |
+
+**And one correction of mine.** I read the short room list as replacing the player. It does not: **See
+all rooms** opens the player, then the full list, then the **Skipped** divider, exactly as specified.
+The short list is a preview one tap above it. **The shuffle button is still worth a second look** - the
+measured mean rooms shown at launch volume was **0.6** with the gates on, and a control promising new
+options that returns the same five rooms is worse than no control. It should render only when there are
+more rooms than the list shows.
+
+### 7. Venue photography: the cost, and the decision not to depend on it
+
+**The question the flow forces:** search results, suggested venues, stop lists and build-my-own tiles
+all want a picture, and **we store nothing of Google's but the `place_id`** (`VENUE_DATABASE_V1.md`
+§0). So every Google photo impression is a live, billed fetch.
+
+**Verified against Google's price list, 2026-10-10:** **Place Details Photos is an Enterprise SKU at
+$7.00 per 1,000** requests, with **1,000 free a month** - about twenty-five user-nights. The media
+fetch needs a photo reference, which arrives inside a Place Details response; **our enrich call is
+already at the top tier because it asks for reviews, so references cost nothing extra - the media
+fetch is the charge.** Google also requires the photo's **author attribution** to be displayed, which
+on its own makes a grid of thumbnails awkward.
+
+**The arithmetic, and it is the largest API number in the project:**
+
+| what shows photos | impressions per user-night | at 300 users |
+|---|---|---|
+| **thumbnails in every list** | ~40 | **~$2,500 a month** |
+| **the venue screen only**, 2 photos on open, 3 opens a night | 6 | **~$380 a month** |
+| **our own library** | 0 | **nothing** |
+
+**So the decision: lists never fetch from Google.** Thumbnails come from our own library, in this order
+- **venue-owner media** (296 admitted venues, one ask each, and the venue picks its best shot), then
+**in-app user content**, then **a branded placeholder**. Google photos are fetched live **on the venue
+screen only**, two or three, on open, never for an off-screen row.
+
+**And the strategic point, which changes a priority.** The gold capture flow is **578 slots of people
+photographing venues with a consent flow already drawn** (screens 21-26). At two or three photos a slot
+that is a licensed library of roughly **1,500 venue photos**. **We have been describing gold as a
+band-data engine; it is also the only photo-acquisition engine we have.** Gold is a December,
+post-funding item, so **at launch most venues have no photo and the design must not need one** - which
+our screens already do not: they are built on poster type, colour and the blend wash rather than
+photography. **A venue name in caps with its fit number and a colour block reads better than a grey
+photograph of an empty dining room.**
+
+**Not answers:** Yelp and Foursquare carry the same no-cache and attribution terms with worse Delhi
+coverage, and a venue's own website image is still somebody's copyright - it needs the same owner
+permission, so it is an easier *ask* rather than a shortcut.
+
+### 8. Screen impact
+
+**Retired:** **05** host, **06** host room, **07** join place-or-people *(the toggle itself survives
+behind See all rooms; the screen does not)*.
+**Redrawn:** **02**, **03** (the whole SHUFFL screen), **09** (the waiting state, now the capsule
+room's), **12** (the gathering chat), **14** and **15** (capsule approval, now capsule-room pop-ups),
+**31** (friends activity, now *friends that want your kind of night*).
+**New, about twelve:** the add-friends list, the name-the-gathering prompt, the capsule room with the
+wheel, the capsule room without it, the *[name] is viewing X* pop-up, the minimised **view updates**
+state, the wheel-request pop-up, build-my-own blank grid, its venue search sheet, its filled state with
+meters, and the no-wheel state.
+
+**Two new surfaces carry obligations.** *Friends that want your kind of night today* needs **a sixth
+privacy toggle** - Settings has per-field toggles for today's vibe, the vibe score, the going-out type,
+history and past events, and **tonight's shape is not one of them** - plus a similarity threshold, or it
+will show a friend who is forty points away. And **the online dot is the first presence system in the
+app**; nothing specifies one.
+
+## [2026-10-12] The waiting screen, and proposals: the four people who are not driving get something to do (entry 191)
+
+**Entry 190 left the no-wheel screen as a blank page and two buttons, and flagged it as the first
+thing owed. This is the answer, and it is better than the read-only floor I proposed.**
+
+### 1. The waiting screen
+
+**Minimising the capsule room no longer gives a member a dead end.** It gives them **three
+carousels**, each **3-5 items** with a **Refresh** at the end:
+
+| | |
+|---|---|
+| **Suggested rooms** | public rooms the group could join |
+| **Suggested venues** | places that fit the group's night |
+| **Suggested nights** | **presets** that suit the group |
+
+**All three are ranked against the whole group's merged skeleton, never against the person looking.**
+That is what makes the screen worth having: four people see the same shelf, so proposing from it is a
+conversation rather than five private searches. **"You don't have the wheel" and "request to take the
+wheel" move to the bottom of the screen** - they are still true, they are just no longer the content.
+
+### 2. Propose - one verb, and it is the whole mechanism
+
+**Opening anything from a carousel gives the member the same view the wheel holder would get, with
+every control replaced by one button: Propose.** The proposal goes to the wheel holder, who gets a
+**Proposals button top right, beside the filters**. Each proposal expands to the full room, venue or
+preset, and from there the holder can **host, join, find rooms or lock** exactly as if they had found
+it themselves. **Requesting the wheel still works and is unchanged.**
+
+**This is the right shape for the problem.** The wheel exists because somebody has to decide; the
+objection to it was that the other four had nothing to do. **Proposing is participation without a
+second steering wheel** - it adds a verb, not a second driver, so the thing that made co-hosts
+incoherent does not come back.
+
+### 3. The presets-in-a-room rule narrows rather than breaks
+
+**`VIEW_FLOW.md` says presets do not exist in a room, and a *Suggested nights* carousel is presets in
+a room.** But the rule's actual load is one sentence: **a preset-filled skeleton and a drawn one must
+never meet in a merge**, because `SKELETON_MERGE_V1.md` §5a resolves opposed drawings by whose
+drawing is **firmer**, and *a tapped preset has no firmness to measure*.
+
+**A proposed preset never enters a merge.** By the time the carousels exist, everybody has drawn and
+the merge has already run; the preset is ranked **against** the merged shape and, if the holder takes
+it, **replaces** the plan rather than being averaged into it. **So the thing the rule protects is
+intact and the surface rule narrows to: a preset is never an input to a merge.**
+
+**One consequence that needs a confirmation step, and it is not small.** Four people drew; if the
+holder accepts a preset proposal, **that drawing is discarded**. The holder must be told so in plain
+words - *"this replaces the night you all drew"* - because otherwise four people's input disappears
+silently. **Adopting a preset also loses stop provenance**, so the plan card can no longer say *"this
+is your line"*.
+
+### 4. The five conditional rules
+
+| | |
+|---|---|
+| **1. A friend who has not opened the app** | vibe deck -> skeleton, headed **"draw the shape of your night to join [host]'s night"** -> straight into the capsule room. Never asked for distance, budget or time - those are the room's |
+| **2. The holder changes the filters** | the carousels re-rank. **But see the correction below** |
+| **3. Not everyone has drawn** | **the SHUFFL screen stays locked for everybody, including the holder**, reading *"Waiting for everyone invited to join"*. Re-ranking on every arriving skeleton would thrash the screen |
+| **4. The capsule room opens anyway** | whoever is in can talk, and can leave for home or messages. **Only the waiting screen is locked**, with the same line |
+| **5. Somebody leaves** | both screens re-rank against who is left |
+
+**Rule 3 is the important one and it settles entry 190's §6 argument completely.** Nothing is ranked
+against anybody until every member has drawn, so there is never a moment where the app is ranking
+against a person who has told it nothing. The lock is not politeness - **it is the only state in
+which the ranking is honest.**
+
+**Rule 5 has a consequence worth stating: leaving is the deadlock exit.** If four of five have drawn
+and the fifth leaves or is removed, everyone remaining has drawn, so **the lock lifts**. That is the
+same mechanism as the wheel holder's remove-cross, arrived at from the other side, and it is why the
+skeleton gate correctly has no timer.
+
+### 5. Two corrections to the rules as written, and one question
+
+**Rule 2 is right for two filters out of three and wrong for the third.** Distance and budget
+re-rank the carousels. **The time window does not re-rank anything - it invalidates every drawing in
+the room** (`SKELETON_MERGE_V1.md` §7), so the group drops back to Rule 3's locked state and
+everybody redraws. A carousel refresh would hide the most destructive control in the app behind the
+gentlest-sounding one.
+
+**And one thing I raised as a correction and should not have: the five-minute vibe timer.**
+**It is not decided and is held in `REMINDERS.md`** (2026-10-12, at the user's instruction). The
+existing rule is *open the app **and complete the game** within five minutes or be removed*, and Rule
+1 now sends a cold-open friend through that deck on the way into a capsule room. **The question is
+whether the clock covers opening the app or also finishing the deck**, and it matters for a reason
+beyond fairness: **a clock running during the deck contaminates the one measurement the deck
+exists to take.** Card latency feeds firmness, firmness feeds the name and the merge, and
+`ASSESSMENT_ENGINE.md` requires the timing to be silent - *"it must not mention time, speed, or how
+many cards there are"*. A five-minute eject clock either **shows**, which breaks that rule outright,
+or **hides**, which ejects somebody silently mid-deck. The options are in `REMINDERS.md`.
+
+**Refresh needs the same condition as shuffle.** At launch volume there may be three live rooms in
+the city, and a Refresh that promises more and returns the same three is worse than no Refresh. It
+should render only when the carousel is not already showing everything that exists - and on the
+**rooms** carousel that will often be the case, while **venues** and **presets** always have more.
+
+### 6. Smaller things this opens
+
+- **Proposal volume.** Four watchers x three carousels is a queue nobody reads. **Dedupe** - two
+  people proposing the same venue is one proposal with two names on it - and order by how many people
+  are behind each one.
+- **A proposal's match number is the group's, not the proposer's**, because the carousel is
+  group-ranked. Showing a personal number on a shared shelf would make two people's copies disagree.
+- **A leaver's proposals leave with them**, unless somebody else is behind the same one.
+
+## [2026-10-12] The invite has three answers, and the clock is a response clock (entry 192)
+
+**The five-minute question from entry 191 is settled, and settling it turned one timer into the only
+timer in the whole invite path.**
+
+### 1. Five minutes to respond, never to finish
+
+**Option (a).** The clock runs from the invite and **stops the moment they enter the swipe game** -
+or **the skeleton, if they have already swiped today**. It never overlaps the deck.
+
+**That removes the problem rather than trading it off.** A clock running during the deck either
+**shows**, breaking `ASSESSMENT_ENGINE.md`'s rule that the card screen must never mention time,
+speed or card count - *"telling them changes how they answer"* - or it **hides**, and ejects somebody
+silently mid-deck. Both corrupt card latency, which feeds firmness, which feeds the daily name and
+the merge. **With the clock stopping at the first card, the deck is never timed by anything the user
+could feel.**
+
+**And after they accept there is no clock at all.** Somebody who starts the deck and wanders off, or
+draws half a skeleton and stops, is handled the way the skeleton gate already handles it: **the wheel
+holder removes them with the cross.** So the invite path now has **exactly one timer**, it measures
+one thing - *did they answer* - and every other wait ends with a person deciding rather than a
+countdown firing.
+
+**This supersedes the three-minute rule in three places** (`VIEW_FLOW.md` §the capsule's room
+approval, the locked-state table, and entry 191's kept-rules table). **An ignored invite is five
+minutes, everywhere.** Two numbers for one behaviour was a bug waiting to ship.
+
+### 2. An invite has three answers, and the third is the one that was missing
+
+**Tapping an invite - from the phone notification or from the notifications bar, the same screen
+either way - opens an interstitial before anything else happens:**
+
+> **[Host] has invited you to their night**
+> [ Accept ]   [ Decline ]        &#10005;
+
+| | |
+|---|---|
+| **Accept** | the swipe game, or **the skeleton directly if they have already swiped today**. **The clock stops here.** Then the capsule room |
+| **Decline** | **removed from the room immediately** - and sent to **the locked home screen**, not to the deck |
+| **&#10005; ignore** | the invite returns to the **notifications bar on the home screen**, and **the five-minute clock keeps running** |
+
+**The reason for the interstitial is the user's and it is the right one:** *"declining the request
+should lead the user to somewhere and not the swipe game directly since it may be that they don't
+want to use the app at the moment."*
+
+**The old behaviour was worse in a way that is easy to miss.** A room invite used to drop an accepter
+straight into the room with the deck over a blurred background, and offered no third option at all -
+so the only ways out of an invite were *yes* and *nothing*. **A person who has been invited and does
+not want to go out tonight had no way to say so**, and tapping the notification committed them to a
+screen about going out. **Decline is now a real answer that frees both people**: the invitee gets
+their evening back, and the room gets its lock lifted instead of waiting out a countdown on somebody
+who already knows the answer.
+
+### 3. Decline is the fastest deadlock exit
+
+**Entry 191 established that leaving is how a stuck room gets unstuck.** Decline is that, immediately
+rather than after five minutes: if four of five have drawn and the fifth declines, **the merge
+re-runs and the lock lifts at once**. The three exits now sit in a clean order -
+
+| | |
+|---|---|
+| **decline** | instant |
+| **ignore** | five minutes |
+| **accepted but not drawing** | no timer; the wheel holder removes them |
+
+### 4. The locked home screen is not new, only newly reachable
+
+**It already exists** - a returning user without today's vibe sees the home screen with every
+vibe-gated feature blurred and *"Play the swipe game and get your vibe for the day to use this
+feature"* over each section. **Declining an invite now lands there**, which is the right destination
+precisely because it asks for nothing.
+
+**And tapping Play from there still asks for the vibe first, before any filter or the skeleton** -
+which is the two-layer gate already in this document, not a new rule. **The whole app is gated on the
+deck; the SHUFFL screen is gated on the filters and the shape.** Declining an invite does not skip a
+layer.
+
+### 5. Two things this leaves open
+
+**What stays reachable on the locked home screen.** The user said *"the only thing accessible is
+messages."* The standing rule says *"all features except profile settings and messages/social"*.
+**I have kept the standing rule** - profile and settings stay reachable - because locking somebody
+out of their own settings means they cannot turn off the notifications that brought them there, and
+that is the one thing a person who just declined an invite might actually want. **Flagged rather than
+decided.**
+
+**An invite that runs out while it is sitting in the bar.** It should go to a visible **expired**
+state - *"this night started without you"* - rather than silently disappearing, or the user taps a
+dead row and the app says nothing. Held in `REMINDERS.md`.
+
+## [2026-10-13] An expired invite is a record, not a deletion (entry 193)
+
+**The last undrawn state from entry 192. An invite that runs out does not disappear from the
+notifications bar.**
+
+**A row that vanishes leaves the person wondering whether they imagined it; a row that stays but does
+nothing is worse.** So it expands and says the two things it knows:
+
+> **THIS NIGHT STARTED WITHOUT YOU**
+> You didn't answer inside five minutes, so Dev's night went ahead and **you came off the room**.
+> It went public at 21:52 - you can still ask to join like anybody else.
+
+**What is offered depends on what is true.** If the night went public, **Find the room** is live and
+puts them in the ordinary request-to-join path - no special case, no back door. **If it never went
+public there is nothing to find**, and the row carries **Message Dev** alone rather than a button
+that would do nothing.
+
+**It also says whether the host knows**, which is the thing a person actually wonders: *Dev saw you
+drop off the list.* He did - the waiting screen shows exactly that, DPs dropping off one at a time
+(entry 191).
+
+### The three endings look different on purpose
+
+| | |
+|---|---|
+| **live** | counts down |
+| **expired** | says what happened and what is left |
+| **declined** | records that they answered, and nothing more |
+
+**All three clear themselves when the night is over.** The bar is a record of tonight, not a queue to
+work through.
+
+### The countdown is shown here and hidden in the deck, and that is not a contradiction
+
+**The live row counts down in the open - *4:12 left to answer*.** That is the exact opposite of the
+rule on the card screen, which may never mention time, speed or card count because *"telling them
+changes how they answer"* (`ASSESSMENT_ENGINE.md`).
+
+**Both are right, and the difference is what the clock is measuring.** In the deck the clock is
+measuring **the user's own reaction time**, which feeds firmness, the daily name and the merge - so
+showing it corrupts the measurement. In the bar the clock is measuring **how long four other people
+have to wait**, and changing how fast somebody answers that is the entire point.
+
+**A countdown is honest where it is about somebody else's evening and corrupting where it is about
+your own.**
+
+## [2026-10-13] Three notifications on the home screen, the rest behind See all (entry 194)
+
+**The notifications bar grows all night and the home screen cannot hold it.** It now shows **the
+three most recent**, with **See all** opening a scrollable notifications screen over the home screen.
+The label carries two numbers - *See all 11 - 2 waiting* - because **how many there are** and **how
+many need an answer** are different questions and only the second one is urgent.
+
+**The expanded screen is split in two**, and the split matters more than the scroll: **waiting on
+you** is a queue, **earlier tonight** is a record. The expired invite from entry 193 expands there
+rather than on the home screen.
+
+### One correction, and without it the rule has a hole
+
+**Strict recency would let three friend requests push a live invite off the home screen** - and a
+live invite is the one row with a five-minute clock on it and four other people waiting on the
+answer. **So: anything with a running clock pins to the top and is never the row that gets cut.**
+The three-slot limit applies to everything else.
+
+**This is the same precedence idea as the status bar** (`VIEW_FLOW.md`, The Status Bar), where a
+locked plan beats everything and the most recent state wins below it. **Recency is the default
+ordering, never the rule that decides what disappears.**
+
+### Two stale things found on screen 01 while doing this
+
+**The home screen was still advertising retired concepts.** Its notification rows read *"Aarav made
+you a co-host"* and *"Nitya added you to a capsule"*, and its status bar read *"Aarav's room - 2/5
+skeletons"*. **Co-hosts, the capsule as a separate thing, and the n/5 skeleton counter were all
+retired by entry 190.** All three are replaced.
+
+**Worth noting as a pattern rather than three typos:** these survived two rounds of redrawing because
+screen 01 was not in the set either time. **A retirement is not finished when the flow doc says so -
+it is finished when nothing in the drawn set still shows it.** Screens 05, 06 and 07 were removed
+cleanly; the references to them inside other screens were not checked.
+
+## [2026-10-13] The sweep: ten screens carrying things that no longer exist (entry 195)
+
+**Entry 194 found screen 01 still advertising co-hosts, and said a retirement is finished only when
+nothing in the drawn set still shows it. This is that sweep, across all fifty.**
+
+**A keyword pass found almost nothing** - the retired vocabulary had largely gone with the screens
+that used it. **The damage was semantic**: screens that never say a retired word and simply assume
+retired behaviour. The method that worked was **reading the rendered text of every screen drawn
+before entry 190**.
+
+### Four screens are retired and nothing on them said so
+
+**05 Host, 06 the host room, 07 Join / Place-or-People** (entry 190) and **09 the capsule waiting
+screen** (superseded by 35). **They were kept as history and were indistinguishable from live
+screens** - a developer opening the folder would have found five host screens with no sign that three
+of them describe a flow that does not exist.
+
+**Each now carries a RETIRED stamp across the screen itself, not only in its caption**, because the
+PNGs get passed around on their own. The captions say what survived the retirement: the
+request-to-join queue and the Strong Matches sorting outlived screen 05; the Place-or-People toggle
+outlived screen 07; the locked-until-everyone-draws rule outlived screen 09.
+
+### Six live screens were showing retired things
+
+| | |
+|---|---|
+| **04** the skeleton game | **"Or select from presets"** - that button moved off this screen on **2026-10-06**, on the user's own argument that under the skeleton it reads as a fallback for people who cannot manage. **It survived the move by seven days** |
+| **12** messages | *"Nitya: recreate it for tonight?"* and *"Sana: sent a plan to the group"* - **the Create and Recreate buttons and the plan-as-a-photo-message were retired 2026-10-06.** The group chat makes no plans |
+| **14** and **15** | *"For the capsule"*, *"waiting on approval from the capsule"*, *"awaiting capsule"* - **user-facing copy still naming the capsule.** The mechanism survives; the word does not |
+| **18** the Go-here card | its button read **"BUILD MY NIGHT"**, which since entry 190 collides with **Build my own night**, a different feature. Now **"Build around this"** |
+| **27** the member stop list | **"Ask Aarav to change this"** and *"the pick is his because the room is"* - both predate the wheel. Now **"Propose another"** and *"because he has the wheel"* |
+
+**27 is worth more than its fix.** The screen was right and its verb was wrong: a member watching the
+holder pick already needed somewhere to put a disagreement, and entry 191 gave that somewhere a name.
+**Propose now points at a stop as well as at a carousel** - the same verb in both places rather than
+a second mechanism.
+
+### What the sweep says about the process
+
+**All of this escaped two rounds of redrawing**, because each round touched only the screens its
+change was about. **The screens that go stale are precisely the ones a change is not about** - they
+inherit a retirement without ever being edited by it, so they are never in the redraw set.
+
+**The cheap guard is the stamp:** a retired screen that still renders is a trap, a stamped one is a
+record. **The expensive guard is reading the drawn set rather than grepping it**, which is what found
+five of the six live errors.
+
+## [2026-10-13] CROWD splits on two coarse slots, and a meter says where its band came from (entry 196)
+
+### 1. CROWD is the only factor that splits
+
+**The user: CROWD should be "how much that venue is typically full at that hour (not a detailed hour
+band but rather just divided into day and night) or on that day".**
+
+**Adopted, and it is a coarsening of machinery that already exists rather than new machinery.**
+`VENUE_DATABASE_V1.md` §2 already specifies a **`base` plus `slots`** keyed by day range and hour
+range, resolved at query time, with the ordinary slots **generated free from the type curve**. What
+was deferred for the first release was the *data*, never the structure. **So this changes how many
+slots we author - two, not thirty.**
+
+| | |
+|---|---|
+| **the cut** | **22:00**, and **Fri-Sat against the rest** |
+| **who splits** | **`CROWD` alone.** `ENRG`, `TALK` and `MOVE` keep one value each |
+| **where the values come from** | timed and dated review evidence where it exists (`FILL_AT` 3), the **type curve** where it does not |
+
+**Why only CROWD.** How full a room is changes enormously with the hour and the day. How loud it is,
+or whether it has a floor, does not nearly as much - **a club is a club at nine and at one; it is
+simply empty at nine.** Splitting all four would quadruple the authoring for three factors that
+barely move.
+
+**Why two cuts and not a 2x2.** Four cells need four times the evidence and **a venue gives us five
+reviews**. The two cuts are applied as **independent modifiers on one base**, not as four
+independently authored numbers, so the evidence is never fragmented.
+
+**The 22:00 cut is a guess and it is measurable right now.** It should sit where the **type curves
+diverge most**, and we have the curves. Worth an hour before launch rather than after. Held in
+`REMINDERS.md`.
+
+**Fri-Sat, not "the weekend".** Sunday in Delhi behaves like a weekday for going out, and a
+weekend/weekday cut that includes Sunday would smear the one distinction it exists to make.
+
+### 2. Confidence marks - seven options, screen 51
+
+**The problem:** a band read from forty review mentions and a band read from a hand-written type
+prior **render identically**, and the second is a guess wearing the first one's clothes. Screen 51
+shows the same value seven ways.
+
+| | | |
+|---|---|---|
+| **A** | hatched | reads as provisional; risks looking like a loading state |
+| **B** | **hollow** | outline, no fill. **Clearest at this size and costs nothing** |
+| **C** | widened | semantically perfect and **unusable - width already means the span across stops** |
+| **D** | pips | matches the profile screen's preference dots; reintroduces a number |
+| **E** | dimmed | cheapest, no new vocabulary; risks reading as disabled |
+| **F** | source label | unambiguous, costs a fourth text element per row |
+| **G** | prior notch | shows the type's own value as a notch, so a band sitting on its notch says *nothing moved this* |
+
+**Recommended: B, with one footer line** - *"hollow bands are read from the venue's type, not from
+what people wrote about it"* - because **one sentence under the block beats four labels on four
+rows**. Drawn in place on screen 52.
+
+**C is the instructive failure and worth recording.** Widening a band is the textbook way to show
+uncertainty, and it cannot be used here because the meter already spends width on the span across
+stops. **Two different meanings cannot share one visual channel**, and the span is the one that
+earns it.
+
+**G is held rather than rejected.** It is the most informative of the seven and the only one that
+shows *how far* the evidence moved the value rather than merely that it did. It also needs a sentence
+of explanation, which is why it waits for a surface with room for one.
+
+## [2026-10-13] Hollow adopted, and the meter set measured (entry 197)
+
+**`simulations/meterband.py`. The confidence mark is settled and the meter set is no longer a
+judgement call - it has numbers against it, and two of them contradict things already written down.**
+
+### 0. The first version of this sim was the wrong experiment
+
+**It asked whether two independently generated nights ever render the same meter block. They never
+do** - the block is eight quantised numbers - **so every condition returned 0.0% and the file proved
+nothing.** Recorded because the failure is instructive: *collision between random pairs* is the wrong
+question for a readout. The right questions are whether it **moves when it should** and **holds still
+when it should**:
+
+| | |
+|---|---|
+| **blindness** | swap one stop for a venue of a **different kind**. How often does nothing change? |
+| **jitter** | swap one stop for an **equivalent** venue of the same kind. How often does it change anyway? |
+
+### 1. Hollow is adopted (the user, 2026-10-13)
+
+**Option B from screen 51, with one footer line** - *"hollow bands are read from the venue's type,
+not from what people wrote about it"* - rather than a label on every row.
+
+### 2. And the mark is a constant on one of the four rows
+
+| meter | hollow |
+|---|---|
+| `ENRG` | **12%** |
+| `CROWD` | **30%** |
+| `TALK` | **78%** |
+| `MOVE` | **96%** |
+| `FOCUS` | 88% |
+
+**On ENERGY and CROWD the mark carries information. On ON YOUR FEET it is on 96% of the time, which
+is not a mark but a label** - and worse, **its constancy makes the other rows' hollowness harder to
+notice**, which is the opposite of what it is for.
+
+**Two fixes, not exclusive.** **Widen the `MOVE` keyword list** - this is exactly the fix the Kwality
+test forced on `HERIT` and `SCEN`, both of which went from unusable to usable once they were written
+in the words people actually use rather than the words a spec writer reaches for. Or **suppress the
+mark on that row** and say once in the footer that on-your-feet is read from the venue type until the
+bands are measured. **I would do the first and fall back to the second.**
+
+### 3. The band is sensitive and noisy; the word is stable and blunt
+
+| | blind | jitter |
+|---|---|---|
+| **the band** (10-point steps) | **6.5%** | **89.5%** |
+| **the word** (*quiet, then loud*) | **28.8%** | **51.0%** |
+
+**Swapping a bar for another bar of the same kind moves the band nine times in ten.** That sounds
+alarming and is not, **because the two layers are doing different jobs** - and the screen already
+carries both. **The band is the detail and moves for almost anything; the word is the headline and
+holds still for a night of the same character.** Keeping both was an assumption on 2026-10-10 and is
+now a measured decision.
+
+### 4. The span was adopted for the wrong stated reason, and is still right
+
+**The record says the span exists because *the mean of a rising night equals the mean of a falling
+one*. That is true of the mean and it is also true of the span.** A min-max span is **order-invariant**
+on everything except `CROWD`; it cannot see direction either.
+
+**What the span actually buys is range.** On nights with near-identical means and clearly different
+ranges, **the mean renders them alike 20.6% of the time and the span never does.**
+
+**Direction is carried by the arc, and only by the arc** - reversing a night changes the arc **99.9%**
+of the time. **So the sparkline is load-bearing rather than decoration**, and anyone trimming the
+screen for space should take something else.
+
+**The conclusion stands and the reasoning in `VIEW_FLOW.md` is corrected.** Getting the right answer
+from a wrong argument is worth catching, because the wrong argument would have justified dropping the
+arc.
+
+### 5. FOCUS as a fifth meter buys more than expected, and should still stay a badge
+
+| | blind | jitter |
+|---|---|---|
+| four meters | 6.5% | 89.5% |
+| **five, with `FOCUS`** | **2.0%** | 94.6% |
+
+**It cuts blindness by two thirds.** But it does so by adding a row that is **hollow 88% of the
+time** - it is buying sensitivity with a mostly-guessed value, and the jitter rises with it.
+**The badge stays, and this is now a judgement with a number against it rather than an assumption.**
+
+### 6. Ten-point bands sit where the curve bends
+
+| quantisation | blind | jitter |
+|---|---|---|
+| 5 points | 4.6% | 92.9% |
+| **10 points** | **6.5%** | **89.5%** |
+| 15 points | 8.6% | 85.7% |
+| 25 points | 14.2% | 75.9% |
+
+**There is no free lunch in the resolution, only the trade**, and no setting fixes the jitter -
+even four steps on the bar still moves 76% of the time. **Jitter is structural to a min-max span over
+venues that genuinely differ**, not a resolution problem, which is why the answer is the word rather
+than a coarser bar.
+
+### 7. The usual caveat, and it bites harder here than most
+
+**Every number above is synthetic.** The venue model is the pipeline's own type priors plus a
+12-point spread, and the evidence depths are assumed Poisson rates, not measured ones. **The hollow
+percentages in particular rest entirely on how many keyword hits a factor really gets across five
+reviews** - and that is measurable the moment the developer's enriched database exists, without a
+single user. **It should be the first thing checked against it.**
+
+## [2026-10-13] The meters stop being factors (entry 198)
+
+**The user: "the meters don't need to be factors. Factors are primarily for our reference and for the
+back end to use. The meters can use words like, how antique the night is? how loud it is?"**
+
+**Adopted, and it is the right correction.** The meter set had been the factor set because the factor
+set was what we had, not because a factor is a good thing to show somebody. **A factor is what the
+engine reasons with. A meter is a sentence a person would say about a night.** Those overlap and they
+are not the same list.
+
+### The set
+
+| | |
+|---|---|
+| **meters** | how loud &middot; how busy &middot; **how it looks** &middot; how dressed up &middot; what it costs |
+| **readouts**, exact figures rather than bars | how late it runs &middot; how far it travels &middot; **the arc** |
+| **badges**, present or absent | a live act &middot; a floor &middot; outdoors &middot; a proper meal &middot; something to play |
+
+### What a meter has to be, which is not what a factor has to be
+
+1. a sentence a person would say about **a night**, not about a room;
+2. meaningful **aggregated across three venues**;
+3. it has to **vary** across nights people would plausibly build;
+4. it has to be **readable** from what we hold.
+
+**`TALK` and `MOVE` fail the first test and the measurement agreed from the other side.** Entry 197
+found them read from the venue's type rather than its reviews **78%** and **96%** of the time - we
+were drawing bars for two properties we can barely read. **This also disposes of entry 197's open
+problem**: the 96%-hollow row stops existing rather than needing a fix.
+
+**`AFFIL` was never in the set** and could not be - it is a people property whose chemistry pull is
+0.00, and it splits rooms rather than describing places.
+
+**Retired from the meter block, and from nothing else.** `TALK` is still the deck's fourth card, still
+the talk warning on the Go-here card, still a line in the venue pros and cons. `MOVE` is still a deck
+card and still in chemistry. **This is a decision about one screen's readout.**
+
+### `HERIT` was proposed and dropped the same day
+
+*How antique* was the user's own example and it is well evidenced - the Kwality test found **age is
+narrated**, one of the very few venue attributes a reviewer treats as a story. **It fails test 3.**
+Almost everything admitted in South Delhi is new, so the meter would sit pinned at one end for most
+nights - **dead space, which is the 96%-hollow failure wearing different clothes.** The user caught
+this before it was drawn.
+
+### `SCEN` replaces it, and the reason generalises
+
+**How it looks passes all four, and passes test 4 for a reason worth stating: it is one of the only
+factors with a working vocabulary in BOTH directions.** A meter has to be able to say *not much* as
+well as *a lot*. `FOCUS` and `GAMES` have **no low keyword list at all** - they can only say *yes*,
+which is why they are badges. **`SCEN` can say both, and only because the Kwality test forced it**: a
+venue whose reviews called the decor *dated, plain, no frills* scored **75** until the lo list was
+widened, after which it read **34**.
+
+**That is a general rule for this screen and it should be applied before anything else is promoted to
+a meter: a factor with only one working direction is a badge, not a scale.**
+
+**`SCEN` is also the one high-weight preference that never surfaced as a scale anywhere.** It carries
+16, third of seven; a user says at onboarding that a beautiful room matters and never sees it again.
+
+### Three of the rows are exact, and that is new
+
+**How late it runs, how far it travels and what it costs come from opening hours, coordinates and
+price level - not from reviews.** They have **no error**, they **never carry the hollow mark**, and
+they are all things people say about a night. **We spent two entries designing a confidence mark for
+uncertain bands; these are the rows that will never need one.**
+
+All three are computed at render time from a live fetch, so `VENUE_DATABASE_V1.md` §0 holds - nothing
+of Google's is stored.
+
+### The preference ticks row is dropped
+
+**`POL` and `SCEN` are now meters; `FOOD`, `LIVE` and `GAMES` are badges.** A parallel ticks row would
+draw every one of them twice. **The preferences are distributed across the meters and badges
+instead.** Two end up with no home here - **somewhere new** (`NOV` is not in the lexicon at all;
+newness is a date, not a sentiment) and **somewhere old** (`HERIT`, dropped above). They are unchanged
+in selection and on the profile; they simply have nothing useful to say about a hand-built night.
+
+### One correction to the drawing it replaces
+
+**`CROWD`'s two slots are one row, not two.** Screen 52 previously drew *before 22* and *after 22* as
+separate rows, which described the data model rather than the screen. **Each stop takes the value for
+its own hour and day, and the span is taken afterwards** - so there is one row, and the split lives
+in the data.
+
+### Still unmeasured
+
+**Does *how it looks* actually spread across the admitted set, or does everything cluster the way
+`HERIT` does?** I expect it to spread and that is a prediction, not a measurement. **Twenty minutes
+against the developer's enriched file settles it, and no users are needed.** Held in `REMINDERS.md`.
+
+## [2026-10-14] Blocking, the proposal cap, and the call written down (entry 199)
+
+### 1. A closed venue is blocked, not warned
+
+**The user: "a user taking control means that they're choosing the venues and the shapes but you can't
+expect them to know about the opening and closing times, we should help there."**
+
+**That is a better argument than the one I put against it.** I had leaned toward a warning on the
+grounds that the house pattern is *tell the user what they are choosing, then let them choose it* -
+the talk floor became a warning rather than a veto on 2026-09-30 for exactly that reason.
+
+**The two cases are not alike, and the difference is worth stating because it decides the next one
+too.** The talk floor is a **judgement** - *you may not enjoy this* - and a judgement the user is
+entitled to overrule, because they know their own night better than we do. **An opening hour is a
+fact.** Nobody overrules a fact; they just did not have it. **Warn where we are guessing about them,
+block where we know something they do not.**
+
+So: a venue closed at the stop's hour is **unselectable for that stop**, greyed with the reason
+stated - *"closes at 23:00 - your 01:30 is shut"*. Screen **41** already draws it that way.
+
+### 2. Proposals: no response required, five per person, and no expiry
+
+**The user: "if the holder ignores a proposal it's assumed that they're in communication with one
+another, so it can stay in the proposals section untouched."**
+
+**This corrects me, and the reason it corrects me is worth keeping.** I argued that a proposal with
+no outcome is worse than a rejection, by analogy with the invite screen - where **Decline** was added
+precisely because *yes and silence* were not enough answers. **That analogy does not hold here, and
+the difference is the voice channel.** An invite goes to somebody who is not in the room and may not
+open the app for an hour. **A proposal goes to four people who are already on a call together.** The
+coordination problem the Decline button solved does not exist when everybody can simply say so.
+
+| | |
+|---|---|
+| **a proposal needs no answer** | it sits in the panel until it is used or the night ends |
+| **the cap** | **five live proposals per person**, of any kind - venue, room or preset |
+| **expiry** | **none** |
+| **dismissing** | stays available to the holder as a way to clear the panel, and is not required |
+
+**The cap is per person rather than per room**, which is the fairer rule: a room of five has up to
+twenty-five slots, but **no single watcher can flood the panel**, and dedupe collapses the duplicates
+anyway.
+
+### 3. The lock is terminal, and that is why there is no expiry
+
+**I had asked what happens to a proposal whose stop has passed. The question does not arise.**
+
+**The user: "proposals are only active when the night is being built. Once the plan is locked the
+capsule is disbanded and there's no night being built, just the active plan screen and the gc exist
+as points of contact. The plan can't be changed once locked, a new night would have to be built by
+initiating add friends to your night again."**
+
+**Written down, because it was implied in three places and stated in none:**
+
+| | |
+|---|---|
+| **the lock** | ends the capsule room. **Voice ends with it** |
+| **what survives** | **the active plan screen** and **the group chat** - somewhere to look and somewhere to talk |
+| **the plan** | **cannot be changed after the lock.** There is no re-open |
+| **a different night** | starts over from **Add friends to your night** |
+
+**This is the same shape as the 2026-10-07 room life cycle** - *the room is a decision-making space
+with a natural end* - extended to the capsule room and to proposals. **Nothing in the app edits a
+locked plan**, which is also why the plan card's refresh button was removed the moment a room went
+public.
+
+**Verified rather than asserted, because the rule is a strong one.** `Change a stop` appears **only on
+the plan card** and is **the host's control alone**; the **active plan screen carries only *Directions
+to stop 1* and *End plan***. **Nothing edits a locked plan and nothing ever did** - the inconsistency
+was in my question, not in the document.
+
+**Why I asked a question that cannot arise.** I had been treating the proposal panel as a persistent
+feature of a group. **It is furniture of a phase.** This document already says so about a public room
+- *"a room is not a place you stay. It is the hour before a night, and it ends when the night is
+settled"* - and entry 191 extended that life cycle to the capsule room. **I did not carry the
+implication through.** The two phases never overlap:
+
+| | |
+|---|---|
+| **building** | the capsule room, voice, the carousels, proposals, the wheel. **Nothing has happened yet** |
+| **-- the lock --** | |
+| **the night** | the active plan screen and the group chat. **No proposals, no wheel, no edits** |
+
+**A stop can never pass while a proposal is live, because by the time any stop happens the panel does
+not exist.**
+
+**Two consequences, now stated rather than inherited.**
+
+**There is no recourse mid-night.** A venue is shut, the queue is two hours, somebody bails - **the
+only lever is End plan and start over**, which means redrawing skeletons and re-inviting. That may
+well be right for a first release: it keeps the model clean, and the alternative is an editing surface
+nobody has designed. **It is the sharpest edge of the rule and the first real night out will find
+it.** The minimal softening, if it is wanted, is **not** re-opening the plan - it is letting the group
+chat **mark a stop skipped** and having the active plan screen reflect that. **A status change rather
+than an edit**, which leaves *the plan cannot be changed* intact.
+
+**And voice ending at the lock is inferred, not decided.** The user said the capsule disbands and the
+chat is the point of contact; ending the call follows from *the room ends* rather than from anything
+anyone chose. **It routes everybody to text at the exact moment they are travelling to the first stop
+and most want to talk.** Worth deciding deliberately.
+
+### 4. The call, consolidated - and it is thinner than it should be
+
+**Everything the spec says about voice is one paragraph** (`VIEW_FLOW.md`, *Voice, and deliberately
+no camera*, 2026-10-07) plus what screens 29 and 36 draw. Collected here because it is now load-
+bearing for the capsule room and was written for a public room.
+
+**What is specified:**
+
+- **Rooms are voice.** One microphone, **muted until you tap it**. No camera.
+- **The ring on a person's icon says who is speaking.** Screen 29: *"nobody can see you until you
+  speak."*
+- **The microphone is the only control** inside a room.
+- **The host's music plays in the room**, muted by default with a speaker toggle, remembered across
+  sessions.
+- **The capsule room is live before the night is built** (entry 191, rule 4) - people can talk while
+  they wait for the last skeleton. That was the whole argument for not locking the room itself.
+- **No camera until there is a reporting flow, a block list and a moderation path.** None of those
+  three exists.
+
+**Who is on the call:**
+
+- **the capsule room** - every invited friend who has accepted, **including the wheel holder**, who is
+  looking at the SHUFFL screen rather than the room;
+- **a public room** - the host and everyone admitted.
+
+**And one rule that was never written and the whole design depends on: minimising does not leave the
+call.** The holder is on the SHUFFL screen and the watchers are on the waiting screen for most of the
+night - **if minimising dropped voice, nobody would ever be on it.** Leaving is the cross, and only
+the cross.
+
+**What is not specified at all:**
+
+| | |
+|---|---|
+| **room capacity** | no number anywhere. `SIZE_CEILING` caps **stops**, not people |
+| **push-to-talk or toggle** | *"muted until you tap it"* implies a toggle; never stated |
+| **two people speaking at once** | the ring is singular in every drawing |
+| **moderation** | no mute-others, no report, no block. The remove cross is the holder's only lever |
+| **recording and consent** | nothing |
+| **the transport** | **unmade, and it is not only an engineering choice - see below** |
+
+**The transport decision has a privacy edge that should be made deliberately.** A five-person mesh is
+the cheap way to carry voice and **peer-to-peer exposes every participant's IP address to every
+other**. In a **capsule room** that is a room of friends and the exposure is roughly what a group call
+already implies. In a **public room**, which is strangers who requested to join at midnight, it is
+not. **The same product cannot use the same transport for both** - public rooms need a server mixing
+the audio, whatever the capsule room does. **This is the kind of thing that is cheap to decide now and
+expensive to retrofit.** Held in `REMINDERS.md`.
+
+### 5. Two stale camera references, in the prose rather than the drawings
+
+**The 2026-10-13 sweep read every screen and did not read the flow doc.** Two passages still describe
+**"Mute/Unmute and Open/Close Camera" buttons** - in the retired host-room prose and in the
+join-a-room prose. **Camera was retired on 2026-10-07.** Both corrected.
+
+**The lesson is the same one entry 195 drew and one layer up:** the places that go stale are the ones
+a change is not about. A sweep of the drawn set does not sweep the document the drawings came from.
+
+## [2026-10-14] Voice ends at the lock, and the lock is a decision rather than a departure (entry 200)
+
+**The user: "voice needn't continue after the lock, group chats will already have a call option.
+After a plan has been locked it's not being assumed people will leave instantly and continue to
+co-ordinate the night, everyone has lives to return to, they can come back to the app when they want
+to co-ordinate or chat with the people part of the outing plan."**
+
+**Decided, and the reasoning replaces the one I had inherited.** Entry 199 ended voice at the lock
+because *the room ends* - a mechanical consequence. **The real reason is better, and it corrects an
+assumption buried in several screens: the lock is a decision, not a departure.**
+
+**I had been reading the lock as the moment the night begins.** It is the moment the night is
+**settled**. A group can lock at six for a nine o'clock first stop and then go back to work, cook
+dinner, put a child to bed. **Expecting continuous co-ordination from the lock to the first stop is a
+model of a group that has nothing else on**, which is not a model of anybody.
+
+**So the capability is relocated rather than removed.** Voice does not end; it moves to the group
+chat, which is where the group persists. **People come back to it when they want it.**
+
+### What this needs, which does not exist
+
+**The group chat has no call option specified.** `VIEW_FLOW.md` gives it a name, a message bar and an
+insights panel, and that is all. **The argument above only holds if the chat can actually call** -
+otherwise voice is not relocated, it is deleted. **It needs adding, and it is small**: the group
+already exists, its membership is settled at the lock, and nothing about it is novel.
+
+### And one thing it exposes in a drawn screen
+
+**The active plan screen has no notion of *not yet*.** It is drawn as though the night is running -
+the **LIVE** tag, the distance rings, *who is coming from where* - and it becomes the bottom bar's
+destination **the instant the plan locks**. **If the lock routinely happens hours before the first
+stop, that screen spends those hours showing compass sectors for five people sitting at home.**
+
+**It is not wrong, it is early**, and the fix is cheap: a **dormant state** - the plan, the time, and
+nothing live about it - waking at some sensible distance from the first stop. Held in
+`REMINDERS.md`; screen **11** draws the live state and stays correct for what it is.
+
+### What the lock means, in one place
+
+| | |
+|---|---|
+| **the capsule room** | ends |
+| **voice** | ends with it, and reappears as the group chat's call |
+| **the plan** | fixed. No edits, no re-open |
+| **the group chat** | already exists; now also the call |
+| **the active plan screen** | the place to look. **Live near the night, dormant before it** |
+| **everyone** | **goes back to their life, and returns when they want to** |
+
+## [2026-10-14] The dormant plan, plan insights, and the ditch (entry 201)
+
+**From `Flow Change_ 13_10_26`, and it closes the item entry 200 opened.**
+
+### 1. The dormant plan (screen 53)
+
+**The lock settles a night; it does not start one.** This screen holds the hours between, and it
+**reads** rather than tracks: the stops with **the plan card's own pros and cons**, the members, the
+insights, **a countdown**, and **Ditch**.
+
+**Nothing live is rendered.** The user distance figure and the directions appear when the plan does -
+five compass sectors for people sitting at home is noise, which was the whole finding behind entry
+200.
+
+### 2. The lock is terminal, and a ditch is its one exception
+
+**The user: "the lock is terminal but you can rebuild the night in case someone ditches."**
+
+**That is the framing to use, and it is not the three-state life cycle I proposed.** The plan is not
+editable-while-dormant; **it is repairable when somebody breaks it**, which is a different and
+narrower claim. Nobody can change their mind about a venue. Somebody can leave, and leaving is the
+only thing that reopens anything.
+
+| | |
+|---|---|
+| **before the lock** | leave the room freely |
+| **after the lock, dormant** | **Ditch**, which is the only exit and the only opener |
+| **once live** | nothing. **End plan and start over** |
+
+**A ditch removes them from everywhere at once** - the members list, **the group chat**, the chemistry
+lines, the insights, and the distance figure. **The chat removal is deliberate**: *"they'd be able to
+be a part of the conversation regarding a plan that they don't want to be a part of."*
+
+**The host then gets three ways on, in the group chat** (screen 55), and the two live ones stay on the
+dormant screen until the night starts, in case he changes his mind.
+
+| | |
+|---|---|
+| **Host to fill the gap** | **the active plan screen disappears and a hosted room takes its place**, with everything a hosted room has: **voice back on, joiners entering the chat, and a second lock**. The join gates are off, so it is ranked rather than gated |
+| **Rebuild the night** | back to the capsule. **Only the skeletons survive** - the venues and the plan are gone, and the group builds from scratch. Each remaining member gets an invite rather than being dragged in, *"since a lot of users might be offline"* |
+| **Continue with three** | the people, the chemistry lines, the insights and the distance figure update. The stops do not |
+
+**"Host to fill the gap" is the one worth reading twice**, because it reverses a rule rather than
+bending it: **entry 200 ended voice at the lock, and this turns voice back on.** That is coherent -
+the plan has stopped being a locked plan and gone back to being a room - but it means **the lock is
+reversible exactly once, by the host, only after a ditch, and only before the night starts.**
+
+### 3. Plan insights (screen 54), and it is mostly a consolidation
+
+**Three of the four things in it already existed, in three different places:** the seating suggestion
+was already on the plan card and already derived from the group's `AFFIL`; the who-needs-what lines
+were already the plan card's **two lines per person**; the drink already existed twice over.
+
+**What is genuinely new is the gathering.** A panel that reads across the whole night can say *"ask
+for the bar rail at Kwality, Raasta takes no bookings"* - which no individual stop could.
+
+**And the architecture holds, with the line worth stating on the screen:** this is read from chemistry
+and vibes, and **chemistry never picked the venues**. Advising how to use a room already chosen is not
+the same as choosing it. `AFFIL` saying *sit at the bar* is a fact about the four people, not about
+the bar.
+
+### 4. Dish and drink recommendations are cut
+
+**The user: "we don't have the resources for it, it shouldn't be included in the mvp."**
+
+**Removed entirely** - the arrival pop-up, the per-stop emoji on the active plan screen, the Go-here
+card's line, the Order Now button and the payment gateway, and the venue screen's **Menu** row.
+**The existing spec said it would work "by the program going through the menu for the location", and
+we hold no menu data for any venue and nothing fetches it.** It was a feature resting on a database
+that does not exist.
+
+**What survives is a flourish that costs nothing: the drink of the night.** One per **plan**, never
+per venue, matching the night's character rather than a menu - *"it's just a drink that matches the
+aesthetic of the night"*. **A button, `Get my drink of the night`, an animation, and then it settles
+into a line.** It is cheap precisely because **it claims nothing about any bar**, which is also why it
+survives the cut that killed the recommendation it came from.
+
+### 5. The user distance figure
+
+**Named, finally.** The diagram on the active plan screen - rounded distance rings, eight compass
+sectors - is **the user distance figure**. It was being called the map in conversation, and entry 183
+is titled *SHUFFL renders no map*. **A developer reading "map" builds a map**, and the rounding exists
+precisely so there is no position to leak.
+
+### 6. The rebuild rule is general, not specific to a rebuild
+
+**I filed this as open and the user had already answered it.** *"Only the skeletons that everyone drew
+survive, everything else is gone: the venues, the plan."* **That is the rule for any change to the set
+of drawers, not only for the Rebuild button.**
+
+**A ditch and an added friend are the same event from opposite directions.** The set of drawers
+changes, the merge re-runs, and **everything downstream of the merge is invalid** - the merged shape,
+the stop count, and therefore every venue picked against it. **Skeletons are per person and survive;
+nothing else does.**
+
+| | |
+|---|---|
+| **somebody ditches, host rebuilds** | skeletons survive, venues and plan gone |
+| **somebody is added mid-build** | **the same** - and the SHUFFL screen re-locks until they draw |
+
+**One consequence the rule does not cover, and the host should see it before the invite goes out.**
+`SIZE_CEILING` caps the stop count by group size - **5 stops for a pair, 4 for three or four, 3 for
+five** (`SKELETON_MERGE_V1.md` §2). **So adding a fifth person to a group of four drops the ceiling
+from four stops to three: the night loses a stop, as well as its venues.** That is a real cost of
+inviting somebody late and it is invisible at the moment of inviting. **It wants one line on the
+add-friends sheet** - *"adding a fifth makes this a three-stop night"* - rather than a surprise after
+everyone has redrawn.
+
+**One refinement available and not taken.** The merge is idempotent on a stable membership
+(`SKELETON_MERGE_V1.md` §7), so it is trivial to detect when an added skeleton **does not change the
+merged shape** and keep the picks in that case. **It is cheap and it costs predictability**: *add
+someone and the venues start again* is a rule you can hold in your head; *add someone and the venues
+might survive* is not. **Left as the simple rule unless somebody asks for it.**
+
+## [2026-10-14] Stops are drawn, and a solo drawer was being capped like a group of five (entry 202)
+
+**The user: "stops aren't automatic they're specified in the skeleton aren't they, we aren't assuming
+the stops."**
+
+**Right, with one qualification - and checking it rather than answering from memory turned up a
+defect.**
+
+### 1. What the merge actually does with stops
+
+**`merge_count` takes `d.n` from each person's drawing. The app never invents a stop count for an
+individual.** Solo, you get exactly what you drew.
+
+**In a group it produces a number nobody drew, but that is a compromise rather than an assumption**,
+and it is the explicit rule: *"nobody who drew a different number gets their own number back."* 1 and
+4 merge to **3**; 2 and 3 merge to **3**.
+
+**Then one line at the end:** `return min(n, ceiling)`, where the ceiling is the smaller of the window
+(about ninety minutes a stop) and `SIZE_CEILING` by group size.
+
+### 2. So entry 201's warning was overstated
+
+**The ceiling only bites when the merged count already exceeds it.** Adding a fifth person drops a
+four-stop night to three **only if the group had actually merged to 4**. Merged to 3 or fewer, nothing
+happens. **So the line on the add-friends sheet is conditional** - shown only when it would really
+cost a stop. **A warning that fires every time is the 96%-hollow problem again** (entry 197).
+
+### 3. The defect
+
+```python
+ceiling = min(max(1, int(window_len // 1.5)),
+              SIZE_CEILING.get(len(drawings), 3))     # SIZE_CEILING = {2: 5, 3: 4, 4: 4, 5: 3}
+```
+
+**For a solo drawer `len(drawings)` is 1, which is not a key, so it fell to the default of 3.**
+**A person drawing alone was being given the coordination penalty of a group of five.**
+
+**Steiner's cost is about getting five people out of a bar; there is no group.** Draw five stops in a
+20:00-03:30 window - which the window cap allows - and you were handed three.
+
+**It matters more now than when it was written.** The app is **solo-first** since the MVP cut: you
+draw, you get a stop list, you pick. **Most first-release nights are one person**, and every one of
+them was meeting a ceiling built for a problem they do not have.
+
+**Fixed** by giving `1` its own entry (`{1: 99, 2: 5, ...}`) rather than special-casing the call, so
+**the table says what it means** and the default of 3 still catches a group of six or more.
+
+### 4. And the lock is unconditional
+
+**The user: "a person added mid build will lock the SHUFFL screen in any scenario and it will be
+refreshed once that person joins with his skeleton drawn."**
+
+**So the refinement entry 201 noted and did not take is now definitively out.** There is no detecting
+whether the merged shape changed in order to keep the picks: **the screen locks, the person draws, the
+screen refreshes, every time.** One rule, no branch, and it is the same rule as the first invite.
+
+## [2026-10-14] Six stale reminders closed, Messages cut back, and `TALK` does not split (entry 203)
+
+### 1. Six items the record had already answered
+
+**A reminder goes stale when a decision elsewhere answers it and nothing goes back to tick it** -
+the same failure as the screen sweep in entry 195, one layer up. Found by reading the file rather
+than grepping it.
+
+| | |
+|---|---|
+| **DECIDE the factor set** | settled by `FACTORS_V6` on 2026-09-30 |
+| **DECIDE: `FOCUS` as a vibe factor** | **it is one**, weight 14 |
+| **the two-rooms offer has no screen** | **screen 16** |
+| **`VENUE_DATABASE_V1.md` is still unwritten - still the critical path** | it is written |
+| **does the skeleton replace the 70% plan-similarity rule?** | **entry 187 removed the gates entirely.** There is no rule to fall back to |
+| **`Our Table` as a gate on the join list** | **no gates exist to be** |
+
+**Plus two straight duplicates** - *widen the `MOVE` keyword list* appeared twice in one section, and
+`SIZE_CEILING` twice. **100 open items down to 94.**
+
+### 2. The Messages SHUFFL button is cut, and with it the last second route
+
+**The user: "learning the group's preferences and generating outing plans for them is not a priority,
+most of it is handled by Add friends to your night in the SHUFFL screen. Remove this from the MVP,
+the messages section is just a point of contact."**
+
+**Gone:** the animated SHUFFL button, the *SHUFFL with friends* picker, the second *Name this
+gathering* prompt, **the insights panel** (group chemistry at *n* people, and the venue a group would
+all like) and **the group's preferences being learned over time**.
+
+**Every path it offered now exists somewhere better.** Making a group is **Add friends to your
+night**, which also makes the chat. Group chemistry is on the **capsule room** and in **Plan
+Insights**. A venue the group would like is the **Suggested venues carousel** - ranked against the
+group's merged skeleton rather than guessed from history.
+
+**That last contrast is the argument.** The Messages panel needed **history the first release will
+not have** - it was specified to show chemistry only until a group had been out together, which is
+to say it was blank for every new user. **The carousel needs only tonight's skeletons, which every
+member has drawn by the time it renders.**
+
+**And it closes an open question for free: *one gathering or two* is now one.** There is a single
+door and it is on the SHUFFL screen.
+
+### 3. `TALK` does not split - and the reason opens a feature
+
+**The open question was whether `TALK` is a fact about the room or about the person.** It is the
+person.
+
+**The user: "a person with high focus and high talk means they want to have discussions about the
+event they're for, but a person with high focus low talk means they'd rather just have company
+undisturbed while they observe the performance."**
+
+**That reading makes the factor more useful rather than less, and it generalises past `TALK`.** Two
+factors read together say something neither says alone. **It is exactly the move the chemistry lines
+already make for a room, pointed at one person instead** - and the machinery exists.
+
+**Where it belongs: a profile.** It is what somebody reads when they scroll past you, and it is
+better than a two-word vibe name because it says *what you are like to go out with* rather than
+*which bucket you are in*. **Held in `REMINDERS.md` as cross-factor inference lines**, with the pairs
+and their sentences to be written.
+
+### 4. A correction to entry 199, from the user's own last line
+
+**The user: "in Delhi clubs may be listed as shutting at 1 but most shut at 3 or 4 on Fridays and
+Saturdays."**
+
+**Entry 199 decided that a venue closed at the stop's hour is blocked rather than warned**, on the
+argument that **an opening hour is a fact** while the talk floor is a judgement.
+
+**For a club that listing is not a fact. It is a claim, and a wrong one.** So the rule has a hole:
+**we do not know when a venue closes, we know what Google says**, and for exactly the venue type that
+matters after midnight the two differ by two or three hours.
+
+**Blocking on bad data is worse than warning on it**, because it deletes a venue that is genuinely
+open - and at 01:00 the stop list is clubs or it is nothing.
+
+**The repair keeps the principle and narrows its reach: block on the listing only where the listing
+is reliable for that type.** A cafe listed shut at 23:00 really is shut at 01:30. A `night_club`
+listed shut at 01:00 on a Friday is a data artefact. **So the venue row wants a per-type close
+confidence**, and **reviews are the corroborating source** - closing time is narrated the way age is
+(*"still going at three"*, *"they kicked us out at four"*), which is the same property the Kwality
+test found for `HERIT`.
+
+**Held in `REMINDERS.md`.** Until it exists, **late stops at late venue types should warn rather than
+block.**
+
+## [2026-10-14] One pathway, and the prose that still said otherwise (entry 204)
+
+**The user: "add friends to your night means that there's no need for a separate host with friends
+and join with friends pathway."**
+
+**That is what entries 190 and 191 decided, and the document was still only half saying it.**
+
+### What the fork used to be, and why collapsing it is right
+
+**The old shape made you choose before you knew anything.** *Host with co-hosts* and *Join with
+friends* were two doors asking the same question - **who are you going out with** - and then
+committing you to an answer about **what kind of night it would be** before a single venue existed.
+A group that started by hosting could not then decide to join somebody else's room without
+dismantling itself.
+
+**Add friends to your night asks the first question only.** Whether the night ends up **hosted
+publicly** or **joined into somebody else's room** is a decision made *inside* the capsule room, by
+whoever has the wheel, after the group has seen what is out there - and both are live from the same
+screen, the whole time. **The fork did not disappear; it moved to after the information.**
+
+### The prose had not caught up, and the banners did not save it
+
+**Four passages still read as live instruction**: the *Host with co-hosts* paragraph, the whole host
+room walkthrough with **Add Co-Hosts** and **Create Plan** in it, *"Join with friends sits in the top
+right corner of the room list"*, and the SHUFFL Capsule screen description. **All four sit under
+section banners that say the flow is retired, and all four read as present-tense instruction to
+anybody who starts in the middle.**
+
+**This is entry 195's lesson one layer down.** That sweep marked retired *screens* because a PNG gets
+passed around alone. **A section banner has the same problem**: a developer reading for *how do I
+build the add-people list* lands in the middle of a retired section and finds a complete,
+confident specification of something that does not exist. **Each passage is now marked inline**, and
+the top banner states the single pathway rather than listing what was removed.
+
+### What is kept, and why the sections are not simply deleted
+
+**The retired flows still carry the only written specification of things that survived them.** The
+host-room prose holds the request-to-join queue, the Strong Matches / Others sorting, the silent
+auto-decline, the remove cross and the music. **Add People Flow** holds the two-gate rule - the vibe
+gate's five-minute response clock and the skeleton gate's deliberate absence of one.
+
+**Deleting the sections would delete those.** Marking them says what they are: **the specification of
+surviving parts, reached from somewhere else now.**
+
+## [2026-10-14] Five answers: who is addable, what is public, how people are matched, and what `FOCUS` can honestly promise (entry 205)
+
+### 1. No vibe today: greyed, and still addable
+
+**Greyed out so it is obvious they will have to play, and selectable anyway.** The two old rules
+disagreed - the capsule made them unaddable, the co-host flow let them in with a clock - and with one
+pathway there is one list and one rule. **The grey is information, not a barrier.**
+
+### 2. Every vibe stat is public, and the shape has an exclusion list
+
+**The user: "every single vibe based stat should be compulsory to be public since that's the part of
+the experience of using the app and one of our selling points."**
+
+**So the Everyone / Friends only / Nobody toggles come off** today's vibe, the vibe score against the
+viewer, the overall going-out type and the vibe history. **A vibe you can hide is a product you
+cannot demonstrate** - the home screen, the friend list and every profile are built out of other
+people's vibes, and a user who hides theirs is invisible in the half of the app that is social.
+
+**Tonight's shape is different and gets a different control.** *Friends that want your kind of night*
+is **public to all friends by default**, with **an exclusion list in the shape of Instagram's Hide
+Story From** - you name the people who do not see it. **Not a visibility level, a per-person block**,
+because the thing being hidden is usually hidden from somebody specific rather than from everybody.
+
+**One of the four is not like the others and I would hold it back.** **Past events is a list of places
+you have physically been.** The vibe, the score and the going-out type say *what you are like*; past
+events says *where you were*. **It is a location history, and making it compulsorily visible to
+everyone a user has accepted as a friend is a different kind of decision from the other three** -
+particularly in a nightlife app, particularly in Delhi, and particularly for women users, where who
+can see where you go is a safety question rather than a preference.
+
+**It is also the weakest of the four as a selling point.** Nobody is sold by an archive; they are sold
+by *your vibe today* and *how we would get on*. **Recommendation: the first three compulsory, past
+events retained as a toggle.** Flagged rather than decided - it is the user's call and the rest of the
+decision stands either way.
+
+### 3. People are matched by chemistry, not similarity (`simulations/peoplematch.py`)
+
+**Adopted. And it is not a refinement - measured, the two rankings pick the same best friend only
+37% of the time and order 38% of friend pairs differently.**
+
+**The worked case:** you are high energy, low talk, a gig-goer. Four friends, ranked:
+
+| | similarity | chemistry |
+|---|---|---|
+| **Zoya**, almost exactly you | **1.00** | 90% |
+| **Dev**, middling on everything | **0.00** | **90%** |
+| Ira, outward and talkative | -0.34 | 85% |
+| Kabir, harder and quieter | 0.63 | 85% |
+
+**Similarity ranks Dev third from bottom; chemistry ranks him joint first.** He wants nothing in
+particular, so **he does not pull the night away from you** - which is what a person actually wants to
+know and what *are we the same* cannot express.
+
+**The extreme case the chemistry work has always named:** somebody firm on all six axes, against an
+identical twin and against a person with no wants. **Similarity scores the blank person 0.00, the
+worst possible friend. Chemistry scores them 84% against the twin's 87%** - because an easy-going
+person does not fight you for the night. **Similarity measures *are we the same*; the product needs
+*what would the night be like*. Those coincide for twins and come apart for everyone else.**
+
+**The label has to move with the number**, or the screen says one thing and means another:
+**"friends you vibe the most with" becomes "friends you would have the best night with."**
+
+**And one catch the run exposed, which decides how it is shown.** **The chemistry numbers sit between
+84% and 90% for people who are nothing alike** - similarity spreads 0.00 to 1.00 over the same four.
+**As a ranking that is fine. As a number on a screen it is useless**: everybody reads as a good match,
+and a figure that never varies trains people to ignore it. **So either rescale against the population
+before showing it, or show no number and let the line carry it** - *"the night would be yours end to
+end"* says more than *90%* and cannot be misread as a percentage of anything. **The second is cheaper
+and more honest, and `CHEMISTRY_LINES_V1.md` already writes those lines.**
+
+### 4. `FOCUS` promises a kind of place, not a performance
+
+**The user: "we won't be able to give accurate information on live gigs and sets without having data
+from the venue, so it shouldn't be included in the MVP. Rather `FOCUS` should aim at serving the users
+by suggesting venues that typically have performances."**
+
+**So clock-anchored stops are out of the first release, and `FOCUS` is reframed rather than
+weakened.** It selects **venues with a main event as part of their character** - a live room, a sports
+bar, a place with a stage - and it does **not** claim a start time.
+
+**That reframing is what makes it honest, and several screens were not.** They said *"there's a set at
+eleven"* and *"be in before the set at one"*. **We have no event feed and no venue data; those were
+inventions.** Corrected to *"it usually has an act on"* across screens **32**, **53**, **54** and
+**43**.
+
+**The engine already has a flag for this and it now means something narrower.** `chem4.py` emits
+**"wants a clock"** when a room reads `FOCUS` high. In the first release that flag means *this room
+wants a venue that reliably has something on*, not *anchor a stop to an hour*.
+
+**What it costs, stated plainly:** a room of gig-goers gets taken to a live room and **may arrive
+after the set**. That is the honest version of what we can do with reviews and opening hours, and the
+alternative was a time we would have made up. **The clock comes back with the venue partnerships, with
+gold, in December.**
+
+### 5. The observed traits: the decision is whether to log from day one
+
+**There are three**, all read from behaviour rather than swiped:
+
+| | measured from | why it matters |
+|---|---|---|
+| **`LEAD`** | who hosts, who locks, who redraws - **and now who takes the wheel and who asks for it** | proposed as a card and rejected. **The wheel makes leading an explicit logged action**, so it is far more measurable than when this was written |
+| **stamina** | how late somebody actually stays | a person who always leaves after stop two should not be merged into a four-stop night |
+| **`NOV` revisits** | do they return to places or always go somewhere new | **the load-bearing one: `NOV` is not in the lexicon at all.** Newness is a date, not a review sentiment, so **behaviour is the only way to score "somewhere new"** |
+
+**They cost the user nothing** - no extra cards, nothing to answer - **and they cannot be gamed by
+self-report**, which is their whole advantage over a swipe.
+
+**They are all cold-start blocked, so they are post-MVP.** **The decision is narrower than it looks:
+do we write the events from launch, for something that consumes them months later?**
+
+**It has to be yes, and the argument is the capture's.** You cannot backfill behaviour that was never
+recorded - the first three months of users would simply have no history, which is exactly when the
+product most needs to stop feeling generic. **And it is nearly free**: `NOV` revisits are already
+implied by locked plans, which record venues and members. **Only two event types are genuinely new** -
+a wheel event and a left-the-night event.
+
+## [2026-10-14] Past events keeps its toggle, and the six unbackfillable things get a home (entry 206)
+
+### 1. Past events stays optional
+
+**The other three vibe stats are compulsory and this one is not.** Today's vibe, the vibe score
+against the viewer and the overall going-out type say **what you are like**; past events is **a list
+of places you have physically been**. **Everyone / Friends only / Nobody, as before.**
+
+### 2. The observed traits are recorded from launch
+
+**Confirmed. And it exposed a gap worth more than the decision itself.**
+
+**There are six things that have to be written from day one, and `MVP_INSTRUCTIONS.md` mentioned none
+of them.** They were scattered across `REMINDERS.md` and `TESTING_WATCHLIST.md` - **neither of which
+is the document a developer builds from.**
+
+| | |
+|---|---|
+| **1** | the **card capture** - latency, first deck position, exposure count |
+| **2** | the **implied** skeleton against the **drawn** one |
+| **3** | every `(drawn skeleton, merged result)` pair |
+| **4** | **`LEAD`** - wheel requested, granted, taken; who hosted, locked, redrew |
+| **5** | **stamina** - the last stop somebody was present at |
+| **6** | **`NOV` revisits** - the venues in each locked plan, per member |
+
+**Now `MVP_INSTRUCTIONS.md` §3b, with the reasoning rather than only the list.**
+
+### 3. Why this is the one category of cut that cannot be undone
+
+**Everything on that list is cheap to write and worthless on launch day.** That combination is
+precisely what gets cut when a deadline arrives - and **a constant can be re-tuned later, a screen
+can be redrawn, but a measurement not taken in March does not exist in June.**
+
+**Nearly every number in the spec is waiting on one of these six.** `card_baseline`,
+`position_baseline`, the personal latency scale and `GLOBAL_SCALE` wait on **1**. Every constant in
+`SKELETON_MERGE_V1.md` waits on **3**. The whole observed-traits layer waits on **4**, **5** and
+**6**.
+
+**Five and six are nearly free** - a locked plan already records its venues and members, so **six
+needs no new event at all**. **Only four is genuinely new, and the wheel is being built anyway.**
+
+### 4. And the one most likely to be dropped is the one that could falsify the deck
+
+**Number two logs the skeleton our cards *imply* beside the one the user actually *drew*.**
+
+**Nothing in the product consumes it. It exists to tell us we were wrong.** That makes it the easiest
+of the six to quietly lose - and **it is the only measurement that can falsify the daily deck**, which
+is the thing the entire app rests on. If the card model's implied night and the drawn night disagree
+badly and consistently, **six cards a day are buying nothing**, and this is the only number that would
+ever say so.
+
+**It is also free.** Both skeletons exist at the same moment, on the same screen, for every user who
+draws.
+
+## [2026-10-14] There is no implied skeleton, and I put one in the developer's document (entry 207)
+
+**The user: "there's no implied skeleton anymore on account of the fact that we're only using the
+skeleton to assess the user's shape of the night. Cards are only used to assess the vibe."**
+
+**Correct, and entry 206 was wrong.** Item 2 of `MVP_INSTRUCTIONS.md` §3b asked the developer to log
+*the skeleton the cards imply beside the one the user drew*. **The cards cannot imply a skeleton.**
+
+### It has been dead twice over for two weeks
+
+**`OUTING_PLAN_ENGINE.md` §15.5, where the item came from, describes a screen that no longer
+exists**: the app generated a plan, **pre-drew the line that plan implied on the grid, faintly**, and
+the user dragged it to correct it. *"The gap between the line the app drew and the line the user
+dragged it to is a direct measurement of how wrong the card model was for that person."*
+
+**That was true when it was written. Two decisions killed it:**
+
+| | |
+|---|---|
+| **`FACTORS_V6`, 2026-09-30** | **`CROWD`, how many places and where the peak sits left the deck entirely.** The cards no longer measure the axes a line would be implied *from* |
+| **the MVP cut, 2026-10-05** | **the app does not generate a plan.** There is no app-drawn line to pre-fill the grid with, faint or otherwise |
+
+**So the grid opens blank, always, and there is no delta to measure.**
+
+### What I did wrong, and it is the thing I have been auditing other documents for
+
+**I lifted a line out of `REMINDERS.md` and promoted it into the document a developer builds from,
+without asking whether it still meant anything.** Entry 203 - three entries ago - closed six reminders
+for exactly this reason and said *"a reminder goes stale when a decision elsewhere answers it and
+nothing goes back to tick it."* Entry 195 said *"the places that go stale are the ones a change is not
+about."*
+
+**A stale reminder sitting in `REMINDERS.md` is clutter. The same line in `MVP_INSTRUCTIONS.md` §3b is
+an instruction**, and it would have cost a developer real time building a comparison between a drawn
+skeleton and a thing that does not exist.
+
+### What actually falsifies the deck now, and it is a better test
+
+**Since the split the cards have exactly one job: matching.** They do not shape a night - the user
+draws that. So *are six cards worth a swipe a day* has one honest form:
+
+> **Does the chemistry we predict have anything to do with the nights people actually have?**
+
+**Item 2 is now that.** At every join and every accepted invite, log **the chemistry score we
+predicted**, and afterwards **what happened** - the plan locked, somebody ditched, or those people
+went out together again.
+
+**It is unbackfillable in exactly the way the old item was**, it is free at the moment of commitment,
+and **it tests the claim the product actually makes** rather than one it abandoned a fortnight ago.
+`FACTORS_V6.md` §6 already names this as the risk the old architecture hid: *"the swipe game has to
+justify itself on matching alone."* **Nothing was measuring that. Now something is.**
+
+## [2026-10-14] What chemistry is for, the pair readings, and the engine docs nobody bannered (entry 208)
+
+### 1. The sweep: none of the six engine documents had a banner
+
+**Entry 207 was one stale line. The sweep found the same disease at document scale.**
+`OUTING_PLAN_ENGINE.md`, `CHEMISTRY_V4.md`, `ASSESSMENT_ENGINE.md`, `COLLECTIVE_V1.md`,
+`PROFILES_V1.md`, `PREFERENCE_ENGINE_V2.md` - **not one carried a supersession banner**, while
+`VIEW_FLOW.md` carries six.
+
+**The worst of it is the worst possible page.** `OUTING_PLAN_ENGINE.md` is **3,010 lines**, it opens
+*"Audience: a backend engineer joining SHUFFL with no prior context"*, and **its own banner is dated
+2026-09-17 and declares seven vibe factors including `CROWD` and `ROAM` that "give the shape of the
+night"**. Both statements were killed a fortnight ago:
+
+| | |
+|---|---|
+| **`FACTORS_V6`, 09-30** | six identity factors. **`CROWD`, the stop count and the peak left the deck**; `ROAM` became the skeleton |
+| **the MVP cut, 10-05** | **the app does not generate a plan** |
+
+**`ROAM` appears 49 times in a document a new engineer is told to read first, and it is not a
+factor.** Banner added, naming what is history (§5-§13), what was the generator's last state
+(§14), and **what is still authoritative and pointed at from live documents** - the per-stop
+readings and their words, the pros-and-cons lines, §13.6.3's match and fit.
+
+**`PROFILES_V1.md`** (`ROAM` eight times) and **`COLLECTIVE_V1.md`** (whose §4 proposal *was*
+adopted, whose "rules in force" are V4 not V3, and whose §6.2 clock-anchored stops left with
+entry 205) are bannered too.
+
+### 2. What chemistry is for - written down because it is the thing that drifts
+
+**The user: "chemistry is a way to match users to rooms in rankings but other than that its job is
+not to dictate a night a person has but rather give assessments on how that person would match with
+the user they're browsing."**
+
+| | |
+|---|---|
+| **it ranks rooms** | one half of the ranking; the other half is the drawn shape against the room's actual plan |
+| **it describes people to each other** | on a profile, in search, in the friend list, and in the people ranking (entry 205) |
+| **it does not decide the night** | **the skeleton does that, alone** |
+
+**The third line is the one that needs writing down**, because every few weeks something appears that
+would be slightly better if chemistry were allowed to pick a place. **Advising how to use a room
+already chosen is not choosing it** - which is exactly why Plan Insights may say *sit at the bar* from
+`AFFIL` and may not say *go to this bar*.
+
+### 3. The pair readings
+
+**The user's example, and the generalisation it asks for.** Six single-axis lines say where somebody
+sits on six scales; **a pair reading says what kind of person that makes them**, which neither line
+carries alone. **It is the room line's own move - two factors, one sentence - pointed at a person.**
+
+**Six pairs, in `CHEMISTRY_LINES_V1.md`.** `FOCUS`×`TALK`, `AFFIL`×`TALK`,
+`ENRG`×`MOVE`, `ENRG`×`TALK`, `SPONT`×`FOCUS`, and `AFFIL`×`MOVE`.
+
+**A pair fires only when both factors are firm** - 70+ or 30- , the band `chem4.strength()` already
+uses. **A mid value means no reading**, because inventing one is how a profile starts lying. At most
+**two on a profile, three on a chemistry read**, ordered by the two weights summed.
+
+**`AFFIL`×`MOVE` is deliberately given two quadrants out of four.** *Outward and seated* and
+*inward and seated* are already said better by `AFFIL`×`TALK`, and **a reading that repeats
+another reading is worse than no reading** - the same rule that keeps the room line from naming two
+factors that say the same thing.
+
+### 4. And the disagreement line is the useful one
+
+**Browsing a person runs both sets and compares them.** A reading you both fire is the strongest
+mutual thing the screen can say. **But the same pair in different quadrants is the most useful line
+on the screen** - *"you want to talk about it; she wants to watch it"*.
+
+**The percentage says how well you match. The disagreement says in what way you do not**, which is
+what somebody is actually trying to work out while scrolling. **It is also the honest use of
+chemistry**: describing two people to each other rather than deciding where they go.
+
+**And it is explicitly not a gate.** A pair that disagrees is interesting, not disqualifying - the
+whole point of *Table and Floor* as a chemistry tag is that rooms containing both are real and often
+the good ones.
+
+---
+
+## [2026-10-16] The brand mark: a chameleon icon, a card mark for the colon (entry 209)
+
+**Two marks, decided separately, doing different jobs.** The chameleon is the app icon and the
+campaign mark; the card mark is a typographic device inside the wordmark. They appear together on the
+open screen and nowhere else.
+
+### 1. The chameleon is locked on 02 — pink body, cyan night
+
+**The animal is the brand colour and the night it catches is the cyan.** The tongue is the night
+skeleton: it rises left to right and the stop circles grow with the crowd, which is how the drawing
+actually works in the app.
+
+**Three cues carry the species** — the curled tail, the casque, the turret eye. The first attempt had
+a smooth tapering head and no curl and read as a fish. **Drop the curl and it is a fish again**, so
+the curl is not decoration and cannot be simplified away.
+
+| | | |
+|---|---|---|
+| `#FF2E7A` | pink | body and tail |
+| `#24E0FF` | cyan | the night, dark grounds |
+| `#0E7E93` | teal | the night, light grounds |
+| `#12000A` | near-black | eye ring and pupil |
+| `#FBFAFF` | white | iris |
+
+**The teal is the one compromise in the locked mark.** Cyan at full strength is close to invisible on
+paper-white, so on light grounds the night stops being exactly the app's cyan. Recorded now rather
+than discovered at print.
+
+**It is a header mark, not an icon at any size.** By 180px wide the three stop circles have merged
+into a tapering wedge; by 110px it is a silhouette with a bump on its nose.
+
+### 2. The icon is C — cropped to the head
+
+**A wide animal in a square tile wastes about sixty per cent of the tile.** Fitted whole, it uses
+roughly forty per cent of the height and goes to a smear at 60px. Three crops were drawn: fitted,
+turned 22° onto the diagonal, and cropped to the head. **C, the head crop, is chosen** — casque,
+turret eye, open mouth, tongue leaving frame.
+
+**The known cost: C drops the tail curl**, which is one of the three cues that stop the drawing
+reading as a fish. It survives because at icon size the casque and turret eye are doing the work and
+the curl was never legible there anyway. **The full animal, curl included, remains the header mark**,
+so the cue is not lost from the system — only from the tile.
+
+### 3. The card mark is the colon, at optical gap 10
+
+**The mark is not beside the name, it is the punctuation inside it** — SH, mark, FFL, with the mark
+standing where the colon goes. Geometry is the F lockup at optical gap 10: cards 47×68 rx8, left
+ghost at `rotate(-13)` opacity .32, left card `rotate(-26)`, mirrored right, disc r33/r26, crowd at
+`scale(.79)`.
+
+**The crowd is eight circles, evenly spaced, open centre.** One radius throughout.
+**Size variation was what made the earlier version read as perforation**, which is the specific
+trypophobia pattern — irregularly-sized round holes clustered on a surface. Placement varies, size
+never does. **The open centre is also what saves it small**: a filled crowd becomes a blob when the
+gaps close, a ring keeps a hole that stays visible long after the circles have merged. It is the same
+shape the room screen already draws, members ringing the blend.
+
+**Seven was the better arrangement and eight was the better mark.** A hexagonal seven is the only
+count where every circle is equidistant from its neighbours; eight gives that up and buys the open
+centre, which matters more.
+
+**Display face is Bebas Neue**, which keeps the animal first on the open screen. Archivo 800 was
+drawn as an alternative and makes the name the loudest thing, which is the wrong order here.
+
+### 4. Still open, and it is a fork
+
+**Locking the chameleon on pink and cyan settles the card mark's palette by implication.** If both
+marks appear on the open screen, the cards cannot be marigold, vermilion, neon or purple without the
+screen carrying two unrelated palettes.
+
+**Four palette directions were explored and are now either dead or relocated**: warm (marigold,
+vermilion, saffron), acid/neon (lime, neon red, the glowing-tube treatment), two-shade purple, and
+the crossed-line white-card version. Each works on its own; none works beside the chameleon.
+
+**The leading answer is the structural fix rather than a new palette.** Both cards pink with the
+crowd in cyan removes the two-parties-meeting read — which is what made pink-and-cyan feel like a
+dating app, more than the hues did — while keeping one palette across both marks.
+
+**What needs deciding: one brand or two.** Either the explorations are dead, or they are a campaign
+layer that never sits beside the chameleon. Cheaper to choose now than after the first poster.
+
+### 5. Why pink and blue read as a dating app, which is worth keeping
+
+**Two different colours meeting symmetrically around a shared circle is a picture of two parties
+pairing up**, whatever the hues are. The pink-and-blue coding is the louder half, but the arrangement
+says it on its own. **A single hue across both cards, or two neighbours on the wheel instead of two
+opposites, removes it without touching the palette.** This generalises past the logo to any place the
+product draws two things meeting.
+
+---
+
+## [2026-10-17] The opening animation, and the wordmark it resolves to (entry 210)
+
+**The wordmark is locked on the alternative: pink card, cyan card, white disc, ink crowd.** Eight
+circles, open centre, one radius. Bebas Neue at 102 with `.14em` tracking, optical gap 10 either
+side of the mark. This supersedes the "both cards pink" primary proposed in entry 209 — **the
+two-colour version wins because the animation needs two colours to animate.**
+
+### 1. What happens
+
+**The cards swipe out of the room and leave the name behind them.** Both start square on and stacked
+under the disc; they fan apart and travel outward; **SH comes out of the pink card and FFL out of the
+cyan**; the room turns throughout and stops last.
+
+**Total 1400 ms. Every track is ease-out cubic**, `1-(1-x)³` — fast away from the centre, slow into
+rest, which is how a swiped card behaves. **Nothing bounces.** An overshoot would make the cards look
+light, and these are meant to have weight.
+
+| Track | Starts | Ends | From | To |
+|---|---|---|---|---|
+| Card travel | 0 ms | 980 ms | ±66 toward centre | 0 (rest) |
+| Card fan | 0 ms | 980 ms | 0° | −26° left, +26° right |
+| Card scale | 0 ms | 980 ms | 0.88 | 1.00 |
+| Ghost travel | 0 ms | 1120 ms | ±66 toward centre | 0 (rest) |
+| Letters, position | 310 ms | 1260 ms | circle centre | rest |
+| Letters, scale | 310 ms | 1260 ms | 0.12 | 1.00 |
+| Letters, opacity | 310 ms | 550 ms | 0 | 1 |
+| Room, rotation | 0 ms | 1400 ms | −320° | 0° |
+| Room, scale | 0 ms | 560 ms | 0.74 | 1.00 |
+
+### 2. The three things that are not negotiable
+
+**The letters are painted behind the cards.** No masks, no clipping paths. **Separation alone is what
+reveals them** — the letters start at 12% scale sitting under a card, and grow and travel outward
+until they clear its edge. Draw them on top and the reveal stops working, and no amount of timing
+fixes it.
+
+**The ghost finishes 140 ms after the card it trails.** That lag is the whole trick. Identical timing
+makes the pair read as one thick card; **the trail only becomes a trail when it is late.**
+
+**The room's rotation ends last**, 140 ms after everything else has settled, so the mark arrives and
+then quietly stops rather than everything landing on one beat.
+
+### 3. Why it is the right animation rather than a nice one
+
+**The opening screen is the product's own gesture, performed once.** A swipe outward from a room in
+the middle is what the user does in the swipe game and what the app does when it splits a deck. The
+animation is not decorating the logo; **it is showing the mechanic before the user has done it once**,
+and the mark it resolves to is the record of that gesture having happened — two cards thrown apart,
+their trails still visible, a room left in the middle.
+
+### 4. Assets
+
+In `shuffl-spec/design/brand/`: `SHFFL_opening.gif` (760px, 26 frames), `shffl_opening_animation.png`
+(six keyframes plus the timing table), `SHFFL_wordmark_for-dark-backgrounds.png` and
+`SHFFL_wordmark_for-light-backgrounds.png` (3785×639, transparent).
+
+**The light-ground cut is a different file, not a filter.** Letters go to `#1A1A22` and the disc
+takes a dark rim; the cards do not change. **And the cyan card still weakens on paper-white** — the
+known failure of that pair, unresolved and now inherited by the wordmark.

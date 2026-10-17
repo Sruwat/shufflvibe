@@ -3,6 +3,9 @@ from __future__ import annotations
 import re
 from typing import Any
 
+# Canonical SHUFFL venue-factor contract: 11 venue-side factors. These are
+# deliberately separate from the six personal vibe factors in FACTORS_V6.
+CONTRACT_VERSION = "venue-factors-v6"
 FACTORS = ("energy", "crowd", "conversation", "movement", "focus", "food", "live_music", "politics", "scene", "heritage", "games")
 POSITIVE = {
     "energy": ("loud", "high energy", "party", "buzzy", "vibrant", "dj", "dance"),
@@ -53,7 +56,19 @@ def score(details: dict[str, Any]) -> dict[str, Any]:
             value, hits = max(value, 58), hits + ["structured:goodForGroups"]
         scores[factor] = max(0, min(100, int(value)))
         evidence[factor] = hits
-    return {"scores": scores, "score_evidence": evidence, "score_confidence": "medium" if corpus else "low"}
+    not_specialised: list[str] = []
+    if details.get("liveMusic") is False:
+        not_specialised.append("live_music")
+        scores["live_music"] = None
+        evidence["live_music"] = ["structured:liveMusic=false"]
+    food_fields = [details.get(key) for key in ("servesDinner", "servesBrunch", "servesDessert", "servesVegetarianFood")]
+    if food_fields and all(value is False for value in food_fields):
+        not_specialised.append("food")
+        scores["food"] = None
+        evidence["food"] = ["structured:all_food_fields_false"]
+    if details.get("goodForWatchingSports") is True:
+        scores["focus"], evidence["focus"] = 78, ["structured:goodForWatchingSports=true"]
+    return {"contract_version": CONTRACT_VERSION, "factors": list(FACTORS), "scores": scores, "score_evidence": evidence, "not_specialised": not_specialised, "score_confidence": "medium" if corpus else "low"}
 
 
 def fallback_metadata(details: dict[str, Any]) -> dict[str, Any]:

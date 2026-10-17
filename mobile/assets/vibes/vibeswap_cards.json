@@ -1,0 +1,18 @@
+[
+  {"card_id":"V-ENRG-A","factor":"ENRG","version":1,"image":"V-ENRG-A_v1.png","description":"A Delhi night building from a calm first drink into a fuller energetic room."},
+  {"card_id":"V-ENRG-B","factor":"ENRG","version":1,"image":"V-ENRG-B_v1.png","description":"A calm, low-energy Delhi evening with relaxed people and intentional quiet."},
+  {"card_id":"V-AFFIL-A","factor":"AFFIL","version":1,"image":"V-AFFIL-A_v1.png","description":"A close friend group contrasted with people meeting new people at a bar."},
+  {"card_id":"V-AFFIL-B","factor":"AFFIL","version":1,"image":"V-AFFIL-B_v1.png","description":"A private booth group contrasted with an open floor social scene."},
+  {"card_id":"V-CROWD-A","factor":"CROWD","version":1,"image":"V-CROWD-A_v1.png","description":"A packed lively room contrasted with a spacious nearly empty room."},
+  {"card_id":"V-CROWD-B","factor":"CROWD","version":1,"image":"V-CROWD-B_v1.png","description":"A queue outside a glowing venue contrasted with an almost private venue."},
+  {"card_id":"V-TALK-A","factor":"TALK","version":1,"image":"V-TALK-A_v1.png","description":"An easy table conversation contrasted with a loud speaker-filled room."},
+  {"card_id":"V-TALK-B","factor":"TALK","version":1,"image":"V-TALK-B_v1.png","description":"Friends hearing a story comfortably contrasted with trying to talk across a loud dance floor."},
+  {"card_id":"V-ROAM-A","factor":"ROAM","version":1,"image":"V-ROAM-A_v1.png","description":"A journey through multiple glowing venues contrasted with staying at one table all night."},
+  {"card_id":"V-ROAM-B","factor":"ROAM","version":1,"image":"V-ROAM-B_v1.png","description":"Moving between venues contrasted with friends settled at one table."},
+  {"card_id":"V-RAMP-A","factor":"RAMP","version":1,"image":"V-RAMP-A_v1.png","description":"A quiet start building to a later peak contrasted with entering the loudest room immediately."},
+  {"card_id":"V-RAMP-B","factor":"RAMP","version":1,"image":"V-RAMP-B_v1.png","description":"Saving the biggest room for the final stop contrasted with starting there immediately."},
+  {"card_id":"V-MOVE-A","factor":"MOVE","version":1,"image":"V-MOVE-A_v1.png","description":"People standing and moving contrasted with people comfortably settled at a table."},
+  {"card_id":"V-MOVE-B","factor":"MOVE","version":1,"image":"V-MOVE-B_v1.png","description":"A moving dance floor contrasted with the deepest comfortable lounge seat."},
+  {"card_id":"V-GAMES-A","factor":"GAMES","version":1,"image":"V-GAMES-A_v1.png","description":"Active pool, darts, bowling or arcade play contrasted with drinks and conversation only."},
+  {"card_id":"V-GAMES-B","factor":"GAMES","version":1,"image":"V-GAMES-B_v1.png","description":"An arcade bar with turn-taking contrasted with a quiet drinks-only table."}
+]

@@ -27,7 +27,35 @@ Member = namedtuple('Member', 'name vibe fast')
 def mk(name, **kw):
     return Member(name, {f: kw.get(f, 50) for f in IDENT}, kw.get('fast', set()))
 
+MID_W = 0.30      # 2026-10-07: what a mid value advocates for its own side. Invented, like the pulls.
+
+
 def strength(m, f, pole):
+    """How hard this member argues for one pole. 2026-10-07, the user: a value is never an absence,
+    it says HOW MUCH you want the thing - so 62 is a real mild want and must not be read as silence.
+
+    Before this, 31-69 returned 0.00 and those people were counted as side-less neutrals, which made
+    four people at 62 behind a leader indistinguishable from four at 38 behind the same leader.
+
+    An exact 50 is the only true neutral there is: on a swiped factor it can only come from a pair
+    that disagreed (`up for it` then `not for me`), which is ambiguity rather than a want."""
+    s = m.vibe[f]
+    if ((s >= 70) if pole == 'high' else (s <= 30)):
+        if s >= 80 or s <= 20:
+            return 1.0
+        return 0.75 if f in m.fast else 0.5
+    if s == 50:
+        return 0.0
+    return MID_W if (('high' if s > 50 else 'low') == pole) else 0.0
+
+
+def firm(m, f, pole):
+    """The ladder WITHOUT the mid band - for the SPLIT test only.
+
+    A split is both poles being ENACTED in one room, and a mild lean enacts nothing. Letting the mid
+    band declare splits is not merely wrong in principle: `halves()` averages the members at each
+    pole, finds nobody at 70+ or 30-, and divides by an empty list. Measured over 1,500 rooms,
+    `match()` crashed in 1,119 of them - 75%."""
     s = m.vibe[f]
     if not ((s >= 70) if pole == 'high' else (s <= 30)):
         return 0.0
@@ -51,7 +79,9 @@ def axis_level(members, f):
     dom  = cfg['dom']
     I_hi = impact(members, f, 'high', cfg['discount'] if dom == 'low'  else 1.0)
     I_lo = impact(members, f, 'low',  cfg['discount'] if dom == 'high' else 1.0)
-    neutrals = [m for m in members if 31 <= m.vibe[f] <= 69]
+    # only an exact 50 is a neutral now. Leaving this at 31-69 would count a mid person
+    # as an advocate AND as a neutral, damping their own contribution.
+    neutrals = [m for m in members if m.vibe[f] == 50]
     I_n  = (len(neutrals) ** IMPACT_EXP) * NEUTRAL_W if neutrals else 0.0
     lead = 'high' if I_hi >= I_lo else 'low'
     I_lead, I_rest = (I_hi, I_lo + I_n) if lead == 'high' else (I_lo, I_hi + I_n)
@@ -71,7 +101,7 @@ def room(members, verbose=False):
     splits = set()
     for f in IDENT:
         if not AXIS[f].get('splits'): continue
-        if sum(strength(m, f, 'high') for m in members) > 0 and sum(strength(m, f, 'low') for m in members) > 0:
+        if sum(firm(m, f, 'high') for m in members) > 0 and sum(firm(m, f, 'low') for m in members) > 0:
             splits.add(f)
     split = 'AFFIL' in splits
     if len(members) == 2 and not split:
@@ -86,7 +116,7 @@ def room(members, verbose=False):
     if v['ENRG'] >= 75 and 'MOVE' not in splits and v['MOVE'] < 60:
         v['MOVE'] = min(60, v['MOVE'] + 5)
         x.append('a rising room gets on its feet (+5 MOVE, capped 60): a derived value must never win the name')
-    if v['FOCUS'] >= 70: flags.append('wants a clock - one stop is anchored to an hour')
+    if v['FOCUS'] >= 70: flags.append('wants a venue that reliably has something on (entry 205: no clock in the MVP)')
     if v['SPONT'] <= 30: flags.append('closed to late joins - this room wants to be settled')
     if v['SPONT'] >= 70: flags.append('open to joins right up to the hour')
     if 'AFFIL' in splits: flags.append('AFFIL split - two social halves; a joiner joins one of them')

@@ -50,6 +50,18 @@ The OSM discovery stage does not require a key. Foursquare discovery requires `F
 The legacy Google commands remain available only for licensed/live display verification and require
 `GOOGLE_MAPS_API_KEY`; Google Maps pages are not scraped.
 
+## Local API start on Windows
+
+Use the guarded launcher so an already-running API is reused instead of
+starting a second Uvicorn process on the same port:
+
+```powershell
+.\backend\start_local.ps1 -Port 8005 -Reload
+```
+
+If the script reports that the API is already running, open
+`http://127.0.0.1:8005/admin/`. MySQL is expected on `127.0.0.1:3306`.
+
 For the locked free/low-cost stack:
 
 ```powershell

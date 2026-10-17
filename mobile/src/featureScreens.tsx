@@ -6,6 +6,7 @@ import {
   PanResponder,
   Pressable,
   ScrollView,
+  Share,
   StyleSheet,
   Switch,
   Text,
@@ -28,6 +29,10 @@ import {
 import { venueArtwork } from "./assets";
 import {
   getService,
+  CapsuleRecord,
+  ConversationRecord,
+  VenueCard,
+  VenueDetail,
   JoinerScores,
   JoinRequestRecord,
   PrivacySettings,
@@ -46,14 +51,56 @@ const reportReasons = [
 function VenueDetailScreen() {
   const { selectedVenueName, lastVibeName, set } = useApp();
   const [showPairing, setShowPairing] = useState(false);
-  const venue = venues.find((item) => item.name === selectedVenueName) ?? {
+  const fallbackVenue = (venues.find((item) => item.name === selectedVenueName) ?? {
     name: selectedVenueName,
     type: "Demo venue",
     area: "Delhi NCR",
     tag: "A place to make the night yours",
     color: "#20DDA9",
     scores: {},
-  };
+  }) as VenueCard;
+  const [venue, setVenue] = useState(fallbackVenue);
+  const [detail, setDetail] = useState<VenueDetail | null>(null);
+  const [live, setLive] = useState<Record<string, unknown> | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [dataError, setDataError] = useState("");
+  const [retryKey, setRetryKey] = useState(0);
+  useEffect(() => {
+    let alive = true;
+    const service = getService();
+    setLoading(true);
+    service.getDiscovery().then(async (items) => {
+      const match = items.find((item) => item.name === selectedVenueName) as VenueCard | undefined;
+      if (!alive || !match) return;
+      setVenue(match);
+      if (match.id) {
+        const result = await service.getVenue(match.id);
+        if (!alive) return;
+        setDetail(result);
+        try {
+          setLive(await service.getLiveVenue(match.id));
+        } catch {
+          setLive(null);
+        }
+      }
+    }).catch((cause) => {
+      if (alive) setDataError(cause instanceof Error ? cause.message : "Venue details could not be loaded.");
+    }).finally(() => { if (alive) setLoading(false); });
+    return () => { alive = false; };
+  }, [selectedVenueName, retryKey]);
+  const liveData = live ?? (venue.live as Record<string, unknown> | null | undefined) ?? null;
+  const normalized = detail?.normalized ?? {};
+  const identity = detail?.venue && typeof detail.venue === "object" ? detail.venue as Record<string, unknown> : {};
+  const officialUrl = String(identity.official_url ?? identity.website_url ?? normalized.official_url ?? liveData?.website ?? "");
+  const address = String(identity.address ?? normalized.address ?? liveData?.address ?? `${venue.area}, Delhi NCR`);
+  const hours = liveData?.opening_hours ?? liveData?.hours ?? normalized.opening_hours ?? "Live hours unavailable";
+  const rating = liveData?.rating ?? identity.rating ?? normalized.rating;
+  const reviewCount = liveData?.review_count ?? identity.review_count ?? normalized.review_count;
+  const menuUrl = String(identity.menu_url ?? normalized.menu_url ?? "");
+  const tags = Array.isArray(identity.tags) ? identity.tags.map(String) : Array.isArray(normalized.tags) ? normalized.tags.map(String) : [];
+  const photos = Array.isArray(identity.photos) ? identity.photos.map(String).filter((url) => /^https?:\/\//.test(url)) : [];
+  const socialUrls = Array.isArray(identity.social_urls) ? identity.social_urls.map(String).filter((url) => /^https?:\/\//.test(url)) : [];
+  const evidence = Array.isArray(normalized.evidence) ? normalized.evidence.map(String) : [];
   const strengths = Object.entries(venue.scores)
     .sort(([, a], [, b]) => b - a)
     .slice(0, 3);
@@ -148,15 +195,29 @@ function VenueDetailScreen() {
             <Ionicons name="share-outline" size={21} color={colors.text} />
           </Pressable>
         </View>
-        <Text style={styles.body}>
-          {venue.tag}. This preview uses SHUFFL’s branded fallback artwork; it
-          does not scrape web or social photos.
-        </Text>
+        <Text style={styles.body}>{venue.tag}. {loading ? "Loading verified venue details…" : "Details are sourced from the published venue record; Google live fields are fetched for display only."}</Text>
+        {dataError ? <><Text accessibilityRole="alert" style={styles.notice}>{dataError}</Text><FeatureButton label="Retry venue details" onPress={() => setRetryKey((value) => value + 1)} secondary /></> : null}
+        <View style={styles.roomCard}>
+          <Text style={styles.routeText}>Official venue information</Text>
+          <Text style={styles.secondaryText}>{address}</Text>
+          {officialUrl ? <Pressable onPress={() => Linking.openURL(officialUrl).catch(() => setMapError("Official website could not be opened."))}><Text style={styles.notice}>Open official website</Text></Pressable> : <Text style={styles.secondaryText}>Official website not available</Text>}
+          {menuUrl ? <Pressable onPress={() => Linking.openURL(menuUrl).catch(() => setMapError("Menu could not be opened."))}><Text style={styles.notice}>Open venue menu</Text></Pressable> : <Text style={styles.secondaryText}>Menu not available</Text>}
+          {socialUrls.length ? <View>{socialUrls.slice(0, 4).map((url) => <Pressable key={url} onPress={() => Linking.openURL(url).catch(() => setMapError("Social profile could not be opened."))}><Text style={styles.notice}>Open social profile</Text></Pressable>)}</View> : <Text style={styles.secondaryText}>Social profiles not available</Text>}
+        </View>
+        <View style={styles.roomCard}>
+          <Text style={styles.routeText}>Tags & evidence</Text>
+          <Text style={styles.secondaryText}>{tags.length ? tags.join(" · ") : "Tags not available"}</Text>
+          <Text style={styles.secondaryText}>{evidence.length ? `Evidence: ${evidence.join(" · ")}` : "Evidence details not available"}</Text>
+        </View>
+        <View style={styles.roomCard}>
+          <Text style={styles.routeText}>Photos & media</Text>
+          {photos.length ? <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10 }}>{photos.slice(0, 6).map((photo) => <Image key={photo} source={{ uri: photo }} style={{ width: 132, height: 92, borderRadius: 14 }} accessibilityLabel={`${venue.name} venue photo`} />)}</ScrollView> : <Text style={styles.secondaryText}>No licensed venue photos available.</Text>}
+        </View>
         <View style={styles.roomCard}>
           <Text style={styles.routeText}>Preference profile</Text>
           <Text style={styles.secondaryText}>
-            Venue scores are demo data, not live reviews or a real-time crowd
-            reading.
+            SHUFFL scores are evidence-backed catalogue scores. Live Google
+            rating/review totals are display-time enrichment and are not stored.
           </Text>
           {strengths.map(([factor, score]) => (
             <View key={factor} style={venueStyles.scoreRow}>
@@ -181,22 +242,23 @@ function VenueDetailScreen() {
           <Text style={styles.routeText}>Stories & notes</Text>
           <Text style={styles.secondaryText}>
             No moderated in-app stories or licensed venue media are available
-            for this place in the demo.
+            for this place yet.
           </Text>
         </View>
         <View style={styles.roomCard}>
           <Text style={styles.routeText}>Getting there</Text>
-          <Text style={styles.secondaryText}>
-            {venue.area}, Delhi NCR · Open tonight · ₹₹. Opening hours and live availability are curated demo data.
-          </Text>
+          <Text style={styles.secondaryText}>{address}</Text>
+          <Text style={styles.secondaryText}>Hours: {typeof hours === "string" ? hours : "Live hours available in Google Maps"}</Text>
+          <Text style={styles.secondaryText}>{liveData ? "Hours refreshed live from Google just now · not stored" : "Live hours unavailable · check Google Maps before leaving"}</Text>
+          {rating !== undefined ? <Text style={styles.secondaryText}>Google rating: {String(rating)}{reviewCount !== undefined ? ` · ${String(reviewCount)} reviews` : ""}</Text> : <Text style={styles.secondaryText}>Google rating and reviews unavailable right now</Text>}
         </View>
         <View style={styles.roomCard}>
           <Text style={styles.routeText}>Why it matches tonight</Text>
           <Text style={styles.secondaryText}>{venue.tag}. Good fit for your {lastVibeName || "current"} energy.</Text>
           <Text style={styles.secondaryText}>Pros · Easy to settle into · Strong neighbourhood fit</Text>
-          <Text style={styles.secondaryText}>Cons · Availability and live crowd data are not connected</Text>
+          <Text style={styles.secondaryText}>Cons · Live crowd availability is not guaranteed</Text>
         </View>
-        <Pressable
+        {false && <Pressable
           accessibilityRole="button"
           accessibilityLabel="Show recommended dish and drink"
           onPress={() => setShowPairing((value) => !value)}
@@ -214,8 +276,8 @@ function VenueDetailScreen() {
             size={19}
             color={colors.pink}
           />
-        </Pressable>
-        {showPairing && (
+        </Pressable>}
+        {false && showPairing && (
           <View style={styles.roomCard}>
             <Text style={styles.eyebrow}>
               {lastVibeName || "TONIGHT"} · AT {venue.name.toUpperCase()}
@@ -258,15 +320,20 @@ function VenueDetailScreen() {
             {mapError}
           </Text>
         ) : null}
+        <FeatureButton
+          label="Report venue information"
+          onPress={() => set({ screen: "feature", featureMode: "report" })}
+          secondary
+        />
         <Pressable
           accessibilityRole="button"
-          onPress={() => set({ screen: "feature", featureMode: "customOuting", selectedVenueName: venue.name })}
+          onPress={openMaps}
           style={venueStyles.goHere}
         >
           <Ionicons name="map" size={19} color={colors.bg} />
-          <Text style={venueStyles.goHereText}>Build my night around this</Text>
+          <Text style={venueStyles.goHereText}>Go Here</Text>
         </Pressable>
-        <Pressable accessibilityRole="button" onPress={openMaps} style={venueStyles.mapsButton}><Ionicons name="navigate-outline" size={19} color={colors.text}/><Text style={venueStyles.mapsButtonText}>Open in Maps</Text></Pressable>
+        <Pressable accessibilityRole="button" onPress={() => set({ screen: "feature", featureMode: "customOuting", selectedVenueName: venue.name })} style={venueStyles.mapsButton}><Ionicons name="add-circle-outline" size={19} color={colors.text}/><Text style={venueStyles.mapsButtonText}>Build my night around this</Text></Pressable>
       </ScrollView>
     </SafeAreaView>
   );
@@ -483,9 +550,9 @@ const venueStyles = StyleSheet.create({
 });
 
 function ReportSafetyScreen() {
-  const { set } = useApp();
+  const { selectedVenueName, set } = useApp();
   const service = React.useMemo(() => getService(), []);
-  const [targetId, setTargetId] = useState("demo-user-2");
+  const [targetId, setTargetId] = useState(selectedVenueName || "demo-user-2");
   const [reason, setReason] = useState(reportReasons[0]);
   const [details, setDetails] = useState("");
   const [busy, setBusy] = useState(false);
@@ -563,18 +630,18 @@ function ReportSafetyScreen() {
         <Text style={styles.eyebrow}>REPORT & BLOCK</Text>
         <Text style={styles.title}>Your safety comes first</Text>
         <Text style={styles.body}>
-          Reports are recorded for review. Blocking is an account-level demo
-          state; because this build has no sign-in or server authorization, it
-          cannot enforce blocks across real accounts.
+          Reports are recorded for review. For a venue, report incorrect hours,
+          identity, media, or safety information. For a person, use their
+          profile ID and block them if needed.
         </Text>
-        <Text style={styles.fieldLabel}>PROFILE ID</Text>
+        <Text style={styles.fieldLabel}>{selectedVenueName ? "VENUE OR PROFILE ID" : "PROFILE ID"}</Text>
         <TextInput
           accessibilityLabel="Profile ID to report or block"
           autoCapitalize="none"
           value={targetId}
           onChangeText={setTargetId}
           style={styles.input}
-          placeholder="Profile ID"
+          placeholder="Venue or profile ID"
           placeholderTextColor={colors.muted}
         />
         <Text style={styles.fieldLabel}>WHY ARE YOU REPORTING?</Text>
@@ -735,7 +802,7 @@ const content: Record<
   chat: {
     eyebrow: "GROUP CHAT",
     title: "Friday room",
-    body: "Talk through arrival, plan edits, and the next stop. The demo uses local seeded messages and keeps private content scoped.",
+      body: "Talk through arrival, plan edits, and the next stop. Messages stay scoped to the room and are synced when the API is connected.",
     action: "View active plan",
     next: "activePlan",
     icon: "chatbubbles-outline",
@@ -856,7 +923,7 @@ function FeatureHeader({
   );
 }
 function CustomOutingScreen() {
-  const { plan, scores, preferences: preferenceState, room, selectedVenueName, set } = useApp();
+  const { plan, scores, preferences: preferenceState, room, skeleton, set } = useApp();
   const [step, setStep] = useState(0);
   const [distance, setDistance] = useState("Up to 8 km");
   const [budget, setBudget] = useState("Flexible");
@@ -864,6 +931,9 @@ function CustomOutingScreen() {
   const [duration, setDuration] = useState(plan.durationHours || 4);
   const [shapeEnergy, setShapeEnergy] = useState([0.42, 0.7, 0.5, 0.28]);
   const [shapeCrowd, setShapeCrowd] = useState([0.45, 0.7, 0.55, 0.35]);
+  const [stopOptions, setStopOptions] = useState<VenueCard[][]>([]);
+  const [selectedStops, setSelectedStops] = useState<(VenueCard | null)[]>([]);
+  const [optionsLoaded, setOptionsLoaded] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const service = React.useMemo(() => getService(), []);
@@ -883,22 +953,62 @@ function CustomOutingScreen() {
     onPanResponderMove: (_, gesture) => updateShapeFromGesture({ moveX: gesture.moveX - 24, moveY: gesture.moveY - 12 }),
     onPanResponderRelease: () => undefined,
   }), []);
-  const regenerate = async () => {
+  const stopCount = Math.max(1, Math.min(3, skeleton.stops || 1));
+  const loadStopOptions = async () => {
     if (busy || plan.locked) return;
     setBusy(true);
     setError("");
     try {
-      const generated = await service.generatePlan({
+      await service.saveSkeleton({
         scores: Object.fromEntries(factors.map((factor) => [factor, scores[factor] ?? 50])),
-        preferences: Object.fromEntries(preferenceFactors.map((factor) => [factor, preferenceState.readings[factor]?.score ?? 50])),
-        pol_sense: preferenceState.sense ?? "both",
-        members: room.members,
-        duration_hours: duration,
-        selectedVenueName: selectedVenueName || undefined,
+        stops: stopCount,
+        energy: Math.round((shapeEnergy.reduce((sum, value) => sum + value, 0) / shapeEnergy.length) * 100),
+        crowd: Math.round((shapeCrowd.reduce((sum, value) => sum + value, 0) / shapeCrowd.length) * 100),
+        tags: skeleton.tags,
+        stop_durations: skeleton.stopDurations,
+        source: "mvp_picker",
       });
+      const target = {
+        energy: skeleton.energy ?? scores.ENRG ?? 50,
+        crowd: skeleton.crowd ?? scores.CROWD ?? 50,
+        conversation: scores.TALK ?? 50,
+        food: preferenceState.readings.FOOD?.score ?? 50,
+        scene: preferenceState.readings.SCEN?.score ?? 50,
+        live_music: preferenceState.readings.LIVE?.score ?? 50,
+      };
+      const options = await Promise.all(Array.from({ length: stopCount }, () => service.getStopOptions(target, { city: "New Delhi", limit: 10, includeLive: true })));
+      setStopOptions(options);
+      setSelectedStops((current) => Array.from({ length: stopCount }, (_, index) => current[index] ?? null));
+      setOptionsLoaded(true);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Could not load venue options.");
+    } finally {
+      setBusy(false);
+    }
+  };
+  const buildSelectedPlan = async () => {
+    if (busy || plan.locked) return;
+    if (selectedStops.some((venue) => !venue)) {
+      setError("Choose one venue for every stop before building the night.");
+      return;
+    }
+    setBusy(true);
+    setError("");
+    try {
+      const selected = selectedStops.filter((venue): venue is VenueCard => Boolean(venue));
+      const selectedPayload = selected.map((venue, index) => ({ venue_id: venue.id, name: venue.name, area: venue.area, stop_index: index }));
+      const generated = plan.id
+        ? await service.updatePlanStops(plan.id, selectedPayload)
+        : await service.createSelectedPlan({
+          title: title.trim() || "Tonight, out together",
+          duration_hours: duration,
+          scores: Object.fromEntries(factors.map((factor) => [factor, scores[factor] ?? 50])),
+          stops: selectedPayload,
+          chemistry: { tags: skeleton.tags, stop_count: stopCount, stop_durations: skeleton.stopDurations },
+        });
       set({ plan: { ...plan, id: generated.id, exists: true, locked: false, style: generated.style, title: title.trim() || generated.style, durationHours: duration, stops: generated.stops, chemistry: generated.chemistry } });
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Could not build this plan.");
+      setError(cause instanceof Error ? cause.message : "Could not save this stop list.");
     } finally {
       setBusy(false);
     }
@@ -917,7 +1027,8 @@ function CustomOutingScreen() {
   };
   const nextStep = () => {
     if (step < 3) setStep((current) => current + 1);
-    else void regenerate();
+    else if (!optionsLoaded) void loadStopOptions();
+    else void buildSelectedPlan();
   };
   const topFactor = factors.reduce((best, factor) => (scores[factor] ?? 50) > (scores[best] ?? 50) ? factor : best, factors[0]);
   return (
@@ -964,11 +1075,21 @@ function CustomOutingScreen() {
           <Text style={styles.secondaryText}>Tap each stop to grow or soften its crowd level.</Text>
           <Text style={styles.fieldLabel}>OR SELECT FROM PRESETS</Text>
           {presets.map((preset) => <Pressable key={preset.title} onPress={() => { setTitle(preset.title); setShapeEnergy(preset.energy); setShapeCrowd(preset.crowd); }} style={customStyles.preset}><Text style={styles.routeText}>{preset.title}</Text><Text style={styles.secondaryText}>Use this shape as a starting point</Text></Pressable>)}
+          {optionsLoaded && stopOptions.map((options, stopIndex) => <View key={`stop-options-${stopIndex}`} style={customStyles.optionsBlock}>
+            <View style={customStyles.optionsHeader}><Text style={styles.fieldLabel}>STOP {stopIndex + 1}</Text><Text style={styles.secondaryText}>{selectedStops[stopIndex] ? "Selected" : "Choose one"}</Text></View>
+            {options.length ? options.map((venue) => {
+              const selected = selectedStops[stopIndex]?.id === venue.id || selectedStops[stopIndex]?.name === venue.name;
+              const liveLabel = venue.live ? "Hours checked live" : "Hours available at display time";
+              return <Pressable key={`${stopIndex}-${venue.id ?? venue.name}`} accessibilityRole="radio" accessibilityState={{ selected }} onPress={() => setSelectedStops((current) => current.map((item, index) => index === stopIndex ? venue : item))} style={[customStyles.optionCard, selected && customStyles.optionCardSelected]}>
+                <View style={customStyles.optionCopy}><Text style={customStyles.optionName}>{venue.name}</Text><Text style={styles.secondaryText}>{venue.type} · {venue.area}</Text><Text style={customStyles.optionMeta}>{venue.tag} · {liveLabel}</Text></View><Ionicons name={selected ? "checkmark-circle" : "radio-button-off"} size={22} color={selected ? colors.pink : colors.muted} />
+              </Pressable>;
+            }) : <Text style={styles.secondaryText}>No published venues matched this stop. Try refreshing the options.</Text>}
+          </View>)}
         </>}
         {plan.exists && step === 3 && <View style={customStyles.planMeta}><View><Text style={styles.eyebrow}>TONIGHT’S SHAPE</Text><Text style={styles.routeText}>{plan.style}</Text></View><Text style={styles.secondaryText}>{duration}h · {plan.stops.length} stops</Text></View>}
         {plan.exists && step === 3 && plan.stops.map((stop, index) => { const venue = venues.find((item) => item.name === stop || stop.startsWith(item.name)); return <View key={`${index}-${stop}`} style={customStyles.stopCard}><View style={customStyles.stopTop}><Text style={styles.eyebrow}>{index === 0 ? "START OFF WITH" : index === plan.stops.length - 1 ? "WIND DOWN AT" : "THEN, HEAD TO"}</Text><Text style={customStyles.stopNumber}>0{index + 1}</Text></View><Text style={customStyles.stopName}>{venue?.name ?? stop}</Text><Text style={styles.secondaryText}>{venue ? `${venue.type} · ${venue.area}` : "Delhi NCR"}</Text><Text style={styles.body}>{venue?.tag ?? "A Delhi stop selected for this lineup."}</Text><View style={customStyles.reason}><Ionicons name="sparkles" size={16} color={colors.pink} /><Text style={customStyles.reasonText}>Your night leans toward {factorCopy[topFactor].title.toLowerCase()}.</Text></View></View>; })}
         {error ? <Text accessibilityRole="alert" style={styles.notice}>{error}</Text> : null}
-        <FeatureButton label={busy ? "Building…" : step === 3 ? (plan.exists ? "Refresh lineup" : "Build my lineup") : "Next"} onPress={nextStep} />
+        <FeatureButton label={busy ? (optionsLoaded ? "Saving…" : "Finding venues…") : step === 3 ? (!optionsLoaded ? "Find venues" : plan.exists ? "Save new choices" : "Build my lineup") : "Next"} onPress={nextStep} />
         {step === 3 && plan.exists && <FeatureButton label={busy ? "Please wait…" : plan.locked ? "Open active plan" : "Lock this plan"} onPress={() => plan.locked ? set({ screen: "feature", featureMode: "activePlan" }) : void lock()} />}
       </ScrollView>
     </SafeAreaView>
@@ -1051,6 +1172,13 @@ const customStyles = StyleSheet.create({
   shapeCircleText: { color: colors.bg, fontWeight: "900", fontSize: 12 },
   stopAxis: { position: "absolute", left: 42, right: 8, bottom: 14, flexDirection: "row", justifyContent: "space-between" },
   preset: { padding: 14, borderRadius: 16, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line, marginBottom: 9 },
+  optionsBlock: { marginTop: 16, gap: 8 },
+  optionsHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 2 },
+  optionCard: { flexDirection: "row", alignItems: "center", gap: 12, padding: 14, borderRadius: 16, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line },
+  optionCardSelected: { borderColor: colors.pink, backgroundColor: "#351323" },
+  optionCopy: { flex: 1 },
+  optionName: { color: colors.text, fontSize: 16, fontWeight: "900" },
+  optionMeta: { color: colors.muted, fontSize: 11, marginTop: 5 },
   planMeta: {
     flexDirection: "row",
     alignItems: "center",
@@ -1102,7 +1230,7 @@ const customStyles = StyleSheet.create({
   },
 });
 function HostRoomScreen() {
-  const { room, plan, preferences: preferenceState, scores, selectedVenueName, set } = useApp();
+  const { room, plan, set } = useApp();
   const [venueQuery, setVenueQuery] = useState("");
   const [hostVenue, setHostVenue] = useState("");
   const [hostIntent, setHostIntent] = useState<"choose" | "cohosts">("choose");
@@ -1111,66 +1239,42 @@ function HostRoomScreen() {
   const [confirm, setConfirm] = useState<"create" | "host" | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  // WebSocket clients receive pushes; this lightweight polling path keeps the
+  // room state correct after reconnects or on networks that block WebSockets.
+  useEffect(() => {
+    if (!room.id || !plan.id || getService().mode !== "api") return undefined;
+    let active = true;
+    const sync = async () => {
+      try {
+        const current = await getService().getPlan(plan.id!);
+        if (!active) return;
+        set({ plan: { ...plan, id: current.id, stops: current.stops, locked: Boolean(current.locked) } });
+      } catch {
+        // The next interval retries; the current UI remains usable offline.
+      }
+    };
+    const timer = setInterval(sync, 15000);
+    sync();
+    return () => { active = false; clearInterval(timer); };
+  }, [room.id, plan.id]);
   const addCohost = () =>
     set({ room: { ...room, cohosts: ["Bela"], members: ["Aarav", "Bela"] } });
   const createPlan = async () => {
     if (!room.cohosts.length && confirm !== "create")
       return setConfirm("create");
-    if (busy) return;
-    setBusy(true);
-    setError("");
-    try {
-      const service = getService();
-      const vibeScores = Object.fromEntries(
-        factors.map((factor) => [factor, scores[factor] ?? 50]),
-      );
-      const preferenceScores = Object.fromEntries(
-        preferenceFactors.map((factor) => [
-          factor,
-          preferenceState.readings[factor]?.score ?? 50,
-        ]),
-      );
-      const generated = await service.generatePlan({
-        scores: vibeScores,
-        preferences: preferenceScores,
-        pol_sense: preferenceState.sense ?? "both",
-        members: room.members,
-        selectedVenueName: selectedVenueName || undefined,
-      });
-      const createdRoom = room.id
-        ? { id: room.id }
-        : await service.createRoom(room.name, room.members);
-      set({
-        room: { ...room, id: createdRoom.id },
-        plan: {
-          ...plan,
-          id: generated.id,
-          exists: true,
-          locked: false,
-          style: generated.style,
-          stops: generated.stops,
-          chemistry: generated.chemistry,
-        },
-      });
-      setConfirm(null);
-    } catch (cause) {
-      setError(
-        cause instanceof Error
-          ? cause.message
-          : "Could not create the plan. Please try again.",
-      );
-    } finally {
-      setBusy(false);
-    }
+    setConfirm(null);
+    set({ screen: "feature", featureMode: "customOuting" });
   };
   const host = async () => {
-    if (!plan.exists || !room.id || !plan.id || busy) return;
+    if (!plan.exists || !plan.id || busy) return;
     if (!room.cohosts.length && confirm !== "host") return setConfirm("host");
     setBusy(true);
     setError("");
     try {
-      await getService().hostRoom(room.id, plan.id);
-      set({ room: { ...room, public: true }, plan: { ...plan, locked: true } });
+      const service = getService();
+      const currentRoom = room.id ? room : await service.createRoom(room.name, room.members);
+      await service.hostRoom(currentRoom.id!, plan.id);
+      set({ room: { ...room, id: currentRoom.id!, public: true }, plan: { ...plan, locked: true } });
       setConfirm(null);
     } catch (cause) {
       setError(
@@ -1180,6 +1284,15 @@ function HostRoomScreen() {
       );
     } finally {
       setBusy(false);
+    }
+  };
+  const shareInvite = async () => {
+    if (!room.id) return;
+    try {
+      const invite = await getService().createRoomInvite(room.id);
+      await Share.share({ message: `Join my SHUFFL room: ${invite.invite_url}` });
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Could not create invite link.");
     }
   };
   const confirmAction = () => (confirm === "host" ? host() : createPlan());
@@ -1304,6 +1417,13 @@ function HostRoomScreen() {
           <FeatureButton
             label={busy ? "Hosting…" : "Host room"}
             onPress={host}
+          />
+        )}{" "}
+        {room.public && (
+          <FeatureButton
+            label="Share room invite"
+            onPress={() => void shareInvite()}
+            secondary
           />
         )}{" "}
         {room.public && (
@@ -1512,6 +1632,10 @@ function PrivacySafetyScreen() {
       setSaving(false);
     }
   };
+  const deleteAccount = () => Alert.alert("Delete SHUFFL account?", "Your profile, vibe history, plans, and privacy state will be reset. The locked venue catalogue will not be changed.", [
+    { text: "Cancel", style: "cancel" },
+    { text: "Delete account", style: "destructive", onPress: () => { void getService().deleteAccount().then(() => { set({ userName: "", userPronouns: "", userBio: "", screen: "welcome", onboardingComplete: false }); }).catch((cause) => setError(cause instanceof Error ? cause.message : "Account could not be deleted.")); } },
+  ]);
   const row = (
     title: string,
     detail: string,
@@ -1616,6 +1740,7 @@ function PrivacySafetyScreen() {
           onPress={() => set({ screen: "feature", featureMode: "report" })}
           secondary
         />
+        <FeatureButton label="Delete account" onPress={deleteAccount} secondary />
       </ScrollView>
     </SafeAreaView>
   );
@@ -1983,9 +2108,8 @@ function JoinRoomScreen() {
         <Text style={styles.eyebrow}>HOSTED NIGHTS</Text>
         <Text style={styles.title}>Find your people</Text>
         <Text style={styles.body}>
-          Every hosted night is checked against your vibe bend before a request
-          can be sent. Venue preferences help rank stops; they never decide
-          admission.
+          Your vibe fit is shown as a helpful signal. It never blocks a join
+          request; the host decides who joins.
         </Text>
         {rooms.map((room) => {
           const existing = requests[room.id];
@@ -2002,6 +2126,16 @@ function JoinRoomScreen() {
                   {room.stop_types.join(" → ")}
                 </Text>
               ) : null}
+              {room.selected_stops?.length ? (
+                <View style={styles.routeList}>
+                  <Text style={styles.eyebrow}>HOST'S STOP LIST · READ ONLY</Text>
+                  {room.selected_stops.map((stop, index) => (
+                    <Text key={`${room.id}-${index}-${stop.name}`} style={styles.secondaryText}>
+                      {index + 1}. {stop.name}{stop.area ? ` · ${stop.area}` : ""}
+                    </Text>
+                  ))}
+                </View>
+              ) : null}
               {fit?.eligible ? (
                 <Text style={styles.notice}>
                   Vibe fit · every stop and the night’s ROAM count are inside
@@ -2009,7 +2143,7 @@ function JoinRoomScreen() {
                 </Text>
               ) : (
                 <Text style={styles.secondaryText}>
-                  Not a fit for this frozen plan
+                  Outside your current vibe bend · request is still allowed
                   {fit?.reasons?.length
                     ? ": " + fit.reasons.join(" · ")
                     : " · eligibility unavailable"}
@@ -2021,12 +2155,12 @@ function JoinRoomScreen() {
                     ? "Request sent · waiting for host"
                     : "Request " + existing.status}
                 </Text>
-              ) : fit?.eligible ? (
+              ) : (
                 <FeatureButton
                   label={busy ? "Sending…" : "Request to join"}
                   onPress={() => requestJoin(room)}
                 />
-              ) : null}
+              )}
             </View>
           );
         })}
@@ -2129,8 +2263,8 @@ function JoinRequestsScreen() {
         <Text style={styles.title}>People who want in</Text>
         <Text style={styles.body}>
           Review each request explicitly. Accepting adds the requester’s member
-          ID and keeps the hosted plan unchanged. The frozen plan-fit gate is
-          checked before a request enters this queue.
+          ID and keeps the hosted plan unchanged. Fit is a label for context,
+          never an automatic admission gate.
         </Text>
         {error ? (
           <Text accessibilityRole="alert" style={styles.notice}>
@@ -2149,8 +2283,9 @@ function JoinRequestsScreen() {
               {request.note || "No note provided"}
             </Text>
             <Text style={styles.disclaimer}>
-              Requests can only enter this queue after the frozen-plan shape-fit
-              gate passes. Preference fit never gates admission.
+              {request.fit
+                ? "Vibe fit looks aligned with this room."
+                : `Vibe mismatch noted${request.fit_reasons?.length ? ` · ${request.fit_reasons.join(" · ")}` : ""}. Host decision required.`}
             </Text>
             <View style={styles.requestActions}>
               <Pressable
@@ -2196,10 +2331,12 @@ function JoinRequestsScreen() {
   );
 }
 function CapsuleScreen() {
-  const { capsule, set } = useApp();
+  const { capsule, room, set } = useApp();
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<string[]>(capsule.members);
   const [invitesSent, setInvitesSent] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
   const friends = ["Bela Shah", "Chirag Mehta", "Maya Kapoor", "Dev Malhotra"];
   const visibleFriends = friends.filter((name) =>
     name.toLowerCase().includes(query.trim().toLowerCase()),
@@ -2213,25 +2350,39 @@ function CapsuleScreen() {
         ? current.filter((item) => item !== name)
         : [...current, name],
     );
-  const sendInvites = () => {
+  const sendInvites = async () => {
     if (!selected.length) return;
-    set({
-      capsule: {
-        members: selected,
-        approvals: Object.fromEntries(
-          selected.map((member) => [member, false]),
-        ),
-      },
-    });
-    setInvitesSent(true);
+    setBusy(true);
+    setError("");
+    try {
+      const record = room.id
+        ? await getService().createCapsule(room.id, selected)
+        : { id: undefined, room_id: undefined, members: selected, approvals: Object.fromEntries(selected.map((member) => [member, false])), status: "awaiting_approval" as const };
+      const roomId = (record as CapsuleRecord & { room_id?: string }).room_id;
+      set({ capsule: { id: record.id, roomId, status: record.status, members: record.members, approvals: record.approvals } });
+      setInvitesSent(true);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Could not send capsule invites.");
+    } finally {
+      setBusy(false);
+    }
   };
-  const simulateApproval = (member: string) =>
-    set({
-      capsule: {
-        ...capsule,
-        approvals: { ...capsule.approvals, [member]: true },
-      },
-    });
+  const approveMember = async (member: string) => {
+    if (capsule.approvals[member] || busy) return;
+    setBusy(true);
+    setError("");
+    try {
+      const record = capsule.id
+        ? await getService().approveCapsule(capsule.id, member, true)
+        : { ...capsule, approvals: { ...capsule.approvals, [member]: true }, status: "approved" as const };
+      const roomId = (record as CapsuleRecord & { room_id?: string }).room_id;
+      set({ capsule: { id: record.id, roomId, status: record.status, members: record.members, approvals: record.approvals } });
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Could not save approval.");
+    } finally {
+      setBusy(false);
+    }
+  };
   return (
     <SafeAreaView style={styles.safe}>
       <FeatureHeader
@@ -2289,7 +2440,8 @@ function CapsuleScreen() {
         {!visibleFriends.length && (
           <Text style={styles.secondaryText}>No friends match that name.</Text>
         )}
-        <FeatureButton label="Send capsule invites" onPress={sendInvites} />
+        <FeatureButton label={busy ? "Saving…" : "Send capsule invites"} onPress={() => void sendInvites()} />
+        {error ? <Text accessibilityRole="alert" style={styles.notice}>{error}</Text> : null}
         {invitesSent && (
           <View style={capsuleStyles.notice}>
             <Ionicons
@@ -2298,8 +2450,7 @@ function CapsuleScreen() {
               color={colors.cyan}
             />
             <Text style={capsuleStyles.noticeText}>
-              Demo mode: tap a member’s approval control to preview their
-              response. No notification is sent.
+              {room.id ? "Invites are saved to this room. Each member must approve before continuing." : "Preview mode: connect the API to send real capsule notifications."}
             </Text>
           </View>
         )}
@@ -2316,9 +2467,9 @@ function CapsuleScreen() {
               </View>
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel={`Simulate ${member} approving`}
-                disabled={!!capsule.approvals[member]}
-                onPress={() => simulateApproval(member)}
+                accessibilityLabel={`Approve capsule for ${member}`}
+                disabled={!!capsule.approvals[member] || busy}
+                onPress={() => void approveMember(member)}
               >
                 <Ionicons
                   name={
@@ -2495,6 +2646,12 @@ function InboxScreen() {
   const { set, pendingVenueShare } = useApp();
   const [query, setQuery] = useState("");
   const [tab, setTab] = useState<"messages" | "invites">("messages");
+  const service = React.useMemo(() => getService(), []);
+  const [conversationRecords, setConversationRecords] = useState<ConversationRecord[]>([]);
+  const [notifications, setNotifications] = useState<import("./services").NotificationRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [retryKey, setRetryKey] = useState(0);
   const stories = [
     ["You", "#FF2E7A"],
     ["Bela", "#874D8C"],
@@ -2502,29 +2659,18 @@ function InboxScreen() {
     ["Maya", "#9A5C47"],
     ["Dev", "#566A44"],
   ];
-  const conversations = [
-    {
-      name: "Friday Room",
-      preview: "The plan is in. I’m in for the first stop.",
-      time: "8:42 PM",
-      unread: true,
-      icon: "people-outline" as const,
-    },
-    {
-      name: "Bela Shah",
-      preview: "Found a new place in GK—sending it over",
-      time: "7:18 PM",
-      unread: false,
-      icon: "person-outline" as const,
-    },
-    {
-      name: "Delhi After Dark",
-      preview: "You: see you there",
-      time: "Yesterday",
-      unread: false,
-      icon: "people-outline" as const,
-    },
-  ];
+  useEffect(() => {
+    let active = true;
+    Promise.all([service.listConversations(), service.listNotifications()])
+      .then(([items, notices]) => { if (active) { setConversationRecords(items); setNotifications(notices); } })
+      .catch((cause) => { if (active) setError(cause instanceof Error ? cause.message : "Could not load your inbox."); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [service, retryKey]);
+  const conversations = conversationRecords.map((conversation) => {
+    const last = conversation.messages[conversation.messages.length - 1];
+    return { id: conversation.id, name: conversation.title, preview: last?.body ?? "No messages yet", time: last?.created_at ? new Date(last.created_at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) : "New", unread: conversation.unread > 0, icon: conversation.kind === "direct" ? "person-outline" as const : "people-outline" as const };
+  });
   const visible = conversations.filter(
     (item) =>
       item.name.toLowerCase().includes(query.toLowerCase()) ||
@@ -2628,30 +2774,18 @@ function InboxScreen() {
           </View>
         ) : null}
         {tab === "invites" ? (
-          <Pressable
-            onPress={() =>
-              set({ screen: "feature", featureMode: "notifications" })
-            }
-            style={inboxStyles.inviteCard}
-          >
-            <View style={inboxStyles.inviteIcon}>
-              <Ionicons name="people" size={20} color={colors.pink} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.routeText}>A capsule invite is waiting</Text>
-              <Text style={styles.secondaryText}>
-                Open to review the local demo invitation
-              </Text>
-            </View>
+          notifications.map((item) => <Pressable key={item.id} onPress={() => { void service.markNotificationRead(item.id); setNotifications((items) => items.map((current) => current.id === item.id ? { ...current, read: true } : current)); set({ screen: "feature", featureMode: item.kind.includes("room") ? "joinRoom" : "notifications" }); }} style={inboxStyles.inviteCard}>
+            <View style={inboxStyles.inviteIcon}><Ionicons name="notifications-outline" size={20} color={colors.pink} /></View>
+            <View style={{ flex: 1 }}><Text style={styles.routeText}>{item.title}</Text><Text style={styles.secondaryText}>{item.body || "Open to review this update."}</Text><Text style={styles.notice}>{item.read ? "Read" : "Unread"}</Text></View>
             <Ionicons name="chevron-forward" size={18} color={colors.muted} />
-          </Pressable>
+          </Pressable>)
         ) : (
           visible.map((item) => (
             <Pressable
               key={item.name}
               onPress={() =>
-                set({
-                  activeConversation: item.name,
+              set({
+                  activeConversation: item.id,
                   screen: "feature",
                   featureMode: "chat",
                 })
@@ -2676,26 +2810,51 @@ function InboxScreen() {
             </Pressable>
           ))
         )}
-        {tab === "messages" && !visible.length && (
+        {loading && <Text style={styles.secondaryText}>Loading conversations…</Text>}
+        {error ? <><Text accessibilityRole="alert" style={styles.notice}>{error}</Text><FeatureButton label="Retry inbox" onPress={() => { setError(""); setLoading(true); setRetryKey((value) => value + 1); }} secondary /></> : null}
+        {tab === "invites" && notifications.filter((item) => !item.read).length === 0 && <Text style={styles.secondaryText}>No unread invites or alerts.</Text>}
+        {tab === "messages" && !loading && !visible.length && (
           <Text style={styles.secondaryText}>
             No conversations match that search.
           </Text>
         )}
-        <Text style={inboxStyles.demoNotice}>
-          Demo conversations are local previews; messages are not delivered to
-          other accounts.
-        </Text>
+        <Text style={inboxStyles.demoNotice}>Unread state and messages are synced to your SHUFFL account when the API is connected.</Text>
       </ScrollView>
     </SafeAreaView>
   );
 }
 function ChatScreen() {
   const { set, activeConversation, pendingVenueShare } = useApp();
-  const [messages, setMessages] = useState<string[]>([]);
+  const service = React.useMemo(() => getService(), []);
+  const [conversation, setConversation] = useState<ConversationRecord | null>(null);
+  const [draft, setDraft] = useState("");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
   const [sharedVenue, setSharedVenue] = useState("");
+  useEffect(() => {
+    let active = true;
+    service.listConversations().then((items) => {
+      const found = items.find((item) => item.id === activeConversation) ?? items.find((item) => item.title === activeConversation) ?? items[0] ?? null;
+      if (active) setConversation(found);
+      if (found) void service.markConversationRead(found.id);
+    }).catch((cause) => { if (active) setError(cause instanceof Error ? cause.message : "Could not load this conversation."); });
+    return () => { active = false; };
+  }, [activeConversation, service]);
   const sendVenue = () => {
     setSharedVenue(pendingVenueShare);
     set({ pendingVenueShare: "" });
+  };
+  const sendMessage = async () => {
+    if (!conversation || !draft.trim() || busy) return;
+    setBusy(true);
+    setError("");
+    try {
+      const message = await service.sendChatMessage(conversation.id, draft.trim());
+      setConversation((current) => current ? { ...current, messages: [...current.messages, message] } : current);
+      setDraft("");
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Could not send message.");
+    } finally { setBusy(false); }
   };
   return (
     <SafeAreaView style={styles.safe}>
@@ -2704,41 +2863,16 @@ function ChatScreen() {
         onBack={() => set({ screen: "feature", featureMode: "inbox" })}
       />
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.eyebrow}>
-          {activeConversation === "Friday Room"
-            ? "FRIDAY ROOM"
-            : "DIRECT MESSAGE · DEMO"}
-        </Text>
-        <Text style={styles.title}>{activeConversation}</Text>
-        <View style={styles.route}>
-          <Text style={styles.routeText}>Aarav</Text>
-          <Text style={styles.secondaryText}>Should we start at Sidecar?</Text>
-        </View>
-        <View style={styles.route}>
-          <Text style={styles.routeText}>
-            {activeConversation === "Friday Room"
-              ? "Bela Shah"
-              : activeConversation}
-          </Text>
-          <Text style={styles.secondaryText}>
-            {activeConversation === "Friday Room"
-              ? "The plan is in. I’m in for the first stop."
-              : "Found a new place in GK—sending it over."}
-          </Text>
-        </View>
-        {messages.map((message, index) => (
-          <View key={`${index}-${message}`} style={styles.roomCard}>
-            <Text style={styles.eyebrow}>YOU · LOCAL PREVIEW</Text>
-            <Text style={styles.routeText}>{message}</Text>
-          </View>
-        ))}
+        <Text style={styles.eyebrow}>{conversation?.kind === "group" ? "GROUP CHAT" : "DIRECT MESSAGE"}</Text>
+        <Text style={styles.title}>{conversation?.title ?? activeConversation}</Text>
+        {conversation?.messages.map((message) => <View key={message.id} style={styles.roomCard}><Text style={styles.eyebrow}>{message.sender_id ?? "SHUFFL MEMBER"}</Text><Text style={styles.routeText}>{message.body}</Text><Text style={styles.secondaryText}>{message.created_at ? new Date(message.created_at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) : ""}</Text></View>)}
+        {error ? <Text accessibilityRole="alert" style={styles.notice}>{error}</Text> : null}
         {pendingVenueShare ? (
           <View style={styles.roomCard}>
             <Text style={styles.eyebrow}>VENUE CARD · PREVIEW</Text>
             <Text style={styles.routeText}>{pendingVenueShare}</Text>
             <Text style={styles.secondaryText}>
-              Share this place in the conversation. This demo keeps the message
-              local.
+              Share this place in the conversation.
             </Text>
             <FeatureButton
               label="Send venue card in demo chat"
@@ -2751,28 +2885,17 @@ function ChatScreen() {
             <Text style={styles.eyebrow}>YOU · LOCAL PREVIEW</Text>
             <Text style={styles.routeText}>{sharedVenue}</Text>
             <Text style={styles.secondaryText}>
-              Venue card added to this demo conversation. It was not delivered
-              to another account.
+              Venue card ready to share in this conversation.
             </Text>
           </View>
         )}
-        <FeatureButton
-          label="Send demo message"
-          onPress={() =>
-            setMessages((current) => [
-              ...current,
-              "I’ll share arrival details privately.",
-            ])
-          }
-        />
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}><TextInput accessibilityLabel="Message" value={draft} onChangeText={setDraft} placeholder="Write a message" placeholderTextColor={colors.muted} style={[styles.input, { flex: 1, marginBottom: 0 }]} /><FeatureButton label={busy ? "…" : "Send"} onPress={() => void sendMessage()} /></View>
         <FeatureButton
           label="View active plan"
           onPress={() => set({ screen: "feature", featureMode: "activePlan" })}
           secondary
         />
-        <Text style={styles.disclaimer}>
-          Demo conversation only. Messages are not delivered to other accounts.
-        </Text>
+        <Text style={styles.disclaimer}>Messages are scoped to this conversation and saved when the API is connected.</Text>
       </ScrollView>
     </SafeAreaView>
   );
@@ -2837,13 +2960,47 @@ function FeatureShell({ children }: { children: React.ReactNode }) {
 
 function NotificationsScreen() {
   const { set } = useApp();
-  const items = [
-    { icon: "person-add-outline" as const, title: "A room is forming", body: "Friday night, open to the city has join requests open.", action: "View room", next: { screen: "feature" as const, featureMode: "joinRoom" as const } },
-    { icon: "map-outline" as const, title: "Plan update", body: "Your current line-up is ready to review.", action: "Open plan", next: { screen: "feature" as const, featureMode: "activePlan" as const } },
-    { icon: "lock-open-outline" as const, title: "Capsule invite", body: "Choose friends before requesting a room together.", action: "Open capsule", next: { screen: "feature" as const, featureMode: "capsule" as const } },
-    { icon: "chatbubbles-outline" as const, title: "Messages", body: "Catch up with your rooms and friends.", action: "Open social", next: { screen: "feature" as const, featureMode: "inbox" as const } },
-  ];
-  return <FeatureShell><SafeAreaView style={styles.safe}><FeatureHeader label="NOTIFICATIONS" onBack={() => set({ screen: "discover" })}/><ScrollView contentContainerStyle={styles.content}><Text style={styles.eyebrow}>YOUR NIGHT, IN THE LOOP</Text><Text style={styles.title}>Notifications</Text><Text style={styles.body}>Join requests, room invitations, capsule approvals and plan updates stay visible here.</Text>{items.map(item => <Pressable key={item.title} accessibilityRole="button" onPress={() => set(item.next)} style={styles.route}><View style={styles.heroIcon}><Ionicons name={item.icon} size={22} color={colors.pink}/></View><View style={{flex:1}}><Text style={styles.routeText}>{item.title}</Text><Text style={styles.secondaryText}>{item.body}</Text><Text style={styles.notice}>{item.action}</Text></View><Ionicons name="chevron-forward" size={19} color={colors.muted}/></Pressable>)}</ScrollView></SafeAreaView></FeatureShell>;
+  const service = React.useMemo(() => getService(), []);
+  const [items, setItems] = useState<import("./services").NotificationRecord[]>([]);
+  const [error, setError] = useState("");
+  const [retryKey, setRetryKey] = useState(0);
+  useEffect(() => { service.listNotifications().then(setItems).catch((cause) => setError(cause instanceof Error ? cause.message : "Could not load notifications.")); }, [service, retryKey]);
+  const nextFor = (kind: string) => kind.includes("room") ? { screen: "feature" as const, featureMode: "joinRoom" as const } : kind.includes("capsule") ? { screen: "feature" as const, featureMode: "capsule" as const } : kind.includes("message") ? { screen: "feature" as const, featureMode: "inbox" as const } : { screen: "feature" as const, featureMode: "activePlan" as const };
+  return <FeatureShell><SafeAreaView style={styles.safe}><FeatureHeader label="NOTIFICATIONS" onBack={() => set({ screen: "discover" })}/><ScrollView contentContainerStyle={styles.content}><Text style={styles.eyebrow}>YOUR NIGHT, IN THE LOOP</Text><Text style={styles.title}>Notifications</Text><Text style={styles.body}>Join requests, room invitations, capsule approvals and plan updates stay visible here.</Text>{error ? <><Text accessibilityRole="alert" style={styles.notice}>{error}</Text><FeatureButton label="Retry notifications" onPress={() => { setError(""); setRetryKey((value) => value + 1); }} secondary /></> : null}{items.map(item => <Pressable key={item.id} accessibilityRole="button" onPress={() => { void service.markNotificationRead(item.id); setItems((current) => current.map((entry) => entry.id === item.id ? { ...entry, read: true } : entry)); set(nextFor(item.kind)); }} style={styles.route}><View style={styles.heroIcon}><Ionicons name={item.read ? "notifications-outline" : "notifications"} size={22} color={item.read ? colors.muted : colors.pink}/></View><View style={{flex:1}}><Text style={styles.routeText}>{item.title}</Text><Text style={styles.secondaryText}>{item.body || "No additional detail."}</Text><Text style={styles.notice}>{item.read ? "Read" : "Unread · tap to open"}</Text></View><Ionicons name="chevron-forward" size={19} color={colors.muted}/></Pressable>)}{!items.length && !error ? <Text style={styles.secondaryText}>No notifications yet.</Text> : null}</ScrollView></SafeAreaView></FeatureShell>;
+}
+
+function SupportScreen() {
+  const { set } = useApp();
+  const [error, setError] = useState("");
+  const contact = async () => {
+    setError("");
+    try {
+      await Linking.openURL("mailto:support@shuffl.app?subject=SHUFFL%20MVP%20support");
+    } catch {
+      setError("Email could not be opened on this device. Please contact the SHUFFL support team.");
+    }
+  };
+  return (
+    <FeatureShell>
+      <SafeAreaView style={styles.safe}>
+        <FeatureHeader label="SUPPORT" onBack={() => set({ screen: "control" })} />
+        <ScrollView contentContainerStyle={styles.content}>
+          <Text style={styles.eyebrow}>HELP DESK</Text>
+          <Text style={styles.title}>We can help you untangle the night.</Text>
+          <Text style={styles.body}>Use support for account, venue information, room, safety, or plan issues. Include the screen and venue/room name so the team can act quickly.</Text>
+          {[
+            ["Venue information", "Report wrong hours, address, photos, website, or tags from the venue page."],
+            ["Room or capsule", "Tell us the room title and what happened to the request or approval."],
+            ["Safety concern", "Use Report & Block immediately; support can follow up on the review."],
+          ].map(([title, body]) => <View key={title} style={styles.route}><View style={{ flex: 1 }}><Text style={styles.routeText}>{title}</Text><Text style={styles.secondaryText}>{body}</Text></View></View>)}
+          {error ? <Text accessibilityRole="alert" style={styles.notice}>{error}</Text> : null}
+          <FeatureButton label="Email SHUFFL support" onPress={() => void contact()} />
+          <FeatureButton label="Open Privacy & Safety" onPress={() => set({ screen: "feature", featureMode: "privacy" })} secondary />
+          <FeatureButton label="Report or block" onPress={() => set({ screen: "feature", featureMode: "report" })} secondary />
+        </ScrollView>
+      </SafeAreaView>
+    </FeatureShell>
+  );
 }
 
 export function FeatureScreen({ mode }: { mode: FeatureMode }) {
@@ -2855,6 +3012,7 @@ export function FeatureScreen({ mode }: { mode: FeatureMode }) {
       </FeatureShell>
     );
   if (mode === "notifications") return <NotificationsScreen />;
+  if (mode === "support") return <SupportScreen />;
   if (mode === "music") return <MusicScreen />;
   if (mode === "feedback") return <FeedbackScreen />;
   if (mode === "customOuting")

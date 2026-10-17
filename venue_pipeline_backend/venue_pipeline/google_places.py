@@ -22,9 +22,11 @@ DETAIL_FIELDS = ",".join([
     "id", "displayName", "formattedAddress", "location", "googleMapsUri", "websiteUri",
     "nationalPhoneNumber", "primaryType", "primaryTypeDisplayName", "types", "rating",
     "userRatingCount", "reviews", "editorialSummary", "generativeSummary", "priceLevel",
+    "photos",
     "regularOpeningHours", "businessStatus", "servesDinner", "servesBrunch", "servesCoffee",
     "servesDessert", "servesVegetarianFood", "servesBeer", "servesWine", "servesCocktails",
     "outdoorSeating", "reservable", "liveMusic", "goodForGroups", "allowsDogs",
+    "goodForWatchingSports",
 ])
 SEARCH_TYPES = ("bar", "night_club", "pub", "restaurant", "cafe")
 
@@ -39,6 +41,9 @@ class GooglePlacesClient:
         self._details_rate_lock = threading.Lock()
         self._next_details_at = 0.0
         self._details_interval_seconds = 0.16
+        self._nearby_rate_lock = threading.Lock()
+        self._next_nearby_at = 0.0
+        self._nearby_interval_seconds = 0.11
         if not self.api_key or self.api_key.startswith("PASTE_") or self.api_key == "replace_me":
             raise GooglePlacesError("Set GOOGLE_PLACES_API_KEY before running the Google stage")
 
@@ -57,6 +62,12 @@ class GooglePlacesClient:
             raise GooglePlacesError(f"Google Places network error: {exc.reason}") from exc
 
     def nearby(self, area: Area, included_type: str) -> list[dict[str, Any]]:
+        with self._nearby_rate_lock:
+            now = time.monotonic()
+            wait_for = self._next_nearby_at - now
+            if wait_for > 0:
+                time.sleep(wait_for)
+            self._next_nearby_at = time.monotonic() + self._nearby_interval_seconds
         payload = {
             "includedTypes": [included_type],
             "maxResultCount": 20,
@@ -94,7 +105,7 @@ class GooglePlacesClient:
                 raise GooglePlacesError(f"Google Place Details {exc.code}: {body[:800]}") from exc
 
 
-def discover(client: GooglePlacesClient, areas: list[Area], max_workers: int = 8) -> list[dict[str, Any]]:
+def discover(client: GooglePlacesClient, areas: list[Area], max_workers: int = 8, failures: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     unique: dict[str, dict[str, Any]] = {}
     tasks = [(area, category) for area in areas for category in SEARCH_TYPES]
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
@@ -105,11 +116,17 @@ def discover(client: GooglePlacesClient, areas: list[Area], max_workers: int = 8
                 places = future.result()
             except Exception as exc:
                 print(f"Warning: Nearby Search failed for {area.area}/{category}: {exc}", flush=True)
+                if failures is not None:
+                    failures.append({"stage": "google_nearby_search", "area": area.area, "city": area.city, "category": category, "error": str(exc)[:500]})
                 continue
             for place in places:
-                place_id = place.get("id") or place.get("name", "").removeprefix("places/")
+                place_id = str(place.get("id") or place.get("name", "")).removeprefix("places/")
                 if place_id:
-                    unique.setdefault(place_id, {"google_place_id": place_id, "discovered_area": area.area, "discovered_city": area.city, "discovered_type": category, "discovery": place})
+                    current = unique.setdefault(place_id, {"google_place_id": place_id, "discovered_area": area.area, "discovered_city": area.city, "discovered_type": category, "discovered_types": [], "discovered_areas": [], "discovery": place})
+                    if category not in current["discovered_types"]:
+                        current["discovered_types"].append(category)
+                    if area.area not in current["discovered_areas"]:
+                        current["discovered_areas"].append(area.area)
             if index % 20 == 0 or index == len(tasks):
                 print(f"Nearby Search progress: {index}/{len(tasks)}", flush=True)
     return list(unique.values())

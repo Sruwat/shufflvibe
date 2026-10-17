@@ -1,4 +1,6 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><title>SHUFFL - the screens</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap"><style>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>SHUFFL screens</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap">
+<style>
   :root{color-scheme:dark;--page:#0A0A0D;--edge:rgba(255,255,255,.1);--txt:#F4F2F8;--dim:#9E9AAC;--faint:#6E6A80;
     --ui:"Instrument Sans",-apple-system,sans-serif;--mono:"IBM Plex Mono",monospace}
   html,body{background:var(--page)}
@@ -113,6 +115,79 @@
   .v8 .swipe .no{border:1px solid rgba(255,255,255,.2);color:#9C98AE}
   .v8 .swipe .yes{background:#FF2E7A;color:#12000A;box-shadow:0 0 16px rgba(255,46,122,.45)}
 
+  /* ---- additions for entry 190: the wheel and build-my-own ---- */
+  .v8 .bd{min-height:0}          /* overflow clips at the viewport; the nav bar stays */
+  .v8 .dot{width:6px;height:6px;border-radius:50%;flex:0 0 auto}
+  .v8 .pick{width:19px;height:19px;border-radius:50%;flex:0 0 auto;
+            border:1.5px solid rgba(255,255,255,.25)}
+  .v8 .pick.on{background:#FF2E7A;border-color:#FF2E7A;color:#12000A;display:grid;place-items:center;
+               font-size:11px;box-shadow:0 0 12px rgba(255,46,122,.5)}
+  .v8 .mtr{display:flex;align-items:center;gap:7px;padding:2.5px 0}
+  .v8 .mtr .k{font-family:var(--mono);font-size:7px;letter-spacing:.13em;color:#6C6880;
+              width:60px;flex:0 0 auto;line-height:1.25}
+  .v8 .mtr .t{flex:1 1 auto;height:6px;border-radius:99px;background:rgba(255,255,255,.08);
+              position:relative;overflow:hidden}
+  .v8 .mtr .t i{position:absolute;top:0;bottom:0;border-radius:99px;background:#FF2E7A;
+                box-shadow:0 0 9px rgba(255,46,122,.5)}
+  .v8 .mtr .w{font-size:8px;color:#9C98AE;width:66px;flex:0 0 auto;text-align:right;line-height:1.15}
+  .v8 .pad{position:relative;flex:1 1 auto;border-radius:10px;overflow:hidden;
+           border:1px solid rgba(255,255,255,.08);
+           background:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px) 0 0/100% 27px,
+                      linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px) 0 0/27px 100%,#0B0B10}
+  .v8 .node{position:absolute;width:50px;height:50px;border-radius:50%;display:grid;place-items:center;
+            font-size:20px;color:#FF2E7A;background:rgba(255,46,122,.07);
+            border:1.5px dashed rgba(255,46,122,.55)}
+  .v8 .vn{position:absolute;width:62px;border-radius:8px;overflow:hidden;
+          box-shadow:0 3px 12px rgba(0,0,0,.5)}
+  .v8 .vn .im{height:40px}
+  .v8 .vn .nm{font-family:"Bebas Neue",sans-serif;font-size:9.5px;letter-spacing:.03em;line-height:1.08;
+              padding:3px 4px;background:#17171D;border:1px solid rgba(255,255,255,.1);border-top:0}
+  .v8 .arr{position:absolute;height:1.5px;background:linear-gradient(90deg,#FF2E7A,rgba(255,46,122,.3))}
+  .v8 .arr:after{content:"";position:absolute;right:-1px;top:-3px;border-left:5px solid rgba(255,46,122,.6);
+                 border-top:4px solid transparent;border-bottom:4px solid transparent}
+  .v8 .spark{display:flex;align-items:flex-end;gap:3px;height:15px}
+  .v8 .spark i{width:6px;border-radius:1px;background:#FF2E7A;opacity:.85}
+  .v8 .pend{filter:grayscale(1);opacity:.42}
+  .v8 .car{display:flex;gap:7px;flex:0 0 auto;align-items:stretch}
+  .v8 .car .it{width:72px;flex:0 0 auto}
+  .v8 .car .it .tile{height:58px;flex:0 0 auto}
+  .v8 .car .it .t1{font-size:9px;font-weight:600;margin-top:4px;line-height:1.15}
+  .v8 .car .it .t2{font-size:8px;color:#9C98AE;line-height:1.2}
+  .v8 .car .rf{width:34px;flex:0 0 auto;border-radius:9px;border:1px dashed rgba(255,255,255,.18);
+               display:grid;place-items:center;font-size:13px;color:#6C6880;align-self:stretch;
+               margin-bottom:22px}
+  .v8 .gone{position:absolute;inset:0;z-index:9;background:rgba(6,6,9,.62);
+            display:flex;align-items:center;justify-content:center}
+  .v8 .gone b{font-family:"Bebas Neue",sans-serif;font-size:27px;letter-spacing:.14em;
+              color:#FBFAFF;border:2px solid #FF2E7A;border-radius:6px;padding:9px 16px;
+              transform:rotate(-10deg);background:rgba(10,6,9,.8);
+              box-shadow:0 0 26px rgba(255,46,122,.4);text-align:center;line-height:1}
+  .v8 .gone b span{display:block;font-family:var(--mono);font-size:7.5px;letter-spacing:.16em;
+                   color:#FF7FAC;margin-top:5px}
+  .v8 .mic{width:52px;height:52px;border-radius:50%;background:#1C1C22;flex:0 0 auto;
+           border:1px solid rgba(255,255,255,.14);display:grid;place-items:center;font-size:21px;color:#6C6880}
+  /* ---- confidence marks on a meter (entry 196) ---- */
+  .v8 .mtr .t i.hatch{background:repeating-linear-gradient(125deg,#FF2E7A 0 3px,
+                      rgba(255,46,122,.22) 3px 7px);box-shadow:none}
+  .v8 .mtr .t i.hollow{background:transparent;border:1.5px dashed rgba(255,46,122,.85);
+                       box-shadow:none}
+  .v8 .mtr .t i.halo{background:rgba(255,46,122,.22);box-shadow:none}
+  .v8 .mtr .t i.dim{opacity:.3;box-shadow:none}
+  .v8 .mtr .t b.notch{position:absolute;top:-2px;bottom:-2px;width:2px;border-radius:2px;
+                      background:rgba(255,255,255,.45);z-index:2}
+  .v8 .pips{font-size:8px;letter-spacing:.09em;color:#6C6880;flex:0 0 auto;width:26px;
+            text-align:right}
+  .v8 .src{font-family:var(--mono);font-size:6.5px;letter-spacing:.1em;color:#6C6880;
+           flex:0 0 auto;width:56px;text-align:right;line-height:1.2}
+  .v8 .mtr .k.w5{width:70px;line-height:1.2}
+  .v8 .bdg{display:flex;flex-wrap:wrap;gap:4px}
+  .v8 .bdg span{font-family:var(--mono);font-size:6.5px;letter-spacing:.08em;padding:3px 6px;
+                border-radius:99px;background:rgba(255,255,255,.05);color:#55525F;
+                border:1px solid transparent}
+  .v8 .bdg span.on{background:rgba(255,46,122,.16);color:#FF7FAC;border-color:rgba(255,46,122,.32)}
+  .v8 .ro{display:flex;gap:7px;border-top:1px solid rgba(255,255,255,.07);padding-top:6px}
+  .v8 .ro>div{flex:1 1 0}
+  .v8 .ro .rv{font-family:"Bebas Neue",sans-serif;font-size:13px;letter-spacing:.03em;line-height:1}
   /* ---- gold: #FFC247 is artwork-only everywhere except the promotion ---- */
   .v8 .au{border-color:rgba(255,194,71,.45);box-shadow:0 0 22px rgba(255,194,71,.15)}
   .v8 .chip.au{background:rgba(255,194,71,.16);color:#FFC247}
@@ -126,7 +201,8 @@
   .v8 .prog b{display:block;height:100%;background:#FFC247;box-shadow:0 0 10px rgba(255,194,71,.6)}
   .v8 .shutter{width:54px;height:54px;border-radius:50%;background:#FFC247;margin:0 auto;
                box-shadow:0 0 22px rgba(255,194,71,.5);border:4px solid #060609;outline:2px solid #FFC247}
-</style></head><body><h1>SHUFFL &middot; the screens</h1>
+</style></head><body>
+<h1>SHUFFL &middot; the screens</h1>
 <p class="intro">Thirteen screens in the <b>Line-Up</b> theme, as the pushed documents describe them (2026-09-30).
 The cover art is the poster; glow is spent only on what is live; Bebas Neue names things and Instrument Sans
 explains them; door times sit left in mono.</p>
@@ -146,18 +222,29 @@ explains them; door times sit left in mono.</p>
       <div class="story"><div class="r"><div style="background:linear-gradient(140deg,#38E29B,#0C4430)"></div></div><span>Sana</span></div>
     </div>
     <div class="card" style="padding:9px 11px">
-      <div class="lab">3 waiting on you</div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline">
+        <span class="lab">NOTIFICATIONS</span>
+        <span class="lab" style="color:#FF7FAC">SEE ALL 11 &middot; 2 WAITING</span></div>
       <div class="listrow" style="border-top:0;padding-top:5px">
         <div class="dp" style="width:26px;height:26px;background:linear-gradient(140deg,#FF2E7A,#7A1038)"></div>
-        <div style="flex:1 1 auto"><div style="font-size:10.5px;font-weight:600">Aarav made you a co-host</div>
-          <div class="sub" style="font-size:9px">Late Shift &middot; draw your skeleton</div></div>
-        <div class="chip hot">Accept</div>
+        <div style="flex:1 1 auto"><div style="font-size:10.5px;font-weight:600">Rhea invited you to
+          their night</div>
+          <div class="sub" style="font-size:9px">The Long Table &middot;
+            <b style="color:#FF7FAC">4:12 left to answer</b></div></div>
+        <div class="chip hot">OPEN</div>
       </div>
       <div class="listrow">
         <div class="dp" style="width:26px;height:26px;background:linear-gradient(140deg,#24E0FF,#0B4A5C)"></div>
-        <div style="flex:1 1 auto"><div style="font-size:10.5px;font-weight:600">Nitya added you to a capsule</div>
-          <div class="sub" style="font-size:9px">Draw your skeleton</div></div>
+        <div style="flex:1 1 auto"><div style="font-size:10.5px;font-weight:600">Nitya sent a friend
+          request</div></div>
         <div class="chip hot">Accept</div>
+      </div>
+      <div class="listrow">
+        <div class="dp pend" style="width:26px;height:26px;background:linear-gradient(140deg,#FFC247,#6B4A00)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:10.5px;font-weight:600;color:#9C98AE">Dev
+          invited you to their night</div>
+          <div class="sub" style="font-size:9px;color:#6C6880">Thursday Thing &middot;
+            <b style="color:#9C98AE">expired 21:40</b></div></div>
       </div>
     </div>
     <div class="sec">WHAT YOUR FRIENDS ARE UP TO</div>
@@ -187,7 +274,7 @@ explains them; door times sit left in mono.</p>
     </div>
     <div class="grow"></div>
   </div>
-  <div class="bar"><span class="k">AARAV&rsquo;S ROOM</span><span class="v">2/5 SKELETONS</span></div>
+  <div class="bar"><span class="k">OPEN NIGHT&rsquo;S ROOM</span><span class="v">ACTIVE &middot; TAP</span></div>
   <div class="nav"><span class="on">HOME</span><span>PLAY</span><span>MESSAGES</span></div>
 </div>
 <p class="cap"><b>01 &middot; Home — the social hub</b>People search, stories, the invites that are waiting on you,
@@ -196,86 +283,112 @@ what your friends are up to, posts. No venues anywhere. The status bar is alread
 
 <!-- ============================================================ 02 SHUFFL LOCKED -->
 <div class="unit">
-<div class="ph v8">
-  <div class="sb"><span>9:41</span><span>5G</span></div>
-  <div class="bd blur">
-    <div class="srch"><span>&#9906;</span><span>Search venues</span></div>
-    <div class="row2"><div class="btn">HOST</div><div class="btn o">JOIN</div></div>
-    <div class="card">
-      <div class="lab">YOUR SHAPE</div>
-      <div class="lu"><span class="t">20:00</span><div><div class="n">A BUZZY RESTAURANT</div></div></div>
-      <div class="lu"><span class="t">22:30</span><div><div class="n">A BIG LOUD BAR</div></div></div>
-      <div class="lu"><span class="t">01:00</span><div><div class="n">A CLUB</div></div></div>
-    </div>
-    <div class="sec">SUGGESTED VENUES</div>
-    <div class="shelf">
-      <div class="sq"><div class="tile" style="background:linear-gradient(150deg,#FF2E7A,#3A0A1C)"></div></div>
-      <div class="sq"><div class="tile" style="background:linear-gradient(150deg,#24E0FF,#07303B)"></div></div>
-      <div class="sq"><div class="tile" style="background:linear-gradient(150deg,#FFC247,#4A3200)"></div></div>
-    </div>
-    <div class="grow"></div>
+<div class="ph v8">  <div class="bd blur deep" style="gap:7px">
+    <div style="display:flex;justify-content:space-between">
+      <span class="btn o" style="font-size:10px;padding:5px 9px">+ ADD FRIENDS</span>
+      <span class="chip">12KM &middot; 8&ndash;2</span></div>
+    <div class="srch"><span>&#9906;</span><span>Search through venues and rooms here</span></div>
+    <div class="sec">FRIENDS WHO WANT YOUR KIND OF NIGHT</div>
+    <div class="shelf"><div class="sq" style="width:50px"><div class="tile" style="height:50px;border-radius:50%;background:#2A2A33"></div></div>
+      <div class="sq" style="width:50px"><div class="tile" style="height:50px;border-radius:50%;background:#2A2A33"></div></div>
+      <div class="sq" style="width:50px"><div class="tile" style="height:50px;border-radius:50%;background:#2A2A33"></div></div></div>
+    <div class="sec">ROOMS FOR TONIGHT</div>
+    <div class="card" style="height:52px"></div>
+    <div class="card" style="height:52px"></div>
+    <div class="sec">THE NIGHT YOU ALL DREW</div>
+    <div class="card" style="height:88px"></div>
+    <div class="btn">&nbsp;</div>
+    <div class="row2"><div class="btn o">&nbsp;</div><div class="btn o">&nbsp;</div></div>
+    <div class="sec">OR TRY A PRESET</div>
+    <div class="shelf"><div class="sq"><div class="tile" style="height:44px;background:#1C1C22"></div></div>
+      <div class="sq"><div class="tile" style="height:44px;background:#1C1C22"></div></div>
+      <div class="sq"><div class="tile" style="height:44px;background:#1C1C22"></div></div></div>
   </div>
   <div class="lockover">
-    <div class="lab">LOCKED</div>
-    <div class="big">DRAW TONIGHT<br>FIRST</div>
-    <div class="sub" style="font-size:10.5px">Three sliders and a line. Then all of this is yours.</div>
-    <div class="btn" style="margin-top:3px">START</div>
+      <span class="lab">LOCKED</span>
+      <div class="cap2" style="font-size:30px;text-align:center;line-height:.92">DRAW<br>TONIGHT FIRST</div>
+      <div class="sub" style="font-size:10px;text-align:center;color:#D8D4E4;line-height:1.45">
+        Three sliders and a line.<br>Then all of this is yours.</div>
+      <div class="btn" style="font-size:15px;padding:10px 26px">START</div>
+      <div class="sub" style="font-size:8.5px;color:#6C6880;text-align:center;margin-top:2px">
+        Nothing here is ranked against anything until you do.</div>
   </div>
   <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
 </div>
-<p class="cap"><b>02 &middot; SHUFFL, locked</b>What Play opens. The screen is blurred behind its own layout, so the
-user sees the shape of what they are about to get. Tapping any feature starts the unlock sequence.
-<b style="color:#FF7FAC;font-weight:600">The blur is the empty state.</b></p>
+<p class="cap"><b>02 &middot; SHUFFL, locked</b>The blur is the empty state, so the app never shows a blank screen — the shape of the thing is visible and one input fills it. <b>Rebuilt because it blurs screen 03, which changed.</b> The centred prompt and tapping any blurred row do the same thing; the prompt exists because a screen of blurred shapes with no stated way in is a puzzle rather than an invitation. <b>And the blur is not a nag, it is the truth</b>: the merge counts drawers only, so with nothing drawn there is genuinely nothing to rank.</p>
 </div>
 
 <!-- ============================================================ 03 SHUFFL -->
 <div class="unit">
-<div class="ph v8">
-  <div class="sb"><span>9:41</span><span>5G</span></div>
-  <div class="bd">
-    <div style="display:flex;gap:8px;align-items:center">
-      <div class="srch" style="flex:1 1 auto"><span>&#9906;</span><span>Search venues</span></div>
-      <div class="chip" style="padding:6px 8px">12km &middot; 8-2 &middot; &#8377;&#8377;</div>
+<div class="ph v8">  <div class="bd" style="background:linear-gradient(184deg,rgba(255,46,122,.13),rgba(6,6,9,0) 52%);gap:7px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <span class="btn o" style="font-size:10px;padding:5px 9px;letter-spacing:.04em">+ ADD FRIENDS</span>
+      <span><span class="chip hot">3 PROPOSED</span>&nbsp;<span class="chip">12KM &middot; 8&ndash;2</span></span></div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="ppl">
+        <div style="background:linear-gradient(140deg,#FF2E7A,#7A1038);width:26px;height:26px"></div>
+        <div style="background:linear-gradient(140deg,#24E0FF,#0B4A5C);width:26px;height:26px"></div>
+        <div style="background:linear-gradient(140deg,#3BD1A0,#06342A);width:26px;height:26px"></div>
+        <div style="background:linear-gradient(140deg,#9B6BFF,#2E1A55);width:26px;height:26px"></div></div>
+      <div class="sub" style="font-size:9px;flex:1 1 auto;line-height:1.25">The Long Table<br><b style="color:#FF7FAC">all four drawn</b></div>
+      <span class="lab" style="color:#FF7FAC;white-space:nowrap">YOU DRIVE</span></div>
+    <div class="srch"><span>&#9906;</span><span>Search through venues and rooms here</span></div>
+    <div class="sec">FRIENDS WHO WANT YOUR KIND OF NIGHT</div>
+    <div class="shelf">
+      <div style="width:60px;text-align:center;flex:0 0 auto">
+        <div class="dp" style="width:38px;height:38px;margin:0 auto;background:linear-gradient(140deg,#FFC247,#6B4A00)"></div>
+        <div class="sub" style="font-size:8.5px;margin-top:3px">Zoya</div>
+        <div class="lab" style="font-size:6.5px;color:#FF7FAC">4 APART</div></div>
+      <div style="width:60px;text-align:center;flex:0 0 auto">
+        <div class="dp" style="width:38px;height:38px;margin:0 auto;background:linear-gradient(140deg,#24E0FF,#0B4A5C)"></div>
+        <div class="sub" style="font-size:8.5px;margin-top:3px">Nitya</div>
+        <div class="lab" style="font-size:6.5px;color:#FF7FAC">7 APART</div></div>
+      <div style="width:60px;text-align:center;flex:0 0 auto">
+        <div class="dp" style="width:38px;height:38px;margin:0 auto;background:linear-gradient(140deg,#FF2E7A,#7A1038)"></div>
+        <div class="sub" style="font-size:8.5px;margin-top:3px">Aarav</div>
+        <div class="lab" style="font-size:6.5px;color:#FF7FAC">11 APART</div></div>
+      <div style="width:66px;text-align:center;flex:0 0 auto">
+        <div class="dp" style="width:38px;height:38px;margin:0 auto;background:#121218;border-style:dashed;border-color:rgba(255,255,255,.14)"></div>
+        <div class="sub" style="font-size:8px;margin-top:3px;color:#5A5668;line-height:1.2">nobody else<br>is close</div></div>
     </div>
-    <div class="row2"><div class="btn">HOST</div><div class="btn o">JOIN</div></div>
-    <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:baseline">
-        <div class="lab">YOUR SHAPE</div><div class="chip hot">Nothing picked yet</div></div>
-      <div class="lu" style="padding-top:7px"><span class="t">20:00</span>
-        <div style="flex:1 1 auto"><div class="n">A BUZZY RESTAURANT</div>
-        <div class="m">it builds from here</div></div>
-        <div style="flex:0 0 auto;text-align:right"><div class="cap2" style="font-size:15px;color:#FF2E7A">8</div>
-        <div class="lab" style="font-size:7px;letter-spacing:.14em">PLACES &#8250;</div></div></div>
-      <div class="lu"><span class="t">22:30</span>
-        <div style="flex:1 1 auto"><div class="n">A BIG LOUD BAR</div>
-        <div class="m">you can still hear each other</div></div>
-        <div style="flex:0 0 auto;text-align:right"><div class="cap2" style="font-size:15px;color:#FF2E7A">10</div>
-        <div class="lab" style="font-size:7px;letter-spacing:.14em">PLACES &#8250;</div></div></div>
-      <div class="lu"><span class="t">01:00</span>
-        <div style="flex:1 1 auto"><div class="n">A CLUB</div>
-        <div class="m">the floor you drew at the end</div></div>
-        <div style="flex:0 0 auto;text-align:right"><div class="cap2" style="font-size:15px;color:#FF2E7A">6</div>
-        <div class="lab" style="font-size:7px;letter-spacing:.14em">PLACES &#8250;</div></div></div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline">
+      <span class="sec">ROOMS FOR TONIGHT</span><span class="lab">&#8635; SHUFFLE</span></div>
+    <div class="card" style="padding:8px 10px;display:flex;gap:9px;align-items:center">
+      <div class="ring" style="width:36px;height:36px;background:conic-gradient(#FF2E7A 0turn .84turn,rgba(255,255,255,.1) .84turn 1turn)">
+        <b style="width:29px;height:29px;font-size:11px">84%</b></div>
+      <div style="flex:1 1 auto">
+        <div class="cap2" style="font-size:15px">CHASE THE NIGHT</div>
+        <div class="sub" style="font-size:8.5px">Loud, and deciding as they go</div></div>
+      <div class="ppl"><div style="background:linear-gradient(140deg,#FF2E7A,#7A1038);width:20px;height:20px"></div>
+        <div style="background:linear-gradient(140deg,#3BD1A0,#06342A);width:20px;height:20px"></div></div></div>
+    <div class="card" style="padding:8px 10px;display:flex;gap:9px;align-items:center">
+      <div class="ring" style="width:36px;height:36px;background:conic-gradient(#FF2E7A 0turn .71turn,rgba(255,255,255,.1) .71turn 1turn)">
+        <b style="width:29px;height:29px;font-size:11px">71%</b></div>
+      <div style="flex:1 1 auto">
+        <div class="cap2" style="font-size:15px">THE SLOW BURN</div>
+        <div class="sub" style="font-size:8.5px">Has not decided what it is yet</div></div>
+      <div class="ppl"><div style="background:linear-gradient(140deg,#9B6BFF,#2E1A55);width:20px;height:20px"></div></div></div>
+    <div class="btn o" style="font-size:11px;padding:7px 0">SEE ALL ROOMS</div>
+    <div class="sec">THE NIGHT YOU ALL DREW</div>
+    <div class="card" style="padding:7px 10px">
+      <div class="lu" style="padding:5px 0"><span class="t">21:00</span><div style="flex:1 1 auto">
+        <div class="sub" style="font-size:9.5px;color:#D8D4E4">somewhere to sit and eat</div></div>
+        <span class="lab" style="color:#FF7FAC">11 PLACES</span></div>
+      <div class="lu" style="padding:5px 0"><span class="t">23:00</span><div style="flex:1 1 auto">
+        <div class="sub" style="font-size:9.5px;color:#D8D4E4">a big loud bar</div></div>
+        <span class="lab" style="color:#FF7FAC">8 PLACES</span></div>
+      <div class="lu" style="padding:5px 0"><span class="t">01:00</span><div style="flex:1 1 auto">
+        <div class="sub" style="font-size:9.5px;color:#D8D4E4">a floor, and late</div></div>
+        <span class="lab" style="color:#FF7FAC">5 PLACES</span></div>
     </div>
-    <div class="row2" style="grid-template-columns:1.45fr 1fr">
-      <div class="btn" style="font-size:12px">BUILD THIS NIGHT</div>
-      <div class="btn o" style="font-size:11px">REDRAW</div></div>
-<div class="sec">OR TRY A PRESET</div>
-    <div style="display:flex;flex-wrap:wrap;gap:7px"><div class="btn" style="position:relative;overflow:hidden;background:#3BD1A0;color:#06251B;box-shadow:0 0 15px #3BD1A066;font-size:11px;padding:8px 13px"><span style="position:absolute;inset:0"><span style="position:absolute;left:66%;top:-4px;font-size:21px;transform:rotate(-14deg);filter:grayscale(1) brightness(.10);opacity:.34;line-height:1">&#127828;</span><span style="position:absolute;left:82%;top:11px;font-size:16px;transform:rotate(12deg);filter:grayscale(1) brightness(.10);opacity:.34;line-height:1">&#127829;</span><span style="position:absolute;left:93%;top:-2px;font-size:13px;transform:rotate(-6deg);filter:grayscale(1) brightness(.10);opacity:.34;line-height:1">&#127836;</span><span style="position:absolute;left:74%;top:16px;font-size:12px;transform:rotate(8deg);filter:grayscale(1) brightness(.10);opacity:.34;line-height:1">&#127839;</span></span><span style="position:relative;z-index:1;padding-right:14px">FOODIE&rsquo;S DAY OUT</span></div><div class="btn" style="position:relative;overflow:hidden;background:#24E0FF;color:#042630;box-shadow:0 0 15px #24E0FF66;font-size:11px;padding:8px 13px"><span style="position:absolute;inset:0"><span style="position:absolute;left:66%;top:-4px;font-size:21px;transform:rotate(-14deg);filter:grayscale(1) brightness(.10);opacity:.34;line-height:1">&#127866;</span><span style="position:absolute;left:82%;top:11px;font-size:16px;transform:rotate(12deg);filter:grayscale(1) brightness(.10);opacity:.34;line-height:1">&#127867;</span><span style="position:absolute;left:93%;top:-2px;font-size:13px;transform:rotate(-6deg);filter:grayscale(1) brightness(.10);opacity:.34;line-height:1">&#129347;</span></span><span style="position:relative;z-index:1;padding-right:14px">SOUTH DELHI PUB CRAWL</span></div><div class="btn" style="position:relative;overflow:hidden;background:#9B6BFF;color:#160A33;box-shadow:0 0 15px #9B6BFF66;font-size:11px;padding:8px 13px"><span style="position:absolute;inset:0"><span style="position:absolute;left:66%;top:-4px;font-size:21px;transform:rotate(-14deg);filter:grayscale(1) brightness(.10);opacity:.34;line-height:1">&#128663;</span><span style="position:absolute;left:82%;top:11px;font-size:16px;transform:rotate(12deg);filter:grayscale(1) brightness(.10);opacity:.34;line-height:1">&#128739;</span><span style="position:absolute;left:93%;top:-2px;font-size:13px;transform:rotate(-6deg);filter:grayscale(1) brightness(.10);opacity:.34;line-height:1">&#127756;</span></span><span style="position:relative;z-index:1;padding-right:14px">THE DESERT RUN</span></div><div class="btn" style="position:relative;overflow:hidden;background:#FF7A3D;color:#2B0D00;box-shadow:0 0 15px #FF7A3D66;font-size:11px;padding:8px 13px"><span style="position:absolute;inset:0"><span style="position:absolute;left:66%;top:-4px;font-size:21px;transform:rotate(-14deg);filter:grayscale(1) brightness(.10);opacity:.34;line-height:1">&#128266;</span><span style="position:absolute;left:82%;top:11px;font-size:16px;transform:rotate(12deg);filter:grayscale(1) brightness(.10);opacity:.34;line-height:1">&#127911;</span><span style="position:absolute;left:93%;top:-2px;font-size:13px;transform:rotate(-6deg);filter:grayscale(1) brightness(.10);opacity:.34;line-height:1">&#127925;</span></span><span style="position:relative;z-index:1;padding-right:14px">LATE &amp; LOUD</span></div></div>
-    <div class="sub" style="font-size:9px;color:#6C6880;text-align:center">See all presets &#8250;</div>
-    <div class="sec" style="margin-top:2px">SUGGESTED VENUES</div>
-    <div class="card" style="padding:0">
-      <div class="listrow" style="border-top:0;padding:8px 11px">
-        <div style="width:26px;height:26px;border-radius:6px;background:linear-gradient(150deg,#9B6BFF,#2E1A55)"></div>
-        <div style="flex:1 1 auto"><div style="font-size:10.5px;font-weight:600">Piano Man</div>
-          <div class="sub" style="font-size:9px">a live room &middot; open till 1</div></div>
-        <div class="cap2" style="font-size:14px;color:#FF2E7A">88</div></div>
-    </div>
-    <div class="grow"></div>
+    <div class="btn">CHOOSE VENUES</div>
+    <div class="row2"><div class="btn o" style="font-size:11px;padding:7px 0">REDRAW SKELETON</div>
+      <div class="btn o" style="font-size:11px;padding:7px 0">BUILD MY OWN</div></div>
+    <div class="sec" style="color:#6C6880">OR TRY A PRESET</div>
   </div>
   <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
 </div>
-<p class="cap"><b>03 &middot; SHUFFL, unlocked — the going-out hub</b>Venue search above Host and Join. <b>The shape, as a list of stops</b> — each row carrying the count of venues that fit it and are open then, and tapping a row opens that stop's list. Nothing is picked yet. <b>Reset</b> sits alone under it; <b>Give me something else</b> went with the generator.</p>
+<p class="cap"><b>03 &middot; SHUFFL, unlocked — rebuilt for the flow change</b>Eight things, in this order: <b>Add friends</b> and the filter chip, the friends who are in tonight, search, <b>friends who want your kind of night</b>, <b>rooms</b> with shuffle and <b>See all rooms</b>, the night everyone drew with its venue counts, then <b>Redraw skeleton</b> and <b>Build my own</b>, then presets. <b>Host and Join are gone as buttons.</b> Two things to read carefully. <b>Rooms now sit above the user’s own night</b>, which is a bet rather than a layout — <code>MVP_INSTRUCTIONS</code> calls the stop list the core loop, and MVP question 3 asks whether drawing beats filtering, so this partly answers it before it is measured. And <b>every DP in the row is full colour</b>, because this screen cannot be reached until all four have drawn — the grey-DP state is screen 35, and it is locked. The friend distances are in <b>skeleton points</b>, which is the same currency as <code>SHAPE_GATE</code>; the empty fourth slot is what a threshold looks like.</p>
 </div>
 
 <!-- ============================================================ 04 SKELETON -->
@@ -329,7 +442,7 @@ user sees the shape of what they are about to get. Tapping any feature starts th
     <div class="sub" style="font-size:9.5px;text-align:center">Up is louder &middot; bigger is fuller</div>
     <div class="grow"></div>
     <div class="btn">NEXT</div>
-    <div class="sub" style="text-align:center">Or select from presets</div>
+    <div class="sub" style="text-align:center;font-size:9px;color:#6C6880">Nothing is chosen yet &mdash; this is the shape.</div>
   </div>
   <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
 </div>
@@ -377,9 +490,10 @@ place being read from the drawing.</p>
     </div>
     <div class="grow"></div>
   </div>
-  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+    <div class="gone"><b>RETIRED<span>ENTRY 190</span></b></div>
+<div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
 </div>
-<p class="cap"><b>05 &middot; Host</b>A venue search, the two renamed buttons &mdash; <b>Host tonight's plan</b> and
+<p class="cap"><b>05 &middot; Host &mdash; RETIRED (entry 190)</b><b>There is no Host button and no host room.</b> Hosting now happens from a plan card (<b>Host this</b>) or by a gathering going public from the capsule room. Kept as history because the request-to-join queue, the Strong&nbsp;Matches / Others sorting and the remove cross all survive and are specified here. <b>05 &middot; Host</b>A venue search, the two renamed buttons &mdash; <b>Host tonight's plan</b> and
 <b>Host with co-hosts</b> &mdash; and five venues by vibe match. Neither button asks for a skeleton or a filter
 again.</p>
 </div>
@@ -441,9 +555,10 @@ again.</p>
       <div class="cap2" style="font-size:19px;color:#6C6880">3/5</div></div>
   </div>
   <div class="bar"><span class="k">LATE SHIFT</span><span class="v">3/5 SKELETONS</span></div>
-  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+    <div class="gone"><b>RETIRED<span>ENTRY 190</span></b></div>
+<div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
 </div>
-<p class="cap"><b>06 &middot; The host room, waiting on skeletons</b>Create Plan is greyed with
+<p class="cap"><b>06 &middot; The host room &mdash; RETIRED (entry 190)</b><b>Gone with it: Add co-hosts, Create Plan and the n/5 skeleton counter.</b> The live equivalent is the capsule room (<b>36</b>) and its waiting state (<b>35</b>). Note the <b>camera button</b>, which was already wrong before this screen was retired &mdash; rooms are voice only (2026-10-07). <b>06 &middot; The host room, waiting on skeletons</b>Create Plan is greyed with
 <b>3/5</b> beside it &mdash; three of five have entered <i>and</i> drawn. It goes live only at 5/5, and the
 deadlock is broken by removing someone, not by a timer.</p>
 </div>
@@ -483,63 +598,77 @@ deadlock is broken by removing someone, not by a timer.</p>
     <div class="grow"></div>
     <div class="btn">SHOW ME ROOMS</div>
   </div>
-  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+    <div class="gone"><b>RETIRED<span>ENTRY 190</span></b></div>
+<div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
 </div>
-<p class="cap"><b>07 &middot; Join — Place or People</b>The fifth filter, and the only one that changes the
+<p class="cap"><b>07 &middot; Join, Place or People &mdash; RETIRED as a screen (entry 190)</b><b>The toggle itself survives</b>, behind <b>See all rooms</b>, where the player and the full list live. What is gone is the Join entry point and this screen between it and the rooms. The four filters above it moved to the filter chip on the SHUFFL screen. <b>07 &middot; Join — Place or People</b>The fifth filter, and the only one that changes the
 <i>order</i> rather than the set. Both numbers already existed in the engine; now the user picks which one
 sorts.</p>
 </div>
 
 <!-- ============================================================ 08 ROOM PLAYER -->
 <div class="unit">
-<div class="ph v8">
-  <div class="sb"><span>9:41</span><span>5G</span></div>
-  <div class="bd" style="background:linear-gradient(185deg,rgba(255,46,122,.2),rgba(6,6,9,0) 58%)">
+<div class="ph v8">  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd" style="background:linear-gradient(185deg,rgba(255,46,122,.14),rgba(6,6,9,0) 58%);gap:7px">
     <div style="display:flex;justify-content:space-between;align-items:center">
-      <span class="lab">3 OF 5</span><span class="lab">&#9834; TAP TO PLAY</span></div>
+      <span class="lab">4 OF 6</span><span class="lab">&#9834; TAP TO PLAY &middot; MUTED</span></div>
     <div style="display:flex;gap:11px;align-items:center">
-      <div class="ring"><b>92%</b></div>
+      <div class="ring" style="background:conic-gradient(#FF2E7A 0turn .55turn,rgba(255,255,255,.1) .55turn 1turn)">
+        <b>55%</b></div>
       <div style="flex:1 1 auto">
-        <div class="cap2" style="font-size:21px">THE LONG TABLE</div>
-        <div class="sub">by Nitya &middot; <span class="chip">Our Table</span></div></div>
+        <div class="cap2" style="font-size:20px">CHASE THE NIGHT</div>
+        <div class="sub" style="font-size:9.5px">by Rhea &middot; <span class="chip">On Our Feet</span></div></div>
     </div>
-    <div class="sub" style="color:#FF7FAC;font-size:10px">&#9656; You would barely change this room</div>
-    <div class="card" style="padding:10px 11px">
-      <div class="lu" style="padding-top:0"><span class="t">20:30</span><div><div class="n">BIG CHILL, KHAN</div>
-        <div class="m">for you &mdash; you can hear each other</div></div></div>
-      <div class="lu"><span class="t">23:00</span><div><div class="n">PIANO MAN</div>
-        <div class="m">for you &mdash; there&rsquo;s a set at eleven</div></div></div>
-      <div class="lu"><span class="t">01:30</span><div><div class="n">THE PIANO BAR</div>
-        <div class="m">for you &mdash; still a table at one</div></div></div>
+    <div class="sub" style="font-size:9.5px;color:#D8D4E4;line-height:1.4">&ldquo;Three places, loud
+      ones, and we&rsquo;re not sitting down.&rdquo;</div>
+    <div class="card" style="padding:9px 11px;border-color:rgba(255,194,71,.42);
+         box-shadow:0 0 18px rgba(255,194,71,.10)">
+      <div class="lab" style="color:#FFC247">NOTHING HERE IS PITCHED AT YOUR NIGHT</div>
+      <div class="sub" style="font-size:9.5px;margin-top:4px">Not one of these three stops is close to
+        the shape you drew. <b style="color:#FBFAFF">You can still join</b> &mdash; you would just be
+        going to their night rather than yours.</div>
     </div>
-    <div class="card" style="padding:9px 11px;border-color:rgba(255,194,71,.28)">
-      <div class="sub" style="font-size:9.5px"><b style="color:#FFC247">No floor tonight</b> &mdash; nothing on
-        this shape has one.</div></div>
-    <div>
-      <div class="lab">IN THE ROOM</div>
-      <div style="display:flex;align-items:center;gap:9px;margin-top:6px">
-        <div class="ppl">
-          <div style="background:linear-gradient(140deg,#24E0FF,#0B4A5C)"></div>
-          <div style="background:linear-gradient(140deg,#FFC247,#6B4A00)"></div>
-          <div style="background:linear-gradient(140deg,#9B6BFF,#2E1A55)"></div>
-          <div style="background:#1C1C22"></div></div>
-        <div class="sub" style="font-size:9.5px">Nitya, Zoya, Kabir +1<br>
-          <span style="color:#6C6880">mostly Table Talkers</span></div></div>
+    <div class="sub" style="font-size:10px;color:#D8D4E4;line-height:1.4">This room is going hard
+      tonight, and you will not hear much over the music.</div>
+    <div class="card" style="padding:9px 11px;border-color:rgba(255,46,122,.26)">
+      <div class="lab" style="color:#FF7FAC">YOU IN THIS ROOM</div>
+      <div class="cap2" style="font-size:15px;margin-top:4px">YOU WOULD CHANGE THIS ROOM</div>
+      <div class="sub" style="font-size:9.5px;margin-top:5px">&middot; They will take this further than
+        you would have.</div>
+      <div class="sub" style="font-size:9.5px;margin-top:2px">&middot; It will be louder than you would
+        have picked, so do not plan on talking.</div>
+      <div class="sub" style="font-size:9.5px;margin-top:2px">&middot; They will be on their feet before
+        you are.</div>
     </div>
-    <div class="card" style="padding:8px 11px;display:flex;align-items:center;gap:9px">
-      <div style="width:28px;height:28px;border-radius:5px;background:linear-gradient(140deg,#FF2E7A,#24E0FF)"></div>
-      <div style="flex:1 1 auto"><div style="font-size:10px;font-weight:600">Nitya&rsquo;s pick</div>
-        <div class="sub" style="font-size:9px">Khruangbin &mdash; So We Won&rsquo;t Forget</div></div>
-      <span class="chip">MUTED</span></div>
+    <div class="card" style="padding:9px 11px;background:linear-gradient(140deg,rgba(255,46,122,.22),
+         rgba(19,19,24,1) 62%);border-color:rgba(255,46,122,.3)">
+      <div class="lab" style="font-size:7px;margin-bottom:4px">THE PLAN &middot; RHEA&rsquo;S THEME</div>
+      <div class="lu" style="padding-top:0;border-top:0"><span class="t">21:00</span>
+        <div style="flex:1 1 auto"><div class="n">RAASTA, HKV</div></div></div>
+      <div class="lu"><span class="t">23:30</span>
+        <div style="flex:1 1 auto"><div class="n">SUMMER HOUSE</div></div></div>
+      <div class="lu"><span class="t">01:30</span>
+        <div style="flex:1 1 auto"><div class="n">KITTY SU</div></div></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:9px">
+      <div class="ppl">
+        <div style="background:linear-gradient(140deg,#FF2E7A,#5A0A26)"></div>
+        <div style="background:linear-gradient(140deg,#24E0FF,#0B4A5C)"></div>
+        <div style="background:linear-gradient(140deg,#3BD1A0,#06342A)"></div>
+        <div style="background:#1C1C22"></div></div>
+      <div class="sub" style="font-size:9.5px;flex:1 1 auto">Rhea, Dev, Ira +1<br>
+        <span style="color:#6C6880">mostly Floor Fillers</span></div>
+      <div style="width:26px;height:26px;border-radius:5px;flex:0 0 auto;
+           background:linear-gradient(140deg,#FF2E7A,#24E0FF)"></div>
+      <div style="width:28px;height:28px;border-radius:50%;background:#FF2E7A;color:#12000A;
+           display:grid;place-items:center;font-size:11px;flex:0 0 auto">&#9205;</div>
+    </div>
     <div class="grow"></div>
-    <div class="transport"><b>&#9198;</b><div class="p">&#9205;</div><b>&#9197;</b></div>
     <div class="btn">REQUEST TO JOIN</div>
   </div>
   <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
 </div>
-<p class="cap"><b>08 &middot; The room player</b>Five rooms back to back with rewind, play, forward. The match is
-a ring, the room's blend style washes the screen, the plan is a line-up with a per-person reason &mdash; and under
-<i>People</i>, the disturbance line.</p>
+<p class="cap"><b>08 &middot; The room player, in the state the dropped gate created</b>This room would have been <b>hidden</b> before 2026-10-08 — it fails the per-member FLOOR check. The gates are off for the first release because they delete the list rather than filter it, so <b>what the gate would have said is now an amber label and the room is shown.</b> Everything else is as before: the ring, the room line, the read of you in it, the host’s description and the plan in the host’s theme. <b>Request to join stays live</b> — the app says what it knows and the user decides.</p>
 </div>
 
 <!-- ============================================================ 09 CAPSULE WAIT -->
@@ -563,9 +692,10 @@ a ring, the room's blend style washes the screen, the plan is a line-up with a p
     <div class="btn o" style="margin-top:8px;font-size:12px">CANCEL CAPSULE</div>
   </div>
   <div class="bar"><span class="k">YOUR CAPSULE</span><span class="v">AWAITING MEMBERS</span></div>
-  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+    <div class="gone"><b>RETIRED<span>SUPERSEDED BY 35</span></b></div>
+<div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
 </div>
-<p class="cap"><b>09 &middot; The capsule, waiting</b>The join screen goes blank until every member has accepted
+<p class="cap"><b>09 &middot; The capsule, waiting &mdash; SUPERSEDED BY 35 (entry 191)</b><b>The behaviour survived and the screen did not.</b> Browsing is still locked until every invited member has accepted and drawn, and the outstanding DPs still drop off one at a time &mdash; but it is now the gathering’s waiting state rather than a separate capsule, and it carries the two timers explicitly. <b>09 &middot; The capsule, waiting</b>The join screen goes blank until every member has accepted
 and drawn. The outstanding DPs stay dim and drop off one by one. The status bar carries the wait if the user
 leaves.</p>
 </div>
@@ -613,60 +743,31 @@ leaves.</p>
 
 <!-- ============================================================ 11 ACTIVE PLAN -->
 <div class="unit">
-<div class="ph v8">
-  <div class="sb"><span>9:41</span><span>5G</span></div>
-  <div class="bd">
-    <div class="cap2" style="font-size:21px">LATE SHIFT&rsquo;S PLAN</div>
-    <div style="border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,.08)">
-      <svg viewBox="0 0 274 150" style="width:100%;display:block;background:#101017">
-        <path d="M0 96 L70 78 L130 104 L200 64 L274 86" stroke="rgba(255,255,255,.07)" stroke-width="9" fill="none"/>
-        <path d="M44 0 L62 150" stroke="rgba(255,255,255,.05)" stroke-width="7" fill="none"/>
-        <path d="M190 0 L172 150" stroke="rgba(255,255,255,.05)" stroke-width="7" fill="none"/>
-        <path d="M58 112 Q110 60 150 74 Q200 92 226 44" stroke="#FF2E7A" stroke-width="2"
-              stroke-dasharray="5 4" fill="none"/>
-        <circle cx="58" cy="112" r="9" fill="#FF2E7A"/>
-        <text x="58" y="115.5" font-size="9" font-family="IBM Plex Mono" fill="#12000A" text-anchor="middle">1</text>
-        <circle cx="150" cy="74" r="9" fill="#FF2E7A" opacity=".55"/>
-        <text x="150" y="77.5" font-size="9" font-family="IBM Plex Mono" fill="#12000A" text-anchor="middle">2</text>
-        <circle cx="226" cy="44" r="9" fill="#FF2E7A" opacity=".55"/>
-        <text x="226" y="47.5" font-size="9" font-family="IBM Plex Mono" fill="#12000A" text-anchor="middle">3</text>
-        <circle cx="86" cy="126" r="13" fill="rgba(36,224,255,.18)"/>
-        <circle cx="86" cy="126" r="4.5" fill="#24E0FF"/>
-      </svg>
+<div class="ph v8">  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd" style="gap:8px">
+    <div style="display:flex;justify-content:space-between;align-items:baseline">
+      <div class="cap2" style="font-size:17px">THE LONG TABLE&rsquo;S PLAN</div>
+      <span class="chip hot">LIVE</span></div>
+    <div style="position:relative;height:218px;border-radius:10px;overflow:hidden;flex:0 0 auto;
+         border:1px solid rgba(255,255,255,.09);background:#0C0C12">
+      <div class="lab" style="position:absolute;left:10px;top:8px;font-size:7px">TONIGHT, AND WHO IS
+        COMING FROM WHERE</div>
+      <div class="lab" style="position:absolute;right:10px;top:8px;font-size:7px;color:#454254">N &#9650;</div>
+      <div style="position:absolute;left:74px;top:94px;width:60px;height:60px;border-radius:50%;border:1px dashed rgba(255,255,255,.10)"></div><div class="lab" style="position:absolute;left:73px;top:120px;font-size:6px;color:#454254">1 KM</div><div style="position:absolute;left:50px;top:70px;width:108px;height:108px;border-radius:50%;border:1px dashed rgba(255,255,255,.10)"></div><div class="lab" style="position:absolute;left:49px;top:120px;font-size:6px;color:#454254">2 KM</div><div style="position:absolute;left:26px;top:46px;width:156px;height:156px;border-radius:50%;border:1px dashed rgba(255,255,255,.10)"></div><div class="lab" style="position:absolute;left:25px;top:120px;font-size:6px;color:#454254">3 KM</div><div style="position:absolute;left:104px;top:124px;width:81px;height:2px;background:rgba(255,46,122,.4);transform:rotate(-26deg);transform-origin:left center;z-index:2"></div><div style="position:absolute;left:177px;top:89px;width:77px;height:2px;background:rgba(255,46,122,.4);transform:rotate(-37deg);transform-origin:left center;z-index:2"></div><div style="position:absolute;left:92px;top:112px;width:24px;height:24px;border-radius:50%;background:#FF2E7A;color:#12000A;display:grid;place-items:center;font-size:11px;font-family:'Bebas Neue',sans-serif;box-shadow:0 0 14px rgba(255,46,122,.55);z-index:4">1</div><div class="lab" style="position:absolute;left:119px;top:125px;font-size:6.5px;z-index:4;white-space:nowrap">BIG CHILL</div><div style="position:absolute;left:166px;top:78px;width:22px;height:22px;border-radius:50%;background:#FF2E7A;color:#12000A;display:grid;place-items:center;font-size:10px;font-family:'Bebas Neue',sans-serif;box-shadow:0 0 12px rgba(255,46,122,.5);z-index:4">2</div><div class="lab" style="position:absolute;left:160px;top:103px;font-size:6.5px;white-space:nowrap;z-index:4">PIANO MAN</div><div style="position:absolute;left:228px;top:32px;width:22px;height:22px;border-radius:50%;background:#FF2E7A;color:#12000A;display:grid;place-items:center;font-size:10px;font-family:'Bebas Neue',sans-serif;box-shadow:0 0 12px rgba(255,46,122,.5);z-index:4">3</div><div class="lab" style="position:absolute;left:222px;top:57px;font-size:6.5px;white-space:nowrap;z-index:4">THE BAR</div><div class="dp" style="position:absolute;left:114px;top:104px;width:19px;height:19px;background:linear-gradient(140deg,#FFC247,#6B4A00);z-index:5"></div><div class="dp" style="position:absolute;left:78px;top:132px;width:19px;height:19px;background:linear-gradient(140deg,#9B6BFF,#2E1A55);z-index:5"></div><div class="dp" style="position:absolute;left:95px;top:175px;width:19px;height:19px;background:linear-gradient(140deg,#24E0FF,#0B4A5C);z-index:5"></div><div class="lab" style="position:absolute;left:93px;top:195px;font-size:6.5px;color:#24E0FF;z-index:5">YOU</div>
     </div>
-    <div class="sub" style="font-family:var(--mono);font-size:9.5px;color:#FF2E7A">2.3 KM TO STOP 1</div>
-    <div class="card" style="padding:0">
-      <div class="listrow" style="border-top:0;padding:9px 11px">
-        <div style="width:30px;height:30px;border-radius:6px;background:linear-gradient(150deg,#24E0FF,#07303B)"></div>
-        <div style="flex:1 1 auto"><div style="font-size:11px;font-weight:600">Cirrus 9 &middot; 20:00</div>
-          <div class="sub" style="font-size:9px">you&rsquo;re 2.3km away</div></div>
-        <span class="chip hot">&#9673; POST</span></div>
-      <div class="listrow" style="padding:9px 11px">
-        <div style="width:30px;height:30px;border-radius:6px;background:linear-gradient(150deg,#FF2E7A,#3A0A1C)"></div>
-        <div style="flex:1 1 auto"><div style="font-size:11px;font-weight:600">Depot 48 &middot; 22:30</div>
-          <div class="sub" style="font-size:9px">a big loud bar</div></div></div>
-      <div class="listrow" style="padding:9px 11px">
-        <div style="width:30px;height:30px;border-radius:6px;background:linear-gradient(150deg,#9B6BFF,#2E1A55)"></div>
-        <div style="flex:1 1 auto"><div style="font-size:11px;font-weight:600">Kitty Su &middot; 01:00</div>
-          <div class="sub" style="font-size:9px">a club</div></div></div>
-    </div>
-    <div>
-      <div class="lab">WHO&rsquo;S COMING</div>
-      <div class="sub" style="margin-top:4px;font-size:9.5px">Aarav &middot; Peak Front-Rower<br>
-        Nitya &middot; Locked-In Table-Talker<br>Zoya &middot; Front Row</div></div>
-    <div class="card" style="padding:8px 11px;display:flex;align-items:center;gap:8px">
-      <span class="lab" style="letter-spacing:0;font-size:11px">&#9678;</span>
-      <div class="sub" style="font-size:9px;flex:1 1 auto">Live location is off. The room sees an area,
-        never a person.</div>
-      <span class="chip">OFF</span></div>
+    <div class="card" style="padding:0 11px"><div class="listrow" style="padding:6px 0;border-top:0"><div class="dp" style="width:21px;height:21px;flex:0 0 auto;background:linear-gradient(140deg,#FFC247,#6B4A00)"></div><div style="flex:1 1 auto;font-size:10px;font-weight:600">Zoya</div><div class="sub" style="font-size:9px;color:#3BD1A0">At the stop</div></div><div class="listrow" style="padding:6px 0;"><div class="dp" style="width:21px;height:21px;flex:0 0 auto;background:linear-gradient(140deg,#9B6BFF,#2E1A55)"></div><div style="flex:1 1 auto;font-size:10px;font-weight:600">Nitya</div><div class="sub" style="font-size:9px;color:#9C98AE">900 m &middot; from the south-west</div></div><div class="listrow" style="padding:6px 0;"><div class="dp" style="width:21px;height:21px;flex:0 0 auto;background:linear-gradient(140deg,#24E0FF,#0B4A5C)"></div><div style="flex:1 1 auto;font-size:10px;font-weight:600">You</div><div class="sub" style="font-size:9px;color:#9C98AE">2.3 km &middot; from the south</div></div><div class="listrow" style="padding:6px 0;"><div class="dp" style="width:21px;height:21px;flex:0 0 auto;background:linear-gradient(140deg,#FF2E7A,#5A0A26)"></div><div style="flex:1 1 auto;font-size:10px;font-weight:600">Kabir</div><div class="sub" style="font-size:9px;color:#6C6880">Not sharing</div></div></div>
+    <div class="sub" style="font-size:9px;color:#6C6880;text-align:center;line-height:1.4">
+      Not a map. <b style="color:#9C98AE">Rough direction, rounded distance</b> &mdash; enough to know
+      who is near and from which side, never enough to find anybody.</div>
     <div class="grow"></div>
-    <div class="btn o" style="font-size:12px">END PLAN</div>
+    <div class="btn" style="text-align:center;font-size:12.5px">&#9671;&nbsp; PLAN INSIGHTS</div>
+    <div class="row2" style="grid-template-columns:1.5fr 1fr">
+      <div class="btn o" style="font-size:12px">DIRECTIONS TO STOP 1</div>
+      <div class="btn o" style="font-size:11px">END PLAN</div></div>
   </div>
-  <div class="bar"><span class="k">LATE SHIFT&rsquo;S OUTING PLAN</span><span class="v">LIVE</span></div>
   <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
 </div>
-<p class="cap"><b>11 &middot; Active plan</b>The stops on a map with the group as an anonymised cluster, never
-individual positions. The camera appears on a stop once you arrive. The vibe names are V5 names.</p>
+<p class="cap"><b>11 &middot; The active plan</b>Not a map — <b>stop one as the hub</b>, distance rings around it, and the rest of the night chaining off. Everyone sits at <b>their distance ring, in their compass sector</b>, so you can see who is close and from which side. <b>Snapped to eight sectors and rounded distances on purpose</b>: direction plus exact distance from a known point is a position, and a room can hold strangers. <b>Directions</b> hands off to Google Maps.</p>
 </div>
 
 <!-- ============================================================ 12 MESSAGES -->
@@ -687,7 +788,7 @@ individual positions. The camera appears on a stop once you arrive. The vibe nam
       <div class="listrow" style="padding:9px 11px">
         <div class="dp" style="width:34px;height:34px;background:linear-gradient(140deg,#24E0FF,#0B4A5C)"></div>
         <div style="flex:1 1 auto"><div style="font-size:11px;font-weight:600">The Usual Suspects</div>
-          <div class="sub" style="font-size:9px">Nitya: recreate it for tonight?</div></div>
+          <div class="sub" style="font-size:9px">Nitya: same five of us tonight?</div></div>
         <div class="lab" style="letter-spacing:.05em">18:10</div></div>
       <div class="listrow" style="padding:9px 11px">
         <div class="dp" style="width:34px;height:34px;background:linear-gradient(140deg,#FFC247,#6B4A00)"></div>
@@ -702,7 +803,7 @@ individual positions. The camera appears on a stop once you arrive. The vibe nam
       <div class="listrow" style="padding:9px 11px">
         <div class="dp" style="width:34px;height:34px;background:linear-gradient(140deg,#38E29B,#0C4430)"></div>
         <div style="flex:1 1 auto"><div style="font-size:11px;font-weight:600">Brunch Club</div>
-          <div class="sub" style="font-size:9px">Sana: sent a plan to the group</div></div>
+          <div class="sub" style="font-size:9px">Sana: that was a good one</div></div>
         <div class="lab" style="letter-spacing:.05em">MON</div></div>
     </div>
     <div class="grow"></div>
@@ -789,12 +890,12 @@ tappable, the overall going-out type, past events and vibe history.</p>
         <div class="cap2" style="font-size:19px">THE LONG TABLE</div>
         <div class="sub">by Rhea &middot; <span class="chip">Our Table</span></div></div>
     </div>
-    <div class="sub" style="font-size:9.5px;color:#FF7FAC;margin-top:7px">For the capsule &mdash; 88% together</div>
+    <div class="sub" style="font-size:9.5px;color:#FF7FAC;margin-top:7px">For the group &mdash; 88% together</div>
     <div class="card" style="padding:9px 10px;margin-top:9px;background:#1B1B21">
       <div class="lu" style="padding-top:0"><span class="t">20:30</span><div><div class="n">BIG CHILL, KHAN</div>
         <div class="m">you &mdash; you can hear each other</div></div></div>
       <div class="lu"><span class="t">23:00</span><div><div class="n">PIANO MAN</div>
-        <div class="m">you &mdash; there&rsquo;s a set at eleven</div></div></div>
+        <div class="m">you &mdash; it usually has an act on</div></div></div>
     </div>
     <div style="margin-top:9px">
       <div class="lab">WHO ELSE HAS DECIDED</div>
@@ -827,11 +928,11 @@ Tapping away minimises it into their own status bar.</p>
         <div class="sub">by Rhea</div></div></div>
     <div class="card" style="padding:10px 11px">
       <div class="lu" style="padding-top:0"><span class="t">20:30</span><div><div class="n">BIG CHILL, KHAN</div>
-        <div class="m">for the capsule &mdash; you can hear each other</div></div></div>
+        <div class="m">for the group &mdash; you can hear each other</div></div></div>
       <div class="lu"><span class="t">23:00</span><div><div class="n">PIANO MAN</div>
-        <div class="m">for the capsule &mdash; there&rsquo;s a set at eleven</div></div></div>
+        <div class="m">for the group &mdash; it usually has an act on</div></div></div>
       <div class="lu"><span class="t">01:30</span><div><div class="n">THE PIANO BAR</div>
-        <div class="m">for the capsule &mdash; still a table at one</div></div></div>
+        <div class="m">for the group &mdash; still a table at one</div></div></div>
     </div>
     <div><div class="lab">IN THE ROOM</div>
       <div class="ppl" style="margin-top:6px">
@@ -846,7 +947,7 @@ Tapping away minimises it into their own status bar.</p>
   <div class="scrim"></div>
   <div class="sheet" style="top:150px;text-align:center">
     <div style="display:flex;justify-content:flex-end"><span class="lab" style="letter-spacing:0;font-size:12px">&#8211;</span></div>
-    <div class="cap2" style="font-size:22px;margin-top:-4px">WAITING ON<br>APPROVAL FROM<br>THE CAPSULE</div>
+    <div class="cap2" style="font-size:22px;margin-top:-4px">WAITING ON<br>APPROVAL FROM<br>THE GROUP</div>
     <div class="sub" style="margin-top:9px;font-size:10px">They&rsquo;re all looking at this room right now.</div>
     <div style="display:flex;justify-content:center;gap:11px;margin-top:11px">
       <div style="text-align:center">
@@ -863,7 +964,7 @@ Tapping away minimises it into their own status bar.</p>
       bar below.</div>
     <div class="btn o" style="margin-top:9px;font-size:12px;width:100%">CANCEL THE REQUEST</div>
   </div>
-  <div class="bar"><span class="k">THE LONG TABLE</span><span class="v">AWAITING CAPSULE</span></div>
+  <div class="bar"><span class="k">THE LONG TABLE</span><span class="v">AWAITING THE GROUP</span></div>
   <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
 </div>
 <p class="cap"><b>15 &middot; Capsule approval, the creator's side</b>The room blurs behind the box, the undecided
@@ -989,9 +1090,6 @@ costs, including whose shape wins and why.</p>
         <div style="flex:1 1 auto;font-size:10px">Open tonight</div>
         <div class="lab" style="letter-spacing:.06em">18:00 &ndash; 02:30</div></div>
       <div class="listrow" style="padding:8px 11px">
-        <div style="flex:1 1 auto;font-size:10px">Menu</div>
-        <span class="lab" style="letter-spacing:0;font-size:12px">&#8250;</span></div>
-      <div class="listrow" style="padding:8px 11px">
         <div style="flex:1 1 auto;font-size:10px">Been here before?</div>
         <span class="chip">Y</span><span class="chip" style="margin-left:5px">N</span></div>
     </div>
@@ -1035,12 +1133,6 @@ scrolls, over a fade.</p>
       <div class="cap2" style="font-size:21px;flex:1 1 auto">DEPOT 48</div>
       <span class="lab" style="letter-spacing:0;font-size:12px">&#10005;</span></div>
     <div class="sub" style="font-size:9.5px">a big loud bar &middot; &#8377;&#8377;</div>
-    <div class="card" style="padding:9px 10px;margin-top:9px;background:#1B1B21;display:flex;gap:9px">
-      <div style="width:34px;height:34px;border-radius:6px;flex:0 0 auto;
-           background:linear-gradient(150deg,#FFC247,#6B4A00)"></div>
-      <div style="flex:1 1 auto"><div style="font-size:10px;font-weight:600">Smoked old fashioned</div>
-        <div class="sub" style="font-size:8.5px">slow and strong &mdash; suits a night that builds</div></div>
-      <div class="cap2" style="font-size:14px;color:#FF2E7A">91</div></div>
     <div style="margin-top:10px">
       <div class="lab">FOR YOUR GROUP</div>
       <div class="sub" style="font-size:9.5px;margin-top:6px;line-height:1.55">
@@ -1056,7 +1148,7 @@ scrolls, over a fade.</p>
       <div class="sub" style="font-size:9.5px"><b style="color:#FFC247">Bela won&rsquo;t hear anyone
         here.</b> Build the night around it anyway?</div></div>
     <div class="row2" style="margin-top:11px"><div class="btn o" style="font-size:12px">LOCK JUST THIS</div>
-      <div class="btn" style="font-size:12px">BUILD MY NIGHT</div></div>
+      <div class="btn" style="font-size:11px">BUILD AROUND THIS</div></div>
   </div>
   <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
 </div>
@@ -1444,13 +1536,13 @@ not be served is <b>in amber inside the list</b>, not hidden. Since 2026-09-30 t
         <div class="cap2" style="font-size:15px;color:#9C98AE">81</div></div>
     </div>
     <div class="sub" style="font-size:9.5px;color:#6C6880">You can see everything Aarav can.
-      <b style="color:#9C98AE">The pick is his because the room is.</b></div>
+      <b style="color:#9C98AE">The pick is his because he has the wheel.</b></div>
     <div class="grow"></div>
-    <div class="btn o" style="text-align:center;font-size:12px">ASK AARAV TO CHANGE THIS</div>
+    <div class="btn o" style="text-align:center;font-size:12px">PROPOSE ANOTHER</div>
   </div>
   <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
 </div>
-<p class="cap"><b>27 &middot; The member&rsquo;s stop list, read-only</b>The same screen as 19 with the decision removed and nothing else. The header names who is choosing, the host&rsquo;s pick is marked, the rest are visible but dimmed, and <b>the affordance is a request rather than a greyed button</b>. The footer states the rule in one line: <b>you can see everything Aarav can; the pick is his because the room is.</b></p>
+<p class="cap"><b>27 &middot; The member&rsquo;s stop list, read-only</b>The same screen as 19 with the decision removed and nothing else. The header names who is choosing, the host&rsquo;s pick is marked, the rest are visible but dimmed, and <b>the affordance is a request rather than a greyed button</b>. The footer states the rule in one line: <b>you can see everything Aarav can; the pick is his because he has the wheel.</b> <b>Updated 2026-10-13 (entry 195):</b> the button was <i>Ask Aarav to change this</i>, which predates the wheel. It is now <b>Propose another</b> — the same verb a member has everywhere else (entry 191), pointed at a stop rather than at a carousel.</p>
 </div>
 
 <div class="unit">
@@ -1487,6 +1579,1250 @@ not be served is <b>in amber inside the list</b>, not hidden. Since 2026-09-30 t
   <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
 </div>
 <p class="cap"><b>28 &middot; A preset, opened</b>Its shape, and <b>one button</b>. Lock, Host and Find rooms are absent because there is nothing to lock yet &mdash; a plan exists only once every stop has a venue. <b>Choose venues</b> drops into the stop list at 20:00 and the three buttons appear on the finished plan card, where they already live for every other plan.</p>
+</div>
+
+<div class="unit">
+<div class="ph v8">  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd" style="background:radial-gradient(120% 68% at 50% 12%,rgba(155,107,255,.34),rgba(6,6,9,0) 66%);gap:8px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <span class="lab">YOU&rsquo;RE IN &middot; 5 OF 5</span>
+      <span class="lab" style="color:#3BD1A0">ZOYA IS TALKING</span></div>
+    <div style="position:relative;height:177px;flex:0 0 auto">
+      <div class="dp" style="position:absolute;left:120px;top:-3px;width:34px;height:34px;background:linear-gradient(140deg,#24E0FF,#0B4A5C);box-shadow:0 2px 10px rgba(0,0,0,.5)"></div><div class="dp" style="position:absolute;left:183px;top:43px;width:34px;height:34px;background:linear-gradient(140deg,#FFC247,#6B4A00);box-shadow:0 0 0 2px #3BD1A0, 0 0 14px rgba(59,209,160,.55)"></div><div class="dp" style="position:absolute;left:159px;top:116px;width:34px;height:34px;background:linear-gradient(140deg,#9B6BFF,#2E1A55);box-shadow:0 2px 10px rgba(0,0,0,.5)"></div><div class="dp" style="position:absolute;left:81px;top:116px;width:34px;height:34px;background:linear-gradient(140deg,#FF2E7A,#5A0A26);box-shadow:0 2px 10px rgba(0,0,0,.5)"></div><div class="dp" style="position:absolute;left:57px;top:43px;width:34px;height:34px;background:linear-gradient(140deg,#3BD1A0,#06342A);box-shadow:0 2px 10px rgba(0,0,0,.5)"></div>
+      <div style="position:absolute;inset:0;display:grid;place-items:center;text-align:center">
+        <div>
+          <div class="cap2" style="font-size:22px;line-height:.92">THE LONG<br>TABLE</div>
+          <div style="margin-top:6px"><span class="chip hot">Our Table</span></div></div></div>
+    </div>
+    <div class="sub" style="font-size:10px;color:#D8D4E4;text-align:center;line-height:1.4">
+      This room came to talk, and nobody is trying to push it harder.</div>
+    <div class="btn o" style="text-align:center;font-size:12px">VIEW PLAN &middot; 3 STOPS</div>
+    <div class="card" style="padding:8px 11px;display:flex;align-items:center;gap:9px">
+      <div style="width:26px;height:26px;border-radius:5px;flex:0 0 auto;
+           background:linear-gradient(140deg,#FF2E7A,#24E0FF)"></div>
+      <div style="flex:1 1 auto"><div style="font-size:10px;font-weight:600">Nitya&rsquo;s pick</div>
+        <div class="sub" style="font-size:9px">Khruangbin &mdash; So We Won&rsquo;t Forget</div></div>
+      <span class="chip">MUTED</span></div>
+    <div class="grow"></div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:16px">
+      <div class="sub" style="font-size:9px;color:#6C6880;text-align:right;width:74px">Nobody can
+        see you<br>until you speak</div>
+      <div style="width:62px;height:62px;border-radius:50%;background:#1C1C22;
+           border:1px solid rgba(255,255,255,.14);display:grid;place-items:center;font-size:24px;
+           color:#6C6880;flex:0 0 auto">&#127908;</div>
+      <div class="sub" style="font-size:9px;color:#6C6880;width:74px">Voice only.<br>No camera.</div>
+    </div>
+    <div class="lab" style="text-align:center;margin-top:2px">TAP TO UNMUTE</div>
+    <div class="sub" style="font-size:9px;color:#6C6880;text-align:center">Leave this room</div>
+  </div>
+  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>29 &middot; Inside a room</b>The blend style at the centre with everyone around it, washing the room in its own colour. <b>The plan is one button, not a list</b> &mdash; it is settled, and the room is for the people. <b>Voice, and no camera</b>: the control is a single mic, muted until you tap it, and the ring on a DP says who is talking. A camera waits until there are safeguards worth trusting. The host sees one more control here: <b>Lock the plan</b>, which ends the room.</p>
+</div>
+
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd" style="gap:9px">
+    <div class="lab">&#8249; CUSTOMISE THIS ROOM</div>
+    <div class="card" style="padding:9px 11px">
+      <div class="lab">NAME</div>
+      <div style="display:flex;align-items:baseline;gap:7px;margin-top:3px">
+        <div class="cap2" style="font-size:19px;flex:1 1 auto">THE LONG TABLE</div>
+        <span class="lab" style="color:#FF7FAC">EDIT</span></div>
+      <div class="sub" style="font-size:9px;color:#6C6880;margin-top:2px">The blend style named it.
+        Yours overrides it.</div>
+    </div>
+    <div class="card" style="padding:9px 11px">
+      <div class="lab">WHAT THIS NIGHT IS</div>
+      <div class="sub" style="font-size:10px;color:#D8D4E4;margin-top:4px;line-height:1.45">Slow start
+        at Big Chill, then jazz. Nobody&rsquo;s in a rush and nobody&rsquo;s dancing.</div>
+      <div class="sub" style="font-size:9px;color:#6C6880;margin-top:5px">Shown on the room card
+        &middot; 94 left</div>
+    </div>
+    <div class="card" style="padding:9px 11px">
+      <div style="display:flex;align-items:baseline;justify-content:space-between">
+        <div class="lab">THE PLAN CARD</div><div class="lab" style="color:#6C6880">PREVIEW</div></div>
+      <div style="border-radius:8px;margin-top:6px;padding:9px 10px;
+           background:linear-gradient(140deg,rgba(155,107,255,.42),rgba(46,26,85,.5));
+           border:1px solid rgba(155,107,255,.4)">
+        <div class="lab" style="font-size:7px">3 STOPS &middot; 6 HRS</div>
+        <div class="cap2" style="font-size:16px;margin-top:2px">BIG CHILL &middot; PIANO MAN &middot; THE BAR</div>
+      </div>
+      <div style="display:flex;gap:7px;margin-top:9px"><div style="width:36px;height:36px;border-radius:9px;flex:0 0 auto;background:linear-gradient(140deg,#9B6BFF,#2E1A55);box-shadow:0 0 0 2px #FBFAFF,0 0 14px rgba(255,255,255,.3)"></div><div style="width:36px;height:36px;border-radius:9px;flex:0 0 auto;background:linear-gradient(140deg,#FF2E7A,#5A0A26);"></div><div style="width:36px;height:36px;border-radius:9px;flex:0 0 auto;background:linear-gradient(140deg,#24E0FF,#07303B);"></div><div style="width:36px;height:36px;border-radius:9px;flex:0 0 auto;background:linear-gradient(140deg,#3BD1A0,#06342A);"></div><div style="width:36px;height:36px;border-radius:9px;flex:0 0 auto;background:linear-gradient(140deg,#FFC247,#4A3200);"></div><div style="width:36px;height:36px;border-radius:9px;flex:0 0 auto;background:linear-gradient(140deg,#E8743B,#3A1605);"></div></div>
+      <div class="sub" style="font-size:9px;color:#6C6880;margin-top:7px">The room&rsquo;s own colour comes
+        from its blend. <b style="color:#9C98AE">This is the plan card only.</b></div>
+    </div>
+    <div class="card" style="padding:9px 11px;opacity:.5">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:14px">&#9834;</span>
+        <div style="flex:1 1 auto"><div style="font-size:10px;font-weight:600">Room music</div>
+          <div class="sub" style="font-size:9px">Not in the first release &mdash; licensing first</div></div>
+      </div>
+    </div>
+    <div class="grow"></div>
+    <div class="btn" style="text-align:center">SAVE</div>
+  </div>
+  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>30 &middot; Customise your room</b>Three things, and the fourth is absent on purpose. <b>The name</b> — the blend style supplies one and yours overrides it. <b>A description</b>, which goes on the room card where people browsing can read it. <b>And the plan card’s theme</b>, previewed live. <b>The room’s own colour still comes from its blend</b> and is not editable: that is its identity, not its decoration. Music is shown greyed with the reason, rather than hidden.</p>
+</div>
+
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd" style="gap:9px">
+    <div style="display:flex;justify-content:space-between;align-items:baseline">
+      <div class="sec">WHAT YOUR FRIENDS ARE UP TO</div>
+      <span class="lab">7 OUT</span></div>
+    <div class="card" style="padding:0 11px"><div class="listrow" style="padding:9px 0"><div class="dp" style="width:30px;height:30px;flex:0 0 auto;background:linear-gradient(140deg,#9B6BFF,#2E1A55);box-shadow:0 0 0 2px #3BD1A0"></div><div style="flex:1 1 auto"><div class="sub" style="font-size:10.5px;color:#9C98AE"><b style="color:#FBFAFF">Aarav</b> is hosting <b style="color:#FBFAFF">The Long Table</b></div><div class="lab" style="font-size:7px;margin-top:2px">3 of 5 &middot; now</div></div><span class="chip" style="background:rgba(59,209,160,.16);color:#3BD1A0">LIVE</span></div><div class="listrow" style="padding:9px 0"><div class="dp" style="width:30px;height:30px;flex:0 0 auto;background:linear-gradient(140deg,#FFC247,#6B4A00);box-shadow:0 0 0 2px #3BD1A0"></div><div style="flex:1 1 auto"><div class="sub" style="font-size:10.5px;color:#9C98AE"><b style="color:#FBFAFF">Zoya</b> is looking at <b style="color:#FBFAFF">Piano Man</b></div><div class="lab" style="font-size:7px;margin-top:2px">a minute ago</div></div><span class="chip" style="background:rgba(59,209,160,.16);color:#3BD1A0">LIVE</span></div><div class="listrow" style="padding:9px 0"><div class="dp" style="width:30px;height:30px;flex:0 0 auto;background:linear-gradient(140deg,#24E0FF,#0B4A5C)"></div><div style="flex:1 1 auto"><div class="sub" style="font-size:10.5px;color:#9C98AE"><b style="color:#FBFAFF">Nitya</b> joined <b style="color:#FBFAFF">Chase the Night</b></div><div class="lab" style="font-size:7px;margin-top:2px">12 min ago</div></div></div><div class="listrow" style="padding:9px 0"><div class="dp" style="width:30px;height:30px;flex:0 0 auto;background:linear-gradient(140deg,#3BD1A0,#06342A);box-shadow:0 0 0 2px #3BD1A0"></div><div style="flex:1 1 auto"><div class="sub" style="font-size:10.5px;color:#9C98AE"><b style="color:#FBFAFF">Kabir</b> is deciding on <b style="color:#FBFAFF">Out to Be Seen</b></div><div class="lab" style="font-size:7px;margin-top:2px">20 min ago</div></div><span class="chip" style="background:rgba(59,209,160,.16);color:#3BD1A0">LIVE</span></div><div class="listrow" style="padding:9px 0"><div class="dp" style="width:30px;height:30px;flex:0 0 auto;background:linear-gradient(140deg,#FF2E7A,#5A0A26)"></div><div style="flex:1 1 auto"><div class="sub" style="font-size:10.5px;color:#9C98AE"><b style="color:#FBFAFF">Meher</b> hosted <b style="color:#FBFAFF">The Send-Off</b></div><div class="lab" style="font-size:7px;margin-top:2px">last night</div></div></div></div>
+    <div class="card" style="padding:9px 11px;border-style:dashed;border-color:rgba(255,255,255,.13)">
+      <div class="sub" style="font-size:9.5px"><b style="color:#FBFAFF">Only rooms and venues.</b>
+        Never where anybody is, never what they searched, and never a venue they only scrolled past.
+        <b style="color:#9C98AE">Turn yours off in Settings.</b></div>
+    </div>
+    <div class="grow"></div>
+  </div>
+  <div class="nav"><span class="on">HOME</span><span>PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>31 &middot; What your friends are up to</b>New, and in no prior document. The rooms they are in, the rooms they have hosted, and <b>what they are considering right now</b> — a venue they are looking at, a room they are deciding on — marked live. <b>The dashed note is the feature’s whole safety case</b>: rooms and venues only, never a position, never a search, never a venue merely scrolled past, and an off switch named on the screen rather than buried.</p>
+</div>
+
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd" style="gap:9px">
+    <div class="lab">&#8249; PIANO MAN</div>
+    <div class="tile" style="height:96px;background:linear-gradient(150deg,#9B6BFF,#2E1A55)">
+      <div class="cap2" style="font-size:21px">PIANO MAN</div>
+      <div class="sub" style="font-size:9.5px;color:#D8D4E4">a live room &middot; Safdarjung &middot; open till 1</div>
+    </div>
+    <div class="card" style="padding:10px 11px">
+      <div style="display:flex;align-items:baseline;justify-content:space-between">
+        <div class="lab">FOR YOU, TONIGHT</div>
+        <div class="cap2" style="font-size:17px;color:#FF2E7A">88</div></div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <div style="width:2px;background:#3BD1A0;border-radius:2px;flex:0 0 auto"></div>
+        <div style="flex:1 1 auto">
+          <div class="sub" style="font-size:9.5px;color:#D8D4E4">It has an act on most nights, and a live
+            act is the thing you said matters most.</div>
+          <div class="sub" style="font-size:9.5px;color:#D8D4E4;margin-top:4px">Quiet enough to talk
+            between sets &mdash; that&rsquo;s the room you drew at 23:00.</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:9px">
+        <div style="width:2px;background:#FFC247;border-radius:2px;flex:0 0 auto"></div>
+        <div style="flex:1 1 auto">
+          <div class="sub" style="font-size:9.5px;color:#D8D4E4">No floor. You drew your last stop on
+            one, so this can&rsquo;t be it.</div>
+          <div class="sub" style="font-size:9.5px;color:#D8D4E4;margin-top:4px">Tables go days ahead at
+            the weekend.</div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="padding:9px 11px">
+      <div class="sub" style="font-size:9px;color:#6C6880">Read against <b style="color:#9C98AE">the
+        shape you drew tonight</b> and <b style="color:#9C98AE">what you said matters in a place</b>
+        &mdash; not against your vibe. The vibe is for people.</div>
+    </div>
+    <div class="grow"></div>
+    <div class="row2"><div class="btn">GO HERE</div><div class="btn o">FIND ROOMS</div></div>
+  </div>
+  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>32 &middot; Pros and cons on a venue</b>Every venue you open carries a read of how it suits <b>tonight</b>. Green is what fits, amber is what does not — <b>and amber is never a warning off</b>, it is the thing you would otherwise find out at the door. The footer names its own sources: <b>the shape you drew and your preferences, never your vibe</b>, because the vibe scores people and not places.</p>
+</div>
+
+<!-- ============================================================ 33 ADD FRIENDS -->
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd" style="gap:8px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <span class="lab">&#10005;&nbsp;&nbsp;CLOSE</span><span class="lab">5 FRIENDS</span></div>
+    <div class="cap2" style="font-size:23px">ADD FRIENDS TO<br>YOUR NIGHT</div>
+    <div class="srch"><span>&#9906;</span><span>Search your friends</span></div>
+    <div class="card" style="padding:7px 10px">
+      <div class="listrow" style="border-top:0;padding-top:3px">
+        <span class="dot" style="background:#3BD1A0;box-shadow:0 0 7px #3BD1A0"></span>
+        <div class="dp" style="width:30px;height:30px;background:linear-gradient(140deg,#FF2E7A,#7A1038)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:10.5px;font-weight:600">Rhea</div>
+          <div class="sub" style="font-size:8.5px">Peak Front-Rower &middot; <b style="color:#FF7FAC">DREW</b></div></div>
+        <div class="pick on">&#10003;</div>
+      </div>
+      <div class="listrow">
+        <span class="dot" style="background:#3BD1A0;box-shadow:0 0 7px #3BD1A0"></span>
+        <div class="dp" style="width:30px;height:30px;background:linear-gradient(140deg,#24E0FF,#0B4A5C)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:10.5px;font-weight:600">Dev</div>
+          <div class="sub" style="font-size:8.5px">Locked-In Table-Talker &middot; <b style="color:#FF7FAC">DREW</b></div></div>
+        <div class="pick on">&#10003;</div>
+      </div>
+      <div class="listrow">
+        <span class="dot" style="background:#6C6880"></span>
+        <div class="dp" style="width:30px;height:30px;background:linear-gradient(140deg,#3BD1A0,#06342A)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:10.5px;font-weight:600">Ira</div>
+          <div class="sub" style="font-size:8.5px">Night Climber &middot; <b style="color:#9C98AE">DRAWING&hellip;</b></div></div>
+        <div class="pick on">&#10003;</div>
+      </div>
+      <div class="listrow">
+        <span class="dot" style="background:#3BD1A0;box-shadow:0 0 7px #3BD1A0"></span>
+        <div class="dp" style="width:30px;height:30px;background:linear-gradient(140deg,#9B6BFF,#2E1A55)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:10.5px;font-weight:600">Kabir</div>
+          <div class="sub" style="font-size:8.5px">Slow Starter &middot; <b style="color:#9C98AE">HASN&rsquo;T DRAWN</b></div></div>
+        <div class="pick"></div>
+      </div>
+      <div class="listrow">
+        <span class="dot" style="background:#6C6880"></span>
+        <div class="dp" style="width:30px;height:30px;background:linear-gradient(140deg,#FFC247,#6B4A00)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:10.5px;font-weight:600">Zoya</div>
+          <div class="sub" style="font-size:8.5px">no vibe today &middot; <b style="color:#FFC247">WILL BE ASKED TO PLAY</b></div></div>
+        <div class="pick"></div>
+      </div>
+    </div>
+    <div class="card" style="padding:8px 10px;border-color:rgba(255,194,71,.3)">
+      <div class="sub" style="font-size:9px;color:#D8D4E4"><b style="color:#FFC247">Zoya has not
+        played today.</b> She can still be added &mdash; the invite asks her to find her vibe first,
+        and she has five minutes from the notification.</div>
+    </div>
+    <div class="grow"></div>
+    <div class="sub" style="font-size:9px;color:#6C6880">Everyone you add has to draw before you can
+      browse. Three have.</div>
+    <div class="btn">CONTINUE &middot; 3 ADDED</div>
+  </div>
+  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>33 &middot; Add friends to your night</b>The friend list carries the three things that decide whether they can come: <b>today’s vibe</b>, a <b>presence dot</b>, and <b>whether they have drawn</b>. Rhea and Dev are in and drawn; Ira is mid-draw; Kabir has a vibe but no shape yet. <b>Zoya has not played at all</b> — she is addable, with the five-minute gate on the invite rather than a grey row, because the notification already asks her to play. The footer says the price of adding anybody: <b>nothing can be browsed until every one of them has drawn.</b> <i>(The presence dot is the first presence system in the app — held in REMINDERS.md.)</i></p>
+</div>
+
+<!-- ============================================================ 34 NAME THE GATHERING -->
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd" style="gap:10px">
+    <div class="lab">3 FRIENDS ADDED</div>
+    <div class="ppl" style="padding-top:2px">
+      <div style="background:linear-gradient(140deg,#FF2E7A,#7A1038);width:36px;height:36px"></div>
+      <div style="background:linear-gradient(140deg,#24E0FF,#0B4A5C);width:36px;height:36px"></div>
+      <div style="background:linear-gradient(140deg,#3BD1A0,#06342A);width:36px;height:36px"></div>
+      <div style="background:linear-gradient(140deg,#9B6BFF,#2E1A55);width:36px;height:36px"></div></div>
+    <div class="cap2" style="font-size:27px;margin-top:4px">NAME THIS<br>GATHERING</div>
+    <div class="card" style="padding:13px 12px;border-color:rgba(255,46,122,.45);
+         box-shadow:0 0 20px rgba(255,46,122,.14);display:flex;align-items:center;gap:1px">
+      <span class="cap2" style="font-size:21px">THE LONG TABLE</span>
+      <span style="width:2px;height:21px;background:#FF2E7A;box-shadow:0 0 8px #FF2E7A"></span></div>
+    <div class="sub" style="font-size:9.5px;color:#D8D4E4">Leave it blank and it takes your names
+      &mdash; <b style="color:#FBFAFF">Rhea, Dev, Ira +1</b>.</div>
+    <div class="grow"></div>
+    <div class="card" style="padding:9px 11px">
+      <div class="sub" style="font-size:9px;color:#6C6880">This name is the room&rsquo;s, the status
+      bar&rsquo;s and the chat&rsquo;s. <b style="color:#9C98AE">You only type it once.</b></div></div>
+    <div class="btn">CONTINUE</div>
+  </div>
+  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>34 &middot; Name this gathering</b>One field, and it names three things. <b>The group chat is created the moment this is confirmed, and the user never sees it happen</b> — there is no “chat created” step, no toast, and they are not taken to it. They land straight back on the SHUFFL screen. This supersedes the 2026-10-07 rule that created the chat at the lock: the people in it now are the user’s own friends, and <b>the only strangers who ever join arrive at the lock, after they have committed.</b> So the protection survives and friends get somewhere to talk an hour earlier.</p>
+</div>
+
+<!-- ============================================================ 35 WAITING ON YOUR NIGHT -->
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd blur" style="gap:9px">
+    <div class="srch"><span>&#9906;</span><span>Search through venues and rooms here</span></div>
+    <div class="sec">ROOMS FOR TONIGHT</div>
+    <div class="card" style="height:54px"></div>
+    <div class="card" style="height:54px"></div>
+    <div class="sec">THE NIGHT YOU ALL DREW</div>
+    <div class="card" style="height:96px"></div>
+    <div class="row2"><div class="btn">&nbsp;</div><div class="btn o">&nbsp;</div></div>
+  </div>
+  <div class="lockover" style="padding:0 16px;background:rgba(6,6,9,.58)">
+      <span class="lab">LOCKED</span>
+      <div class="cap2" style="font-size:26px;text-align:center">WAITING ON<br>YOUR NIGHT</div>
+      <div class="ppl">
+        <div style="background:linear-gradient(140deg,#FF2E7A,#7A1038);width:30px;height:30px"></div>
+        <div style="background:linear-gradient(140deg,#24E0FF,#0B4A5C);width:30px;height:30px"></div>
+        <div style="background:linear-gradient(140deg,#3BD1A0,#06342A);width:30px;height:30px"></div>
+        <div class="pend" style="background:linear-gradient(140deg,#9B6BFF,#2E1A55);width:30px;height:30px"></div>
+        <div class="pend" style="background:linear-gradient(140deg,#FFC247,#6B4A00);width:30px;height:30px"></div></div>
+      <div class="lab" style="color:#FF7FAC">3 OF 5 HAVE DRAWN</div>
+      <div class="card" style="padding:7px 10px;width:100%;background:#101016;text-align:left">
+        <div class="listrow" style="border-top:0;padding-top:4px">
+          <div class="dp" style="width:24px;height:24px;background:linear-gradient(140deg,#FF2E7A,#7A1038)"></div>
+          <div style="flex:1 1 auto;font-size:10px;font-weight:600">Rhea</div>
+          <span class="lab" style="color:#FF7FAC">DREW</span>
+          <span class="lab" style="width:12px;text-align:right"></span>
+        </div>
+        <div class="listrow">
+          <div class="dp" style="width:24px;height:24px;background:linear-gradient(140deg,#24E0FF,#0B4A5C)"></div>
+          <div style="flex:1 1 auto;font-size:10px;font-weight:600">You</div>
+          <span class="lab" style="color:#FF7FAC">DREW</span>
+          <span class="lab" style="width:12px;text-align:right"></span>
+        </div>
+        <div class="listrow">
+          <div class="dp" style="width:24px;height:24px;background:linear-gradient(140deg,#3BD1A0,#06342A)"></div>
+          <div style="flex:1 1 auto;font-size:10px;font-weight:600">Ira</div>
+          <span class="lab" style="color:#FF7FAC">DREW</span>
+          <span class="lab" style="width:12px;text-align:right"></span>
+        </div>
+        <div class="listrow">
+          <div class="dp pend" style="width:24px;height:24px;background:linear-gradient(140deg,#9B6BFF,#2E1A55)"></div>
+          <div style="flex:1 1 auto;font-size:10px;font-weight:600">Kabir</div>
+          <span class="lab" style="color:#9C98AE">DRAWING&hellip;</span>
+          <span class="lab" style="width:12px;text-align:right">&#10005;</span>
+        </div>
+        <div class="listrow">
+          <div class="dp pend" style="width:24px;height:24px;background:linear-gradient(140deg,#FFC247,#6B4A00)"></div>
+          <div style="flex:1 1 auto;font-size:10px;font-weight:600">Zoya</div>
+          <span class="lab" style="color:#FFC247">NO VIBE &middot; 4:52</span>
+          <span class="lab" style="width:12px;text-align:right">&#10005;</span>
+        </div>
+      </div>
+      <div class="sub" style="font-size:9.5px;color:#D8D4E4;text-align:center;line-height:1.45">
+        The rooms and the venues are ranked against <b style="color:#FBFAFF">the night you all
+        drew</b>. Two of you have not said what that is yet.</div>
+      <div class="sub" style="font-size:8.5px;color:#6C6880;text-align:center">The cross removes
+        somebody. There is no timer on a skeleton.</div>
+  </div>
+  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>35 &middot; The gathering, waiting</b>Screen 09 reborn, and the most load-bearing screen in the set. <b>Nothing can be browsed until every invited friend has accepted and drawn</b> — which is what keeps the ranking honest: <code>SKELETON_MERGE_V1</code> §6 is <b>drawers only, no inference from cards, ever</b>, so ranking against people who have merely been <i>invited</i> would mean inventing a shape for somebody who has not drawn one. Gating the screen makes <b>invited and drawn the same set</b> by the time anything is ranked. The two timers are the ones already specified and they differ on purpose: <b>no vibe runs a five-minute clock</b> (the app cannot read them at all, so waiting is pointless), <b>no skeleton has no clock</b> — the wheel holder removes them instead, because a plan is worth waiting for and the wait needs an exit rather than a deadline.</p>
+</div>
+
+<!-- ============================================================ 36 THE CAPSULE ROOM -->
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd" style="background:radial-gradient(118% 62% at 50% 10%,rgba(255,46,122,.3),rgba(6,6,9,0) 62%);gap:7px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <span class="lab">&#10005;&nbsp;&nbsp;LEAVE</span>
+      <span class="lab" style="color:#FF7FAC">RHEA HAS THE WHEEL</span></div>
+    <div class="lab" style="text-align:center">THE LONG TABLE</div>
+    <div style="position:relative;height:160px;flex:0 0 auto">
+      <div class="dp" style="position:absolute;left:133px;top:-4px;width:34px;height:34px;background:linear-gradient(140deg,#FF2E7A,#7A1038);box-shadow:0 2px 10px rgba(0,0,0,.5)"></div>
+      <div class="dp" style="position:absolute;left:208px;top:44px;width:34px;height:34px;background:linear-gradient(140deg,#24E0FF,#0B4A5C);box-shadow:0 2px 10px rgba(0,0,0,.5)"></div>
+      <div class="dp" style="position:absolute;left:170px;top:120px;width:34px;height:34px;background:linear-gradient(140deg,#3BD1A0,#06342A);box-shadow:0 2px 10px rgba(0,0,0,.5)"></div>
+      <div class="dp" style="position:absolute;left:58px;top:120px;width:34px;height:34px;background:linear-gradient(140deg,#9B6BFF,#2E1A55);box-shadow:0 2px 10px rgba(0,0,0,.5)"></div>
+      <div class="dp" style="position:absolute;left:20px;top:44px;width:34px;height:34px;background:linear-gradient(140deg,#FFC247,#6B4A00);box-shadow:0 2px 10px rgba(0,0,0,.5)"></div>
+      <div style="position:absolute;left:52px;right:52px;top:46px;text-align:center">
+          <div class="cap2" style="font-size:20px;line-height:.92">BIG ROOM,<br>LOUD NIGHT</div>
+          <div style="margin-top:7px"><span class="chip hot">Table and Floor</span></div></div>
+    </div>
+    <div class="sub" style="font-size:10px;color:#D8D4E4;text-align:center;line-height:1.42">
+      This room wants a loud one, and they would rather see how it goes than hold to a plan.</div>
+    <div class="card" style="padding:9px 11px;border-color:rgba(255,46,122,.26)">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="dp" style="width:22px;height:22px;background:linear-gradient(140deg,#FF2E7A,#7A1038)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:10px;font-weight:600">Rhea is building your
+          night</div>
+          <div class="sub" style="font-size:8.5px">2 of 3 stops chosen</div></div>
+        <span class="chip hot">VIEW UPDATES</span></div>
+    </div>
+    <div class="grow"></div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:16px">
+      <div class="mic">&#127908;</div>
+      <div style="flex:0 0 auto">
+        <div class="btn o" style="font-size:12px;padding:8px 13px">&#9881;&nbsp; REQUEST THE WHEEL</div>
+        <div class="sub" style="font-size:8.5px;color:#6C6880;margin-top:4px;text-align:center">Rhea
+          says yes or no</div>
+      </div>
+    </div>
+    <div class="lab" style="text-align:center">TAP TO UNMUTE &middot; VOICE ONLY, NO CAMERA</div>
+  </div>
+  <div class="bar"><span class="k">THE LONG TABLE&rsquo;S ROOM</span>
+    <span class="v">ACTIVE &middot; TAP</span></div>
+  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>36 &middot; The capsule room — what the four who are not driving see</b>The blend style at the centre with everyone around it, the chemistry chip, and the room’s
+generated sentence — the same furniture as screen 29, because it is the same kind of room. What is
+new is the <b>wheel</b>: one person drives the SHUFFL screen and everybody else watches, with
+<b>Request the wheel</b> as the only way to take over. <b>The wheel answers a question the spec never
+had one for</b> — the co-host model had five people each draw a skeleton and then the host pick
+every venue alone, which is one person deciding with none of the honesty. The card above the controls
+is what stops this being a waiting room: <b>it says what the holder is doing right now</b> and opens
+the mirror. Voice, muted, no camera, unchanged.</p>
+</div>
+
+<!-- ============================================================ 37 RHEA IS VIEWING -->
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd blur" style="background:radial-gradient(118% 66% at 50% 12%,rgba(255,46,122,.3),rgba(6,6,9,0) 64%);gap:8px">
+    <div style="display:flex;justify-content:space-between"><span class="lab">&#10005;</span>
+      <span class="lab">RHEA HAS THE WHEEL</span></div>
+    <div style="position:relative;height:172px;flex:0 0 auto">
+      <div style="position:absolute;inset:0;display:grid;place-items:center">
+        <div class="cap2" style="font-size:21px;text-align:center">BIG ROOM,<br>LOUD NIGHT</div></div>
+    </div>
+    <div class="grow"></div>
+    <div style="display:flex;justify-content:center;gap:18px"><div class="mic">&#127908;</div></div>
+  </div>
+  <div class="scrim"></div>
+  <div class="sheet" style="top:54px;bottom:80px;display:flex;flex-direction:column;gap:8px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <span class="lab" style="color:#FF7FAC">RHEA IS VIEWING</span>
+      <span class="chip">&#8211;&nbsp; MINIMISE</span></div>
+    <div class="tile" style="height:74px;background:linear-gradient(150deg,#FF2E7A,#3A0A1C);flex:0 0 auto">
+      <div class="cap2" style="font-size:19px">SUMMER HOUSE</div></div>
+    <div class="sub" style="font-size:9px">Bar &middot; Hauz Khas Village &middot; &#8377;&#8377;</div>
+    <div class="card" style="padding:8px 10px">
+      <div class="lab" style="color:#FF7FAC">THIS IS YOUR 23:00 &middot; 91</div>
+      <div class="sub" style="font-size:9px;margin-top:4px">&middot; Loud, and on its feet by midnight
+        &mdash; the stop you drew.</div>
+      <div class="sub" style="font-size:9px;margin-top:2px">&middot; A live act most Fridays, which
+        two of you wanted.</div>
+      <div class="sub" style="font-size:9px;margin-top:2px;color:#FFC247">&middot; Nobody is hearing
+        anyone after 23:30. Dev drew a talker.</div>
+    </div>
+    <div class="grow"></div>
+    <div class="card" style="padding:8px 10px;background:#101016">
+      <div class="sub" style="font-size:9px;color:#6C6880">You are watching, not choosing. Every screen
+        Rhea opens arrives here and <b style="color:#9C98AE">minimises into View updates.</b></div></div>
+  </div>
+  <div class="sheet" style="top:20px;padding:7px 10px;border-color:rgba(255,46,122,.4);
+       box-shadow:0 0 20px rgba(255,46,122,.2)">
+    <div class="sub" style="font-size:9px;color:#FBFAFF">&#9654;&nbsp; <b>Rhea selected Raasta</b>
+      for your 21:00</div></div>
+  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>37 &middot; Everything the wheel holder opens, mirrored</b>Whatever Rhea taps lands on the other four screens with her name on it — <b>“Rhea is viewing Summer House”</b> with the full payload she is reading, pros and cons included, and <b>“Rhea selected Raasta for your 21:00”</b> as each stop is chosen, one at a time. Note the amber line: the warning is computed <b>per member</b>, so Dev’s problem with the venue shows on everybody’s copy. <b>Every pop-up minimises into a View updates button</b>, so watching is never a trap. The alternative — four people staring at a static blend style while one person shops — is the thing this screen exists to prevent.</p>
+</div>
+
+<!-- ============================================================ 38 A WHEEL REQUEST -->
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd blur" style="gap:9px">
+    <div class="srch"><span>&#9906;</span><span>Search through venues and rooms here</span></div>
+    <div class="sec">ROOMS FOR TONIGHT</div>
+    <div class="card" style="height:56px"></div>
+    <div class="card" style="height:56px"></div>
+    <div class="sec">THE NIGHT YOU ALL DREW</div>
+    <div class="card" style="height:92px"></div>
+    <div class="row2"><div class="btn">&nbsp;</div><div class="btn o">&nbsp;</div></div>
+  </div>
+  <div class="scrim"></div>
+  <div class="sheet" style="top:150px">
+    <div class="lab">A REQUEST</div>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:8px">
+      <div class="dp" style="width:40px;height:40px;background:linear-gradient(140deg,#9B6BFF,#2E1A55)"></div>
+      <div class="cap2" style="font-size:18px;line-height:1">KABIR WANTS<br>THE WHEEL</div></div>
+    <div class="sub" style="font-size:9.5px;margin-top:9px;color:#D8D4E4">He would drive the night from
+      here &mdash; browsing rooms, picking venues, hosting. <b style="color:#FBFAFF">You would join the
+      four watching.</b></div>
+    <div class="sub" style="font-size:9px;margin-top:6px;color:#6C6880">One wheel at a time. You can
+      ask for it back.</div>
+    <div class="swipe"><div class="s no">NO</div><div class="s yes">HAND IT OVER</div></div>
+  </div>
+  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>38 &middot; A request for the wheel</b>The only interruption the wheel holder gets, and it is a plain yes or no. <b>The copy has to say what the holder loses</b>, because “Kabir wants the wheel” on its own does not: they would stop driving and join the watchers. <b>One wheel at a time, and a handover is the only way it moves</b> — there is no co-driving, which is what made co-hosts incoherent. <b>A wheel request outranks every other status-bar state except a locked plan</b>, because it is the only one a person is actively waiting on. <i>(What happens if the holder simply leaves is unspecified — held in REMINDERS.md.)</i></p>
+</div>
+
+<!-- ============================================================ 39 YOU DO NOT HAVE THE WHEEL -->
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd" style="gap:7px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <span class="lab">THE LONG TABLE</span>
+      <span class="lab" style="color:#FF7FAC">RHEA HAS THE WHEEL</span></div>
+    <div class="sub" style="font-size:9px;color:#6C6880">Everything here is ranked against
+      <b style="color:#9C98AE">all four of your shapes</b> &mdash; not yours alone.</div>
+    <div class="sec">SUGGESTED ROOMS</div>
+    <div class="car">
+      <div class="it"><div class="tile" style="background:linear-gradient(150deg,#FF2E7A,#3A0A1C)"><span class="pct">84</span></div><div class="t1">Chase the Night</div><div class="t2">4 in &middot; loud</div></div>
+      <div class="it"><div class="tile" style="background:linear-gradient(150deg,#24E0FF,#07303B)"><span class="pct">71</span></div><div class="t1">The Slow Burn</div><div class="t2">3 in &middot; undecided</div></div>
+      <div class="it"><div class="tile" style="background:linear-gradient(150deg,#9B6BFF,#2A1250)"><span class="pct">66</span></div><div class="t1">Last Orders</div><div class="t2">2 in &middot; late</div></div>
+      <div class="rf">&#8635;</div>
+    </div>
+    <div class="sec">SUGGESTED VENUES</div>
+    <div class="car">
+      <div class="it"><div class="tile" style="background:linear-gradient(150deg,#3BD1A0,#06342A)"><span class="pct">94</span></div><div class="t1">Kwality</div><div class="t2">CP &middot; your 21:00</div></div>
+      <div class="it"><div class="tile" style="background:linear-gradient(150deg,#FF2E7A,#3A0A1C)"><span class="pct">88</span></div><div class="t1">Raasta</div><div class="t2">HKV &middot; your 23:00</div></div>
+      <div class="it"><div class="tile" style="background:linear-gradient(150deg,#FFC247,#4A3200)"><span class="pct">83</span></div><div class="t1">Summer House</div><div class="t2">HKV &middot; your 01:00</div></div>
+      <div class="rf">&#8635;</div>
+    </div>
+    <div class="sec">SUGGESTED NIGHTS</div>
+    <div class="car">
+      <div class="it"><div class="tile" style="background:linear-gradient(150deg,#FFC247,#4A3200)"></div><div class="t1">Late &amp; Loud</div><div class="t2">3 stops &middot; builds</div></div>
+      <div class="it"><div class="tile" style="background:linear-gradient(150deg,#3BD1A0,#06342A)"></div><div class="t1">Foodie's Day Out</div><div class="t2">3 stops &middot; eats</div></div>
+      <div class="it"><div class="tile" style="background:linear-gradient(150deg,#9B6BFF,#2A1250)"></div><div class="t1">South Delhi Crawl</div><div class="t2">4 stops &middot; walks</div></div>
+      <div class="rf">&#8635;</div>
+    </div>
+    <div class="grow"></div>
+    <div class="card" style="padding:8px 10px;display:flex;align-items:center;gap:9px">
+      <div style="flex:1 1 auto"><div class="sub" style="font-size:9.5px;color:#D8D4E4">You don&rsquo;t
+        have the wheel for <b style="color:#FBFAFF">The Long Table</b></div>
+        <div class="sub" style="font-size:8.5px;color:#6C6880">Tap anything above to propose it</div></div>
+      <span class="chip">&#9881; ASK</span></div>
+  </div>
+  <div class="bar"><span class="k">THE LONG TABLE&rsquo;S ROOM</span><span class="v">ACTIVE &middot; TAP</span></div>
+  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>39 &middot; The waiting screen — rebuilt</b>Entry 190 left this as a blank page and two buttons and flagged it as the first thing owed. <b>This is the answer.</b> Three carousels — rooms, venues and <b>nights</b> — each three to five deep with a <b>Refresh</b> at the end, and <b>all of it ranked against the whole group’s merged skeleton rather than the person looking.</b> That is what makes the screen worth having: four people see the same shelf, so proposing from it is a conversation rather than five private searches. <b>“You don’t have the wheel” drops to the bottom</b> — still true, no longer the content. <b>Refresh re-draws from a ranked list and generates nothing</b>, and should only render when the carousel is not already showing everything that exists — which at launch volume is usually true of <b>rooms</b> and never of venues or presets.</p>
+</div>
+
+<!-- ============================================================ 40 BUILD MY OWN NIGHT -->
+<div class="unit">
+<div class="ph v8">  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd" style="gap:7px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <span class="lab">&#10005;&nbsp;&nbsp;CLOSE</span><span class="lab">BUILD MY OWN NIGHT</span></div>
+    <div class="card" style="padding:8px 10px">
+      <div class="lab" style="font-size:6.5px;margin-bottom:3px">HOW THIS NIGHT IS SHAPING UP</div>
+      <div class="mtr"><span class="k w5">HOW LOUD</span><span class="t"></span><span class="w" style="color:#5A5668">&mdash;</span></div>
+      <div class="mtr"><span class="k w5">HOW BUSY</span><span class="t"></span><span class="w" style="color:#5A5668">&mdash;</span></div>
+      <div class="mtr"><span class="k w5">HOW IT LOOKS</span><span class="t"></span><span class="w" style="color:#5A5668">&mdash;</span></div>
+      <div class="mtr"><span class="k w5">HOW DRESSED UP</span><span class="t"></span><span class="w" style="color:#5A5668">&mdash;</span></div>
+      <div class="mtr"><span class="k w5"><span style="color:#FF7FAC">&#8226;</span> WHAT IT COSTS</span><span class="t"></span><span class="w" style="color:#5A5668">&mdash;</span></div>
+      <div class="ro">
+        <div><div class="lab" style="font-size:6.5px">RUNS UNTIL</div><div class="rv">&mdash;</div></div>
+        <div><div class="lab" style="font-size:6.5px">TRAVELS</div><div class="rv">&mdash;</div></div>
+        <div style="text-align:right"><div class="lab" style="font-size:6.5px">THE ARC</div><div class="sub" style="font-size:8.5px;color:#5A5668">&mdash;</div></div>
+      </div>
+      <div class="bdg" style="margin-top:7px"><span>A LIVE ACT</span><span>A FLOOR</span><span>OUTDOORS</span><span>A PROPER MEAL</span><span>SOMETHING TO PLAY</span></div>
+    </div>
+    <div class="pad">
+      <div class="node" style="left:24px;top:84px">+</div>
+      <div class="sub" style="position:absolute;left:24px;top:146px;width:200px;font-size:9.5px;
+           color:#9C98AE">Tap the circle to put your first place in.</div>
+    </div>
+    <div class="btn dead">NEXT</div>
+  </div>
+  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>40 &middot; Build my own night, empty</b><b>The meters are not the factor set and never were meant to be read as one</b> (entry 198). Factors are what the engine reasons with; <b>these are what a person would say about a night</b> — how loud, how busy, how it looks, how dressed up, what it costs. <b><code>TALK</code> and <code>MOVE</code> came off</b>: they describe a room rather than a night, and the measurement agreed — they were read from the venue’s type rather than its reviews <b>78% and 96%</b> of the time. <b>Underneath, three readouts that are exact</b> — how late it runs, how far it travels, and the arc — and <b>badges for the things a place either has or does not</b>, which is why they are not scales.</p>
+</div>
+
+<!-- ============================================================ 41 BUILD: SEARCH VENUES -->
+<div class="unit">
+<div class="ph v8">  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd" style="gap:7px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <span class="lab">&#10005;&nbsp;&nbsp;CLOSE</span><span class="lab">BUILD MY OWN NIGHT</span></div>
+    <div class="card" style="padding:8px 10px">
+      <div class="mtr"><span class="k w5">HOW LOUD</span><span class="t"><i style="left:62%;right:16%"></i></span><span class="w">loud, so far</span></div>
+      <div class="mtr"><span class="k w5">HOW BUSY</span><span class="t"><i style="left:50%;right:28%"></i></span><span class="w">busy enough</span></div>
+      <div class="mtr"><span class="k w5">HOW IT LOOKS</span><span class="t"><i class="hollow" style="left:40%;right:38%"></i></span><span class="w">nothing<br>special</span></div>
+    </div>
+    <div class="pad">
+      <div class="vn" style="left:22px;top:10px">
+        <div class="im" style="background:linear-gradient(150deg,#FF2E7A,#3A0A1C)"></div>
+        <div class="nm">RAASTA<br>HKV</div></div>
+      <div class="arr" style="left:84px;top:32px;width:34px"></div>
+      <div class="node" style="left:126px;top:8px">+</div>
+      <div class="sheet" style="left:9px;right:9px;top:84px;bottom:7px;padding:9px;
+           display:flex;flex-direction:column;gap:7px">
+        <div class="srch" style="background:#0C0C11"><span>&#9906;</span>
+          <span style="color:#FBFAFF">summer</span>
+          <span style="width:1.5px;height:11px;background:#FF2E7A;margin-left:-4px"></span></div>
+        <div class="listrow" style="border-top:0;padding-top:2px">
+          <div style="width:30px;height:30px;border-radius:6px;flex:0 0 auto;
+               background:linear-gradient(140deg,#FF2E7A,#5A0A26)"></div>
+          <div style="flex:1 1 auto"><div style="font-size:10.5px;font-weight:600">Summer House</div>
+            <div class="sub" style="font-size:8.5px">Bar &middot; Hauz Khas Village &middot;
+              <b style="color:#FF7FAC">a live act</b></div></div>
+          <span class="lab" style="color:#FF7FAC">91</span></div>
+        <div class="listrow">
+          <div style="width:30px;height:30px;border-radius:6px;flex:0 0 auto;
+               background:linear-gradient(140deg,#9B6BFF,#2E1A55)"></div>
+          <div style="flex:1 1 auto"><div style="font-size:10.5px;font-weight:600">Summer House Caf&eacute;</div>
+            <div class="sub" style="font-size:8.5px">Caf&eacute; &middot; Saket &middot; outdoors</div></div>
+          <span class="lab">62</span></div>
+        <div class="listrow">
+          <div style="width:30px;height:30px;border-radius:6px;flex:0 0 auto;background:#1C1C22"></div>
+          <div style="flex:1 1 auto"><div style="font-size:10.5px;font-weight:600;color:#6C6880">Summerhouse Deli</div>
+            <div class="sub" style="font-size:8.5px;color:#FFC247">closes at 23:00 &mdash; your 01:30 is shut</div></div>
+          <span class="lab" style="color:#5A5668">&#10005;</span></div>
+        <div class="grow"></div>
+        <div class="sub" style="font-size:8.5px;color:#6C6880">Our own admitted venues only. The number
+          is fit, not a rating.</div>
+      </div>
+    </div>
+  </div>
+  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>41 &middot; The venue search</b>Two rules are visible. <b>The search hits our own admitted database and never Google’s index</b> — a venue from outside it has no scores, so the meters could not move, and it has not passed the six admission criteria. And the <b>closed-at-that-hour case</b>, drawn as a soft block with the reason stated. <b>The meters above read the night so far</b>, one stop in, so a user can see what a pick does before making the next one. <b>The result rows carry badges rather than scores for the things a place either has or has not</b> — a live act, outdoors — because there is no sensible middle value for them.</p>
+</div>
+
+<!-- ============================================================ 42 BUILD: THREE PLACES IN -->
+<div class="unit">
+<div class="ph v8">  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd" style="gap:7px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <span class="lab">&#10005;&nbsp;&nbsp;CLOSE</span><span class="lab">BUILD MY OWN NIGHT</span></div>
+    <div class="card" style="padding:8px 10px">
+      <div class="lab" style="font-size:6.5px;margin-bottom:3px">HOW THIS NIGHT IS SHAPING UP</div>
+      <div class="mtr"><span class="k w5">HOW LOUD</span><span class="t"><i style="left:34%;right:8%"></i></span><span class="w">quiet, then<br>loud</span></div>
+      <div class="mtr"><span class="k w5">HOW BUSY</span><span class="t"><i style="left:40%;right:12%"></i></span><span class="w">fills as it<br>goes</span></div>
+      <div class="mtr"><span class="k w5">HOW IT LOOKS</span><span class="t"><i class="hollow" style="left:46%;right:20%"></i></span><span class="w">nice all<br>the way</span></div>
+      <div class="mtr"><span class="k w5">HOW DRESSED UP</span><span class="t"><i class="hollow" style="left:18%;right:48%"></i></span><span class="w">nobody&rsquo;s<br>dressing up</span></div>
+      <div class="mtr"><span class="k w5"><span style="color:#FF7FAC">&#8226;</span> WHAT IT COSTS</span><span class="t"><i style="left:30%;right:24%"></i></span><span class="w">one cheap,<br>one steep</span></div>
+      <div class="ro">
+        <div><div class="lab" style="font-size:6.5px">RUNS UNTIL</div><div class="rv">02:00</div></div>
+        <div><div class="lab" style="font-size:6.5px">TRAVELS</div><div class="rv">3.4 KM</div></div>
+        <div style="text-align:right"><div class="lab" style="font-size:6.5px">THE ARC</div><div class="spark" style="margin-top:2px"><i style="height:4px"></i><i style="height:9px"></i><i style="height:14px"></i></div></div>
+      </div>
+      <div class="bdg" style="margin-top:7px"><span class="on">A LIVE ACT</span><span class="on">A FLOOR</span><span>OUTDOORS</span><span class="on">A PROPER MEAL</span><span>SOMETHING TO PLAY</span></div>
+      <div class="sub" style="font-size:7.5px;color:#55525F;margin-top:7px;line-height:1.35"><b style="color:#9C98AE">Hollow bands are read from the venue&rsquo;s type</b>, not from what people wrote. <b style="color:#FF7FAC">&#8226;</b> is exact.</div>
+    </div>
+    <div class="pad" style="min-height:118px">
+      <div class="vn" style="left:14px;top:10px">
+        <div class="im" style="background:linear-gradient(150deg,#3BD1A0,#06342A)"></div>
+        <div class="nm">KWALITY<br>CP</div></div>
+      <div class="arr" style="left:76px;top:30px;width:26px"></div>
+      <div class="vn" style="left:108px;top:36px">
+        <div class="im" style="background:linear-gradient(150deg,#FF2E7A,#3A0A1C)"></div>
+        <div class="nm">RAASTA<br>HKV</div></div>
+      <div class="arr" style="left:170px;top:56px;width:22px"></div>
+      <div class="vn" style="left:196px;top:58px">
+        <div class="im" style="background:linear-gradient(150deg,#9B6BFF,#2E1A55)"></div>
+        <div class="nm">SUMMER<br>HOUSE</div></div>
+    </div>
+    <div class="btn">NEXT</div>
+  </div>
+  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>42 &middot; Three places in</b>Every meter is a <b>span across the stops</b>, which is what lets the night read as <i>quiet, then loud</i> rather than as a level. <b>Measured (entry 197): on nights with near-identical means and clearly different ranges, a mean renders them alike 20.6% of the time and a span never does.</b> <b>Direction is not in the bars at all</b> — a span is blind to order — which is why <b>the arc is load-bearing rather than decoration</b>. <b>Two bands are hollow</b>: how it looks and how dressed up are being read from the venue type here, not from what anyone wrote. <b>What it costs carries a dot instead</b>, because it is exact and can never be a guess.</p>
+</div>
+
+<!-- ============================================================ 43 THE BUILT NIGHT -->
+<div class="unit">
+<div class="ph v8">  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd" style="background:linear-gradient(183deg,rgba(155,107,255,.17),rgba(6,6,9,0) 54%);gap:7px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <span class="lab">YOUR NIGHT &middot; BUILT BY HAND</span><span class="lab">&#9881; CUSTOMISE</span></div>
+    <div class="cap2" style="font-size:23px">THREE PLACES,<br>ONE DIRECTION</div>
+    <div class="card" style="padding:9px 11px">
+      <div class="lu" style="padding:4px 0"><span class="t">21:00</span><div style="flex:1 1 auto">
+        <div class="n">KWALITY, CP</div>
+        <div class="m">Sit down, eat properly.</div></div></div>
+      <div class="lu" style="padding:4px 0"><span class="t">23:00</span><div style="flex:1 1 auto">
+        <div class="n">RAASTA, HKV</div>
+        <div class="m">Louder, and filling by the time you get there.</div></div></div>
+      <div class="lu" style="padding:4px 0"><span class="t">01:00</span><div style="flex:1 1 auto">
+        <div class="n">SUMMER HOUSE</div>
+        <div class="m">Usually an act on, and a floor.</div></div></div>
+    </div>
+    <div class="card" style="padding:8px 10px">
+      <div class="mtr"><span class="k w5">HOW LOUD</span><span class="t"><i style="left:34%;right:8%"></i></span><span class="w">quiet, then<br>loud</span></div>
+      <div class="mtr"><span class="k w5">HOW BUSY</span><span class="t"><i style="left:40%;right:12%"></i></span><span class="w">fills as it<br>goes</span></div>
+      <div class="mtr"><span class="k w5">HOW IT LOOKS</span><span class="t"><i class="hollow" style="left:46%;right:20%"></i></span><span class="w">nice all<br>the way</span></div>
+      <div class="mtr"><span class="k w5">HOW DRESSED UP</span><span class="t"><i class="hollow" style="left:18%;right:48%"></i></span><span class="w">nobody&rsquo;s<br>dressing up</span></div>
+      <div class="mtr"><span class="k w5"><span style="color:#FF7FAC">&#8226;</span> WHAT IT COSTS</span><span class="t"><i style="left:30%;right:24%"></i></span><span class="w">one cheap,<br>one steep</span></div>
+      <div class="ro">
+        <div><div class="lab" style="font-size:6.5px">RUNS UNTIL</div><div class="rv">02:00</div></div>
+        <div><div class="lab" style="font-size:6.5px">TRAVELS</div><div class="rv">3.4 KM</div></div>
+        <div style="text-align:right"><div class="lab" style="font-size:6.5px">THE ARC</div><div class="spark" style="margin-top:2px"><i style="height:4px"></i><i style="height:9px"></i><i style="height:14px"></i></div></div>
+      </div>
+      <div class="bdg" style="margin-top:7px"><span class="on">A LIVE ACT</span><span class="on">A FLOOR</span><span>OUTDOORS</span><span class="on">A PROPER MEAL</span><span>SOMETHING TO PLAY</span></div>
+    </div>
+    <div class="card" style="padding:8px 10px;background:#101016">
+      <div class="lab">NO SHAPE BEHIND THIS ONE</div>
+      <div class="sub" style="font-size:9px;margin-top:4px">You picked the places, so there is no drawn
+        night to compare them with. <b style="color:#9C98AE">Other people can still rank this room</b>
+        &mdash; they match their shape against the plan, not against yours.</div></div>
+    <div class="grow"></div>
+    <div class="row2"><div class="btn">LOCK THIS</div><div class="btn o">HOST THIS</div></div>
+  </div>
+  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>43 &middot; The built night</b>A plan card like any other, with the same two buttons — and <b>no skeleton behind it</b>. <code>plan.skeleton = null</code> is a legal state, and the card says so rather than hiding it: no drawn shape means no stop provenance, no two-rooms offer, no <code>SIZE_CEILING</code>, no window enforcement. <b>What survives is the thing that matters, and only because of entry 187</b> — rooms are ranked against a room’s <i>actual plan</i> rather than its merged shape, so other people can rank a hand-built night normally. <b>The meter block is the same one from the build screen</b>, carried onto the card, so what the user was adjusting is what the card reports.</p>
+</div>
+
+<!-- ============================================================ 44 WAITING, LOCKED -->
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd blur" style="gap:7px">
+    <div class="sec">SUGGESTED ROOMS</div>
+    <div class="car">
+      <div class="it"><div class="tile" style="background:linear-gradient(150deg,#FF2E7A,#3A0A1C)"><span class="pct">84</span></div><div class="t1">Chase the Night</div><div class="t2">4 in &middot; loud</div></div>
+      <div class="it"><div class="tile" style="background:linear-gradient(150deg,#24E0FF,#07303B)"><span class="pct">71</span></div><div class="t1">The Slow Burn</div><div class="t2">3 in &middot; undecided</div></div>
+      <div class="it"><div class="tile" style="background:linear-gradient(150deg,#9B6BFF,#2A1250)"><span class="pct">66</span></div><div class="t1">Last Orders</div><div class="t2">2 in &middot; late</div></div>
+      <div class="rf">&#8635;</div>
+    </div>
+    <div class="sec">SUGGESTED VENUES</div>
+    <div class="car">
+      <div class="it"><div class="tile" style="background:linear-gradient(150deg,#3BD1A0,#06342A)"><span class="pct">94</span></div><div class="t1">Kwality</div><div class="t2">CP &middot; your 21:00</div></div>
+      <div class="it"><div class="tile" style="background:linear-gradient(150deg,#FF2E7A,#3A0A1C)"><span class="pct">88</span></div><div class="t1">Raasta</div><div class="t2">HKV &middot; your 23:00</div></div>
+      <div class="it"><div class="tile" style="background:linear-gradient(150deg,#FFC247,#4A3200)"><span class="pct">83</span></div><div class="t1">Summer House</div><div class="t2">HKV &middot; your 01:00</div></div>
+      <div class="rf">&#8635;</div>
+    </div>
+    <div class="sec">SUGGESTED NIGHTS</div>
+    <div class="car">
+      <div class="it"><div class="tile" style="background:linear-gradient(150deg,#FFC247,#4A3200)"></div><div class="t1">Late &amp; Loud</div><div class="t2">3 stops &middot; builds</div></div>
+      <div class="it"><div class="tile" style="background:linear-gradient(150deg,#3BD1A0,#06342A)"></div><div class="t1">Foodie's Day Out</div><div class="t2">3 stops &middot; eats</div></div>
+      <div class="it"><div class="tile" style="background:linear-gradient(150deg,#9B6BFF,#2A1250)"></div><div class="t1">South Delhi Crawl</div><div class="t2">4 stops &middot; walks</div></div>
+      <div class="rf">&#8635;</div>
+    </div>
+  </div>
+  <div class="lockover" style="inset:0 0 58px 0;padding:0 20px;background:rgba(6,6,9,.62)">
+      <span class="lab">LOCKED</span>
+      <div class="cap2" style="font-size:24px;text-align:center;line-height:.95">WAITING FOR<br>EVERYONE INVITED<br>TO JOIN</div>
+      <div class="ppl">
+        <div style="background:linear-gradient(140deg,#FF2E7A,#7A1038);width:28px;height:28px"></div>
+        <div style="background:linear-gradient(140deg,#24E0FF,#0B4A5C);width:28px;height:28px"></div>
+        <div style="background:linear-gradient(140deg,#3BD1A0,#06342A);width:28px;height:28px"></div>
+        <div class="pend" style="background:linear-gradient(140deg,#9B6BFF,#2E1A55);width:28px;height:28px"></div></div>
+      <div class="lab" style="color:#FF7FAC">3 OF 4 HAVE DRAWN</div>
+      <div class="sub" style="font-size:9.5px;color:#D8D4E4;text-align:center;line-height:1.45">
+        Nothing can be ranked until everybody has drawn &mdash; it would mean
+        <b style="color:#FBFAFF">inventing a shape for Kabir</b>.</div>
+      <div class="card" style="padding:9px 11px;text-align:left">
+        <div class="sub" style="font-size:9px;color:#9C98AE">The room itself is
+          <b style="color:#FBFAFF">not locked.</b> Open it and talk while you wait, or go to
+          messages. Only the browsing waits.</div></div>
+  </div>
+  <div class="bar"><span class="k">THE LONG TABLE&rsquo;S ROOM</span><span class="v">ACTIVE &middot; TAP</span></div>
+  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>44 &middot; The same screen, before everybody has drawn</b><b>Both browsing surfaces are locked — this one and the wheel holder’s SHUFFL screen — until every invited member has accepted and drawn.</b> Two reasons, and the second is the real one. Re-ranking three carousels every time a skeleton arrives would thrash the screen. And <b>nothing can be ranked honestly until everyone has drawn</b>: ranking against Kabir before he has drawn would mean inventing a shape for him, which is exactly what <code>SKELETON_MERGE_V1</code> §6 forbids. <b>The capsule room is deliberately not locked</b> — people can unmute and talk while they wait, which is the whole reason the room exists before the plan does. <b>And leaving is the deadlock exit:</b> if Kabir leaves or is removed, everyone remaining has drawn and the lock lifts by itself. That is why the skeleton gate correctly has no timer.</p>
+</div>
+
+<!-- ============================================================ 45 A PROPOSAL -->
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd" style="background:linear-gradient(185deg,rgba(255,46,122,.14),rgba(6,6,9,0) 56%);gap:8px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <span class="lab">&#10005;&nbsp;&nbsp;BACK</span><span class="lab">SUGGESTED ROOMS &middot; 1 OF 3</span></div>
+    <div style="display:flex;gap:11px;align-items:center">
+      <div class="ring" style="background:conic-gradient(#FF2E7A 0turn .84turn,rgba(255,255,255,.1) .84turn 1turn)">
+        <b>84%</b></div>
+      <div style="flex:1 1 auto">
+        <div class="cap2" style="font-size:19px">CHASE THE NIGHT</div>
+        <div class="sub" style="font-size:9.5px">by Rhea &middot; <span class="chip">On Our Feet</span></div></div>
+    </div>
+    <div class="sub" style="font-size:9.5px;color:#D8D4E4;line-height:1.4">This room is going hard
+      tonight, and you will not hear much over the music.</div>
+    <div class="card" style="padding:9px 11px;border-color:rgba(255,46,122,.26)">
+      <div class="lab" style="color:#FF7FAC">THE GROUP IN THIS ROOM</div>
+      <div class="cap2" style="font-size:15px;margin-top:4px">YOU WOULD ALL FIT IN</div>
+      <div class="sub" style="font-size:9.5px;margin-top:5px">&middot; They take it as far as you drew
+        it.</div>
+      <div class="sub" style="font-size:9.5px;margin-top:2px">&middot; Louder than Dev drew, at every
+        stop.</div>
+    </div>
+    <div class="card" style="padding:9px 11px;background:linear-gradient(140deg,rgba(255,46,122,.2),
+         rgba(19,19,24,1) 62%)">
+      <div class="lab" style="font-size:7px;margin-bottom:4px">THEIR PLAN</div>
+      <div class="lu" style="padding:4px 0"><span class="t">21:00</span>
+        <div style="flex:1 1 auto"><div class="n">RAASTA, HKV</div></div></div>
+      <div class="lu" style="padding:4px 0"><span class="t">23:30</span>
+        <div style="flex:1 1 auto"><div class="n">SUMMER HOUSE</div></div></div>
+      <div class="lu" style="padding:4px 0"><span class="t">01:30</span>
+        <div style="flex:1 1 auto"><div class="n">KITTY SU</div></div></div>
+    </div>
+    <div class="grow"></div>
+    <div class="card" style="padding:8px 10px;background:#101016">
+      <div class="sub" style="font-size:9px;color:#6C6880">The percentage is
+        <b style="color:#9C98AE">the group&rsquo;s, not yours</b> &mdash; four people are looking at
+        this same card.</div></div>
+    <div class="btn">PROPOSE TO RHEA</div>
+  </div>
+  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>45 &middot; A room, opened from a carousel</b><b>The same view the wheel holder would get, with every control replaced by one button.</b> Request to join, Find rooms and Lock are all gone; <b>Propose</b> is the entire verb a member has. That is the shape of the fix: <b>it adds a verb, not a second driver</b>, so the thing that made co-hosts incoherent does not come back. Two details carry decisions. The read is headed <b>THE GROUP IN THIS ROOM</b> and the ring is <b>the group’s match, not the viewer’s</b> — the shelf is group-ranked, and two people must not be looking at the same card with different numbers on it. And the per-member warning is still there (<i>“louder than Dev drew”</i>), because a group read that hides who it does not suit is worth nothing.</p>
+</div>
+
+<!-- ============================================================ 46 THE PROPOSALS PANEL -->
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd blur" style="gap:7px">
+    <div style="display:flex;justify-content:space-between">
+      <span class="btn o" style="font-size:10px;padding:5px 9px">+ ADD FRIENDS</span>
+      <span class="chip hot">3 PROPOSED</span></div>
+    <div class="srch"><span>&#9906;</span><span>Search through venues and rooms here</span></div>
+    <div class="sec">ROOMS FOR TONIGHT</div>
+    <div class="card" style="height:52px"></div>
+    <div class="card" style="height:52px"></div>
+    <div class="sec">THE NIGHT YOU ALL DREW</div>
+    <div class="card" style="height:80px"></div>
+  </div>
+  <div class="scrim"></div>
+  <div class="sheet" style="top:66px;bottom:124px;display:flex;flex-direction:column;gap:7px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <span class="lab">PROPOSALS &middot; 3</span><span class="chip">&#8211; MINIMISE</span></div>
+    <div class="card" style="padding:8px 10px;display:flex;align-items:center;gap:8px">
+      <div style="width:30px;height:30px;border-radius:6px;flex:0 0 auto;background:linear-gradient(150deg,#FFC247,#4A3200)"></div>
+      <div style="flex:1 1 auto"><div style="font-size:10.5px;font-weight:600">Summer House</div>
+        <div class="sub" style="font-size:8.5px">venue &middot; Dev and Ira</div></div>
+      <span class="chip hot">2</span><span class="lab">&#8964;</span></div>
+    <div class="card" style="padding:8px 10px;display:flex;align-items:center;gap:8px">
+      <div style="width:30px;height:30px;border-radius:6px;flex:0 0 auto;background:linear-gradient(150deg,#FF2E7A,#3A0A1C)"></div>
+      <div style="flex:1 1 auto"><div style="font-size:10.5px;font-weight:600">Chase the Night</div>
+        <div class="sub" style="font-size:8.5px">room &middot; Kabir</div></div>
+      <span class="lab">&#8964;</span></div>
+    <div class="card" style="padding:9px 10px;border-color:rgba(255,194,71,.42);
+         box-shadow:0 0 16px rgba(255,194,71,.1)">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:30px;height:30px;border-radius:6px;flex:0 0 auto;background:linear-gradient(150deg,#9B6BFF,#2A1250)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:10.5px;font-weight:600">Late &amp; Loud</div>
+          <div class="sub" style="font-size:8.5px">preset &middot; Ira</div></div>
+        <span class="lab">&#8963;</span></div>
+      <div class="lu" style="padding:5px 0;margin-top:6px"><span class="t">21:00</span>
+        <div style="flex:1 1 auto"><div class="n">A BIG LOUD BAR</div></div></div>
+      <div class="lu" style="padding:5px 0"><span class="t">23:30</span>
+        <div style="flex:1 1 auto"><div class="n">A FLOOR, AND LATE</div></div></div>
+      <div class="card" style="padding:7px 9px;margin-top:7px;border-color:rgba(255,194,71,.4);
+           background:rgba(255,194,71,.07)">
+        <div class="sub" style="font-size:9px;color:#FFC247"><b>This replaces the night you all
+          drew.</b> Four shapes go, and the stops stop saying whose line they were.</div></div>
+      <div class="row2" style="margin-top:8px"><div class="btn o" style="font-size:11px;padding:7px 0">DISMISS</div>
+        <div class="btn au" style="font-size:11px;padding:7px 0">TAKE THIS NIGHT</div></div>
+    </div>
+    <div class="grow"></div>
+    <div class="sub" style="font-size:8.5px;color:#6C6880">Two people behind one proposal is one row,
+      not two. They sort by how many are behind them.</div>
+  </div>
+  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>46 &middot; The proposals panel — the wheel holder’s side</b>A <b>Proposals button sits top right beside the filters</b>, and each proposal expands to the full room, venue or preset with the holder’s normal controls on it — host, join, find rooms, lock. <b>Dedupe is the rule that keeps this readable</b>: Dev and Ira both proposed Summer House, so it is one row with a <b>2</b> on it, and rows sort by how many people are behind them. The expanded preset carries the one warning this whole mechanism needs: <b>“this replaces the night you all drew.”</b> It does, and silently discarding four people’s drawings is the one way this feature could do real damage. <b>Adopting a preset also loses stop provenance</b>, so the plan card can no longer say <i>“this is your line”</i> — which is why that is in the warning too.</p>
+</div>
+
+<!-- ============================================================ 47 THE COLD OPEN -->
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd" style="gap:9px">
+    <div class="prog"><b style="width:66%;background:#FF2E7A;box-shadow:0 0 10px rgba(255,46,122,.6)"></b></div>
+    <div class="lab">STEP 2 OF 2 &middot; NOTHING ELSE IS ASKED</div>
+    <div class="cap2" style="font-size:23px;line-height:.95">DRAW THE SHAPE<br>OF YOUR NIGHT<br>TO JOIN RHEA&rsquo;S NIGHT</div>
+    <div class="card" style="padding:8px 10px;display:flex;align-items:center;gap:9px">
+      <div class="ppl">
+        <div style="background:linear-gradient(140deg,#FF2E7A,#7A1038);width:24px;height:24px"></div>
+        <div style="background:linear-gradient(140deg,#24E0FF,#0B4A5C);width:24px;height:24px"></div>
+        <div style="background:linear-gradient(140deg,#3BD1A0,#06342A);width:24px;height:24px"></div></div>
+      <div class="sub" style="font-size:9px;flex:1 1 auto">Rhea set the window.
+        <b style="color:#FBFAFF">21:00&ndash;02:00</b>, 12km, &#8377;&#8377;</div></div>
+    <div class="pad" style="min-height:196px">
+      <svg viewBox="0 0 258 196" style="position:absolute;inset:0;width:100%;height:100%">
+        <polyline points="26,152 88,120 150,74 216,40" fill="none" stroke="#FF2E7A"
+          stroke-width="2.5" stroke-linecap="round" opacity=".9"/>
+        <circle cx="26" cy="152" r="13" fill="rgba(255,46,122,.22)" stroke="#FF2E7A" stroke-width="2"/>
+        <circle cx="88" cy="120" r="18" fill="rgba(255,46,122,.22)" stroke="#FF2E7A" stroke-width="2"/>
+        <circle cx="150" cy="74" r="23" fill="rgba(255,46,122,.22)" stroke="#FF2E7A" stroke-width="2"/>
+        <circle cx="216" cy="40" r="11" fill="none" stroke="rgba(255,46,122,.5)" stroke-width="2"
+          stroke-dasharray="4 4"/>
+      </svg>
+      <div class="lab" style="position:absolute;left:10px;bottom:7px;font-size:6.5px">21:00</div>
+      <div class="lab" style="position:absolute;right:10px;top:7px;font-size:6.5px">02:00</div>
+      <div class="sub" style="position:absolute;left:62px;bottom:7px;font-size:8px;color:#6C6880">
+        hold a circle to say how full</div>
+    </div>
+    <div class="sub" style="font-size:9px;color:#6C6880">You are not asked for distance, budget or
+      time. Those belong to whoever started the night.</div>
+    <div class="btn">NEXT</div>
+  </div>
+  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>47 &middot; A friend who had not opened the app</b>Three screens and nothing else: <b>the vibe deck</b> (they have no vibe today, so the app cannot read them at all), <b>this</b>, and then straight into the capsule room. <b>The window, the distance and the budget are Rhea’s and are shown rather than asked</b> — a window belongs to a room and a shape belongs to a person (<code>SKELETON_MERGE_V1</code> §1), so two skeletons drawn over different windows could never be merged. <b>And the five-minute drop timer stops the moment the deck starts.</b> It exists to clear somebody who never opened the app, not to eject somebody mid-deck for doing exactly what they were asked.</p>
+</div>
+
+<!-- ============================================================ 48 THE INVITE -->
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd" style="background:radial-gradient(116% 58% at 50% 16%,rgba(255,46,122,.26),rgba(6,6,9,0) 62%);gap:9px;padding-top:12px">
+    <div style="display:flex;justify-content:flex-end">
+      <span class="lab" style="font-size:12px">&#10005;</span></div>
+    <div class="grow"></div>
+    <div style="text-align:center">
+      <div class="dp" style="width:62px;height:62px;margin:0 auto;background:linear-gradient(140deg,#FF2E7A,#7A1038);
+           box-shadow:0 0 26px rgba(255,46,122,.4)"></div>
+      <div class="lab" style="margin-top:10px">AN INVITE</div>
+      <div class="cap2" style="font-size:25px;margin-top:5px;line-height:.96">RHEA HAS INVITED YOU<br>TO THEIR NIGHT</div>
+      <div class="sub" style="font-size:10px;margin-top:8px;color:#D8D4E4">The Long Table &middot;
+        with Dev, Ira and Kabir</div>
+    </div>
+    <div class="ppl" style="justify-content:center;margin-top:2px">
+      <div style="background:linear-gradient(140deg,#24E0FF,#0B4A5C);width:28px;height:28px"></div>
+      <div style="background:linear-gradient(140deg,#3BD1A0,#06342A);width:28px;height:28px"></div>
+      <div style="background:linear-gradient(140deg,#9B6BFF,#2E1A55);width:28px;height:28px"></div></div>
+    <div class="grow"></div>
+    <div class="card" style="padding:9px 11px">
+      <div class="sub" style="font-size:9px;color:#9C98AE">Accepting asks you for
+        <b style="color:#FBFAFF">your vibe and the shape of your night</b> &mdash; nothing else.
+        Rhea set the window, the distance and the budget.</div></div>
+    <div class="row2"><div class="btn o">DECLINE</div><div class="btn">ACCEPT</div></div>
+    <div class="sub" style="font-size:8.5px;color:#6C6880;text-align:center">Close it and it waits in
+      your notifications for five minutes.</div>
+  </div>
+  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>48 &middot; An invite, and the third answer</b>Opened from the phone notification or from the notifications bar — <b>the same screen either way</b> — and it comes before anything else happens. <b>The old invite had two answers, yes and silence.</b> Accepting dropped you straight into the room with the deck over a blurred background; there was no way to say no. <b>Decline is the thing that was missing</b>, and it frees both sides: the invitee gets their evening back, and the room’s lock lifts at once rather than waiting out a countdown on somebody who already knows the answer. <b>The cross is a third thing again</b> — not now — and it sends the invite back to the notifications bar with the five-minute clock still running. The card above the buttons exists because <b>an invite should say what accepting costs</b>: the vibe and the shape, and never the window, the distance or the budget, which belong to whoever started the night.</p>
+</div>
+
+<!-- ============================================================ 49 THE LOCKED HOME -->
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd" style="gap:9px">
+    <div class="srch blur"><span>&#9906;</span><span>Search people</span></div>
+    <div class="card" style="padding:10px 11px;border-color:rgba(255,46,122,.38);
+         box-shadow:0 0 20px rgba(255,46,122,.12)">
+      <div class="lab" style="color:#FF7FAC">NO VIBE TODAY</div>
+      <div class="cap2" style="font-size:19px;margin-top:5px;line-height:.96">PLAY THE SWIPE GAME<br>TO USE ANY OF THIS</div>
+      <div class="sub" style="font-size:9.5px;margin-top:6px">It takes about a minute and
+        <b style="color:#FBFAFF">there is no timer on it.</b></div>
+      <div class="btn" style="margin-top:9px;width:100%;text-align:center">GET MY VIBE</div>
+    </div>
+    <div class="storyrail blur">
+      <div class="story"><div class="r"><div style="background:#2A2A33"></div></div><span>&nbsp;</span></div>
+      <div class="story"><div class="r"><div style="background:#2A2A33"></div></div><span>&nbsp;</span></div>
+      <div class="story"><div class="r"><div style="background:#2A2A33"></div></div><span>&nbsp;</span></div>
+      <div class="story"><div class="r"><div style="background:#2A2A33"></div></div><span>&nbsp;</span></div>
+      <div class="story"><div class="r"><div style="background:#2A2A33"></div></div><span>&nbsp;</span></div></div>
+    <div class="card" style="padding:8px 10px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline">
+        <span class="lab">NOTIFICATIONS</span>
+        <span class="lab" style="color:#FF7FAC">SEE ALL 9</span></div>
+      <div class="listrow" style="border-top:0;padding-top:5px">
+        <div class="dp pend" style="width:26px;height:26px;background:linear-gradient(140deg,#FF2E7A,#7A1038)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:10px;font-weight:600;color:#9C98AE">Rhea
+          invited you to their night</div>
+          <div class="sub" style="font-size:8.5px;color:#6C6880">The Long Table &middot;
+            <b style="color:#9C98AE">declined</b></div></div></div>
+      <div class="listrow">
+        <div class="dp" style="width:26px;height:26px;background:linear-gradient(140deg,#24E0FF,#0B4A5C)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:10px;font-weight:600">Nitya sent a friend
+          request</div></div>
+        <span class="chip hot">Accept</span></div>
+    </div>
+    <div class="sec blur">WHAT YOUR FRIENDS ARE UP TO</div>
+    <div class="shelf blur">
+      <div class="sq"><div class="tile" style="height:68px;background:#1C1C22"></div></div>
+      <div class="sq"><div class="tile" style="height:68px;background:#1C1C22"></div></div>
+      <div class="sq"><div class="tile" style="height:68px;background:#1C1C22"></div></div></div>
+    <div class="grow"></div>
+    <div class="card" style="padding:8px 10px;background:#101016">
+      <div class="sub" style="font-size:9px;color:#6C6880"><b style="color:#9C98AE">Messages, your
+        profile and settings still work.</b> Everything that needs today&rsquo;s vibe does not.</div></div>
+  </div>
+  <div class="nav"><span class="on">HOME</span><span>PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>49 &middot; Where declining lands you</b><b>Not a new screen — a newly reachable one.</b> This is the state a returning user without today’s vibe already sees, and declining an invite now goes here rather than into the swipe game. <i>The user’s reason, and it is the whole point: “declining the request should lead the user to somewhere and not the swipe game directly since it may be that they don’t want to use the app at the moment.”</i> <b>So the screen asks for nothing and offers one thing.</b> Note the declined invite still sitting in the bar with its outcome on it rather than vanishing — an answered invite is a record, not a deletion. <b>Messages, profile and settings stay live</b>; somebody who just declined may well want to turn off the notification that brought them here, which is why locking them out of settings would be the one genuinely hostile version of this screen. And <b>Play from here asks for the vibe before any filter or the skeleton</b> — the two-layer gate, not a new rule.</p>
+</div>
+
+<!-- ============================================================ 50 THE EXPIRED INVITE -->
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd blur" style="gap:9px">
+    <div class="srch"><span>&#9906;</span><span>Search people</span></div>
+    <div class="storyrail">
+      <div class="story"><div class="r"><div style="background:#2A2A33"></div></div><span>&nbsp;</span></div>
+      <div class="story"><div class="r"><div style="background:#2A2A33"></div></div><span>&nbsp;</span></div>
+      <div class="story"><div class="r"><div style="background:#2A2A33"></div></div><span>&nbsp;</span></div>
+      <div class="story"><div class="r"><div style="background:#2A2A33"></div></div><span>&nbsp;</span></div></div>
+    <div class="card" style="height:120px"></div>
+    <div class="sec">WHAT YOUR FRIENDS ARE UP TO</div>
+    <div class="card" style="height:92px"></div>
+  </div>
+  <div class="scrim"></div>
+  <div class="sheet" style="top:40px;bottom:40px;display:flex;flex-direction:column;gap:7px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <span class="lab">NOTIFICATIONS &middot; 11</span><span class="lab" style="font-size:11px">&#10005;</span></div>
+
+    <div class="lab" style="color:#FF7FAC;font-size:7px">WAITING ON YOU &middot; 2</div>
+    <div class="card" style="padding:7px 9px;border-color:rgba(255,46,122,.3)">
+      <div class="listrow" style="border-top:0;padding:2px 0">
+        <div class="dp" style="width:26px;height:26px;background:linear-gradient(140deg,#FF2E7A,#7A1038)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:10px;font-weight:600">Rhea invited you to
+          their night</div>
+          <div class="sub" style="font-size:8.5px">The Long Table &middot;
+            <b style="color:#FF7FAC">4:12 left</b></div></div>
+        <span class="chip hot">OPEN</span></div>
+    </div>
+    <div class="card" style="padding:7px 9px">
+      <div class="listrow" style="border-top:0;padding:2px 0">
+        <div class="dp" style="width:26px;height:26px;background:linear-gradient(140deg,#24E0FF,#0B4A5C)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:10px;font-weight:600">Nitya sent a friend
+          request</div></div>
+        <span class="chip hot">Accept</span></div>
+    </div>
+
+    <div class="lab" style="font-size:7px;margin-top:3px">EARLIER TONIGHT</div>
+    <div class="card" style="padding:8px 9px;background:#101016">
+      <div class="listrow" style="border-top:0;padding:2px 0">
+        <div class="dp pend" style="width:26px;height:26px;background:linear-gradient(140deg,#FFC247,#6B4A00)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:10px;font-weight:600;color:#9C98AE">Dev
+          invited you to their night</div>
+          <div class="sub" style="font-size:8.5px;color:#6C6880">Thursday Thing &middot;
+            <b style="color:#9C98AE">expired 21:40</b></div></div>
+        <span class="lab">&#8963;</span></div>
+      <div style="border-top:1px solid rgba(255,255,255,.07);margin-top:6px;padding-top:7px">
+        <div class="cap2" style="font-size:15px;line-height:.98">THIS NIGHT STARTED<br>WITHOUT YOU</div>
+        <div class="sub" style="font-size:9px;margin-top:5px;color:#D8D4E4">You didn&rsquo;t answer
+          inside five minutes, so <b style="color:#FBFAFF">you came off the room</b>. It went public
+          at 21:52 &mdash; you can still ask to join like anybody else.</div>
+        <div class="row2" style="margin-top:8px">
+          <div class="btn o" style="font-size:10.5px;padding:6px 0">MESSAGE DEV</div>
+          <div class="btn o" style="font-size:10.5px;padding:6px 0">FIND THE ROOM</div></div>
+        <div class="sub" style="font-size:8px;margin-top:6px;color:#6C6880">Dev saw you drop off the
+          list.</div>
+      </div>
+    </div>
+    <div class="card" style="padding:7px 9px;background:#101016">
+      <div class="listrow" style="border-top:0;padding:2px 0">
+        <div class="dp pend" style="width:26px;height:26px;background:linear-gradient(140deg,#9B6BFF,#2E1A55)"></div>
+        <div style="flex:1 1 auto"><div style="font-size:10px;font-weight:600;color:#9C98AE">Zoya
+          invited you to their night</div>
+          <div class="sub" style="font-size:8.5px;color:#6C6880">Saturday &middot;
+            <b style="color:#9C98AE">you declined</b></div></div></div>
+    </div>
+    <div class="grow"></div>
+    <div class="sub" style="font-size:8.5px;color:#6C6880">Anything with a clock on it stays at the
+      top and is never the row that gets cut. All of this clears when the night is over.</div>
+  </div>
+  <div class="nav"><span class="on">HOME</span><span>PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>50 &middot; See all &mdash; the notifications screen</b><b>The home screen shows three and nothing more</b>; this opens over it, scrolls, and holds the rest. Split into <b>waiting on you</b> and <b>earlier tonight</b>, because those are two different jobs: one is a queue, the other is a record. The expired invite from entry 193 expands here rather than on the home screen. <b>One rule keeps the truncation from doing damage: anything with a clock on it pins to the top and is never the row that gets cut.</b> Strict recency would let three friend requests push a live invite off the home screen &mdash; and that is the one row four other people are waiting on, with five minutes to run. <b>The same precedence idea as the status bar</b>, where a locked plan beats everything and the most recent state wins below it.</p>
+</div>
+
+<!-- ============================================================ 51 CONFIDENCE MARKS -->
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd" style="gap:4px">
+    <div class="lab">CONFIDENCE ON A METER</div>
+    <div class="sub" style="font-size:9px;color:#D8D4E4;line-height:1.35">Seven ways to say
+      <b style="color:#FBFAFF">this band came from the venue&rsquo;s type, not from what anyone
+      wrote about it.</b> Same value in every row.</div>
+    <div style="margin-top:7px">
+      <div class="lab" style="font-size:7px;color:#FBFAFF">A &middot; HATCHED</div>
+      <div class="mtr"><span class="k">TALK</span><span class="t"><i class="hatch" style="left:14%;right:52%"></i></span><span class="w">only at<br>the first</span></div>
+      <div class="sub" style="font-size:8px;color:#6C6880;line-height:1.3">Reads as provisional. Risk: looks like a loading state.</div>
+    </div>
+    <div style="margin-top:7px">
+      <div class="lab" style="font-size:7px;color:#FBFAFF">B &middot; HOLLOW</div>
+      <div class="mtr"><span class="k">TALK</span><span class="t"><i class="hollow" style="left:14%;right:52%"></i></span><span class="w">only at<br>the first</span></div>
+      <div class="sub" style="font-size:8px;color:#6C6880;line-height:1.3">Outline, no fill. Clearest at this size, and costs nothing.</div>
+    </div>
+    <div style="margin-top:7px">
+      <div class="lab" style="font-size:7px;color:#FBFAFF">C &middot; WIDENED</div>
+      <div class="mtr"><span class="k">TALK</span><span class="t"><i class="halo" style="left:6%;right:42%"></i><i style="left:14%;right:52%"></i></span><span class="w">only at<br>the first</span></div>
+      <div class="sub" style="font-size:8px;color:#6C6880;line-height:1.3">Uncertainty as a wider range. <b>Collides &mdash; width already means the span across stops.</b></div>
+    </div>
+    <div style="margin-top:7px">
+      <div class="lab" style="font-size:7px;color:#FBFAFF">D &middot; PIPS</div>
+      <div class="mtr"><span class="k">TALK</span><span class="t"><i class="" style="left:14%;right:52%"></i></span><span class="w">only at<br>the first</span><span class="pips">&#9679;&#9675;&#9675;</span></div>
+      <div class="sub" style="font-size:8px;color:#6C6880;line-height:1.3">Matches the profile screen&rsquo;s preference dots. Risk: a number by another name.</div>
+    </div>
+    <div style="margin-top:7px">
+      <div class="lab" style="font-size:7px;color:#FBFAFF">E &middot; DIMMED</div>
+      <div class="mtr"><span class="k">TALK</span><span class="t"><i class="dim" style="left:14%;right:52%"></i></span><span class="w">only at<br>the first</span></div>
+      <div class="sub" style="font-size:8px;color:#6C6880;line-height:1.3">Cheapest, no new vocabulary. Risk: reads as disabled.</div>
+    </div>
+    <div style="margin-top:7px">
+      <div class="lab" style="font-size:7px;color:#FBFAFF">F &middot; SOURCE LABEL</div>
+      <div class="mtr"><span class="k">TALK</span><span class="t"><i class="" style="left:14%;right:52%"></i></span><span class="w">only at<br>the first</span><span class="src">FROM ITS<br>TYPE</span></div>
+      <div class="sub" style="font-size:8px;color:#6C6880;line-height:1.3">Unambiguous. Costs a fourth text element on every row.</div>
+    </div>
+    <div style="margin-top:7px">
+      <div class="lab" style="font-size:7px;color:#FBFAFF">G &middot; PRIOR NOTCH</div>
+      <div class="mtr"><span class="k">TALK</span><span class="t"><i class="" style="left:14%;right:52%"></i><b class="notch" style="left:31%"></b></span><span class="w">only at<br>the first</span></div>
+      <div class="sub" style="font-size:8px;color:#6C6880;line-height:1.3">The white notch is the type&rsquo;s own value. When the band sits on it, nothing moved it.</div>
+    </div>
+    <div class="grow"></div>
+    <div class="card" style="padding:8px 10px;border-color:rgba(255,46,122,.3)">
+      <div class="lab" style="color:#FF7FAC">MINE IS B, WITH ONE FOOTER LINE</div>
+      <div class="sub" style="font-size:9px;margin-top:4px">One sentence under the block beats four
+        labels on four rows &mdash; <i>&ldquo;hollow bands are read from the venue&rsquo;s type,
+        not from what people wrote.&rdquo;</i> <b>G is the most informative and the hardest to
+        explain</b>; it is the one to keep in reserve.</div>
+    </div>
+  </div>
+  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>51 &middot; Confidence on a meter &mdash; seven options</b>The problem: <b>a band read from forty review mentions and a band read from a hand-written type prior render identically</b>, and the second is a guess wearing the first one’s clothes. Every row here shows the same value. <b>C is the instructive failure</b> — widening a band is the semantically perfect way to show uncertainty, and it is unusable here because <b>width already means the span across the stops</b>. <b>D borrows the profile screen’s preference dots</b>, which is consistent but reintroduces a number after we spent the whole meter design removing one. <b>G is the most honest</b>: it shows the type’s own value as a notch, so a band sitting on its notch visibly says <i>nothing moved this</i>. It is also the one that needs a sentence of explanation, which is why it is held rather than chosen.</p>
+</div>
+
+<!-- ============================================================ 52 METERS APPLIED -->
+<div class="unit">
+<div class="ph v8">  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd" style="gap:7px">
+    <div class="lab">HOW A NIGHT READS</div>
+    <div class="sub" style="font-size:9px;color:#D8D4E4;line-height:1.35">Five meters, three exact
+      readouts, five badges. <b style="color:#FBFAFF">None of them is a factor name</b>, and that is
+      the point.</div>
+    <div class="card" style="padding:8px 10px">
+      <div class="mtr"><span class="k w5">HOW LOUD</span><span class="t"><i style="left:34%;right:8%"></i></span><span class="w">quiet, then<br>loud</span></div>
+      <div class="mtr"><span class="k w5">HOW BUSY</span><span class="t"><i style="left:40%;right:12%"></i></span><span class="w">fills as it<br>goes</span></div>
+      <div class="mtr"><span class="k w5">HOW IT LOOKS</span><span class="t"><i class="hollow" style="left:46%;right:20%"></i></span><span class="w">nice all<br>the way</span></div>
+      <div class="mtr"><span class="k w5">HOW DRESSED UP</span><span class="t"><i class="hollow" style="left:18%;right:48%"></i></span><span class="w">nobody&rsquo;s<br>dressing up</span></div>
+      <div class="mtr"><span class="k w5"><span style="color:#FF7FAC">&#8226;</span> WHAT IT COSTS</span><span class="t"><i style="left:30%;right:24%"></i></span><span class="w">one cheap,<br>one steep</span></div>
+      <div class="ro">
+        <div><div class="lab" style="font-size:6.5px">RUNS UNTIL</div><div class="rv">02:00</div></div>
+        <div><div class="lab" style="font-size:6.5px">TRAVELS</div><div class="rv">3.4 KM</div></div>
+        <div style="text-align:right"><div class="lab" style="font-size:6.5px">THE ARC</div><div class="spark" style="margin-top:2px"><i style="height:4px"></i><i style="height:9px"></i><i style="height:14px"></i></div></div>
+      </div>
+      <div class="bdg" style="margin-top:7px"><span class="on">A LIVE ACT</span><span class="on">A FLOOR</span><span>OUTDOORS</span><span class="on">A PROPER MEAL</span><span>SOMETHING TO PLAY</span></div>
+      <div class="sub" style="font-size:7.5px;color:#55525F;margin-top:7px;line-height:1.35"><b style="color:#9C98AE">Hollow bands are read from the venue&rsquo;s type</b>, not from what people wrote. <b style="color:#FF7FAC">&#8226;</b> is exact.</div>
+    </div>
+    <div class="card" style="padding:9px 11px">
+      <div class="lab" style="color:#FF7FAC">HOW BUSY IS THE ONE THAT READS THE CLOCK</div>
+      <div class="sub" style="font-size:9px;margin-top:5px">Each stop takes the value for
+        <b style="color:#FBFAFF">its own hour and day</b> &mdash; two slots, cut at
+        <b style="color:#FBFAFF">22:00</b> and <b style="color:#FBFAFF">Fri&ndash;Sat</b> against the
+        rest &mdash; and the span is taken after that. <b style="color:#9C98AE">One row, not two.</b>
+        The split is in the data, not on the screen.</div>
+    </div>
+    <div class="grow"></div>
+    <div class="card" style="padding:9px 11px;background:#101016">
+      <div class="sub" style="font-size:9px;color:#6C6880">Retired from this block:
+        <b style="color:#9C98AE">can you hear each other</b> and <b style="color:#9C98AE">on your
+        feet</b>. Both describe a room rather than a night, and both were read from the venue type
+        rather than its reviews <b style="color:#9C98AE">78%</b> and <b style="color:#9C98AE">96%</b>
+        of the time. <b style="color:#FBFAFF">They are unchanged everywhere else in the app.</b></div>
+    </div>
+  </div>
+  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>52 &middot; The block, as the reference</b><b>Not one of these is a factor name</b>, and that is the whole change (entry 198). A factor is what the engine reasons with; a meter is a sentence a person would say about a night. <b>Three of the readouts are exact</b> — how late it runs, how far it travels, what it costs — because they come from hours, coordinates and price level rather than from reviews, so <b>they can never be a guess and never carry the hollow mark.</b> <b>How busy is the only one that reads the clock</b>: each stop takes its own slot, cut at 22:00 and Fri–Sat, and the span is taken afterwards — <b>one row, not two. The split lives in the data, not on the screen</b>, which is the correction this drawing makes to the one before it.</p>
+</div>
+
+<!-- ============================================================ 53 THE DORMANT PLAN -->
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd" style="gap:7px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <span class="lab">THE LONG TABLE&rsquo;S PLAN</span>
+      <span class="chip">LOCKED</span></div>
+    <div class="card" style="padding:9px 11px;border-color:rgba(255,46,122,.3);
+         box-shadow:0 0 18px rgba(255,46,122,.1);text-align:center">
+      <div class="lab" style="font-size:6.5px">GOES LIVE IN</div>
+      <div class="cap2" style="font-size:30px;margin-top:2px">2 : 47 : 10</div>
+      <div class="sub" style="font-size:8.5px;margin-top:3px">First stop 21:00 &middot; Kwality, CP</div></div>
+    <div class="card" style="padding:9px 11px">
+      <div class="lu" style="padding:5px 0"><span class="t">21:00</span><div style="flex:1 1 auto">
+        <div class="n">KWALITY, CP</div>
+        <div class="m" style="color:#3BD1A0">+ Dev &mdash; you can hear each other</div>
+        <div class="m" style="color:#3BD1A0">+ Ira &mdash; the food is the point here</div>
+        <div class="m" style="color:#FFC247">&minus; Tables go days ahead at the weekend</div></div></div>
+      <div class="lu" style="padding:5px 0"><span class="t">23:00</span><div style="flex:1 1 auto">
+        <div class="n">RAASTA, HKV</div>
+        <div class="m" style="color:#3BD1A0">+ Rhea &mdash; this is your line</div>
+        <div class="m" style="color:#FFC247">&minus; Dev came out to talk; nobody will hear anyone</div></div></div>
+      <div class="lu" style="padding:5px 0"><span class="t">01:00</span><div style="flex:1 1 auto">
+        <div class="n">SUMMER HOUSE</div>
+        <div class="m" style="color:#3BD1A0">+ Usually an act on, and a floor</div></div></div>
+    </div>
+    <div class="card" style="padding:8px 10px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span class="lab">WHO IS COMING &middot; 4</span><span class="lab">&#9671; PLAN INSIGHTS</span></div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+        <div class="ppl">
+          <div style="background:linear-gradient(140deg,#FF2E7A,#7A1038);width:28px;height:28px"></div>
+          <div style="background:linear-gradient(140deg,#24E0FF,#0B4A5C);width:28px;height:28px"></div>
+          <div style="background:linear-gradient(140deg,#3BD1A0,#06342A);width:28px;height:28px"></div>
+          <div style="background:linear-gradient(140deg,#9B6BFF,#2E1A55);width:28px;height:28px"></div></div>
+        <div class="sub" style="font-size:9px;flex:1 1 auto">Rhea, you, Ira, Dev</div></div>
+    </div>
+    <div class="grow"></div>
+    <div class="card" style="padding:8px 10px;background:#101016">
+      <div class="sub" style="font-size:8.5px;color:#6C6880">Nothing here is live yet. The distance
+        figure and the directions appear when the night does.</div></div>
+    <div class="btn o" style="text-align:center;font-size:12px;border-color:rgba(255,255,255,.18)">
+      DITCH THIS PLAN</div>
+  </div>
+  <div class="bar"><span class="k">THE LONG TABLE&rsquo;S PLAN</span>
+    <span class="v">LOCKED &middot; 2:47 TO GO</span></div>
+  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>53 &middot; The plan, dormant</b>The answer to entry 200’s open item. <b>The lock is the moment a night is settled, not the moment it starts</b> — a group can lock at six for a nine o’clock first stop and go back to work — so this screen holds the hours between, and it <b>reads</b> rather than tracks. The stops carry <b>the plan card’s own pros and cons</b>, the members are listed, and the countdown is the only live thing on it. <b>Nothing about the night is rendered yet</b>: the user distance figure and the directions appear when the plan does, because five compass sectors for people sitting at home is noise. <b>Ditch is here and only here</b> — before the lock you simply leave the room; after it, this is the exit, and it is the one thing that can reopen a locked plan.</p>
+</div>
+
+<!-- ============================================================ 54 PLAN INSIGHTS -->
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd" style="gap:7px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <span class="lab">&#8249;&nbsp;&nbsp;THE LONG TABLE</span><span class="lab">PLAN INSIGHTS</span></div>
+    <div class="cap2" style="font-size:21px">HOW TO TAKE<br>THIS NIGHT</div>
+    <div class="card" style="padding:9px 11px">
+      <div class="lab" style="color:#FF7FAC">WHERE TO SIT</div>
+      <div class="sub" style="font-size:9.5px;margin-top:5px;color:#D8D4E4">You face outward as a
+        group, so <b style="color:#FBFAFF">ask for the bar rail at Kwality</b>, not a corner booth.</div>
+      <div class="sub" style="font-size:9px;margin-top:4px">Raasta takes no bookings &mdash; go before
+        23:15 or stand.</div>
+      <div class="sub" style="font-size:8px;margin-top:5px;color:#6C6880">From the group&rsquo;s
+        <b style="color:#9C98AE">AFFIL</b>, which is about the four of you and never about the venue.</div>
+    </div>
+    <div class="card" style="padding:9px 11px">
+      <div class="lab" style="color:#FF7FAC">WHO NEEDS WHAT, AND WHERE</div>
+      <div class="lu" style="padding:5px 0;border-top:0"><span class="t" style="width:46px">KWALITY</span>
+        <div style="flex:1 1 auto"><div class="m">Dev gets his table here. It is the only stop he can
+          hear anyone at.</div></div></div>
+      <div class="lu" style="padding:5px 0"><span class="t" style="width:46px">RAASTA</span>
+        <div style="flex:1 1 auto"><div class="m">Rhea&rsquo;s line. Let her set the pace and the
+          night follows.</div></div></div>
+      <div class="lu" style="padding:5px 0"><span class="t" style="width:46px">SUMMER</span>
+        <div style="flex:1 1 auto"><div class="m">Ira came for the act. This is the stop that has one.</div></div></div>
+    </div>
+    <div class="card" style="padding:11px;text-align:center;border-color:rgba(255,46,122,.4);
+         background:linear-gradient(150deg,rgba(255,46,122,.16),rgba(19,19,24,1) 70%)">
+      <div class="lab">THE DRINK OF THE NIGHT</div>
+      <div class="cap2" style="font-size:24px;margin-top:5px">A LONG ISLAND</div>
+      <div class="sub" style="font-size:9px;margin-top:5px;color:#D8D4E4">Loud, builds, and nobody is
+        sitting down. It matches the night, not the menu.</div>
+      <div class="sub" style="font-size:8px;margin-top:6px;color:#6C6880">One per night, for the plan
+        and not per venue. We do not know what any bar stocks.</div>
+    </div>
+    <div class="grow"></div>
+    <div class="sub" style="font-size:8.5px;color:#6C6880;text-align:center">Read from the group&rsquo;s
+      chemistry and everyone&rsquo;s vibe. It never picked the venues.</div>
+  </div>
+  <div class="nav"><span>HOME</span><span class="on">PLAY</span><span>MESSAGES</span></div>
+</div>
+<p class="cap"><b>54 &middot; Plan insights</b><b>Mostly a consolidation, and that is the point.</b> The seating suggestion and the who-needs-what lines already existed <b>per stop on the plan card</b>; gathering them into one panel lets them read across the whole night — <i>“ask for the bar rail at Kwality, Raasta takes no bookings”</i> — which no single stop could say. <b>The architectural line holds and the footer states it</b>: this is read from chemistry and vibes, and <b>chemistry never picked the venues</b>. Advising how to use a room you have already chosen is not the same as choosing it. <b>The drink of the night is one per plan, never per venue</b> — it matches the night’s character rather than a menu, because <b>we hold no menu data for any venue and are not going to for the first release.</b> It is a flourish, and it is cheap precisely because it claims nothing about the bar.</p>
+</div>
+
+<!-- ============================================================ 55 A DITCH -->
+<div class="unit">
+<div class="ph v8">
+  <div class="sb"><span>9:41</span><span>5G</span></div>
+  <div class="bd" style="gap:8px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <span class="lab">&#8249;&nbsp;&nbsp;THE LONG TABLE</span><span class="lab">4 &rarr; 3</span></div>
+    <div class="grow"></div>
+    <div style="display:flex;gap:8px;align-items:flex-end">
+      <div class="dp" style="width:24px;height:24px;background:linear-gradient(140deg,#24E0FF,#0B4A5C);flex:0 0 auto"></div>
+      <div class="card" style="padding:8px 10px;flex:1 1 auto">
+        <div class="sub" style="font-size:9.5px;color:#D8D4E4">Still on for 21:00?</div></div></div>
+    <div class="card" style="padding:9px 11px;background:#101016;text-align:center">
+      <div class="sub" style="font-size:9.5px;color:#9C98AE"><b style="color:#FBFAFF">Dev has ditched
+        the plan.</b></div>
+      <div class="sub" style="font-size:8.5px;margin-top:4px;color:#6C6880">He is out of the chat and
+        off the plan. The stops have not changed.</div>
+    </div>
+    <div class="card" style="padding:10px 11px;border-color:rgba(255,46,122,.34)">
+      <div class="lab" style="color:#FF7FAC">YOU ARE THE HOST &middot; THREE WAYS ON</div>
+      <div class="btn o" style="text-align:center;font-size:11.5px;margin-top:8px;width:100%">
+        HOST TO FILL THE GAP</div>
+      <div class="sub" style="font-size:8.5px;margin-top:4px;color:#6C6880">The plan goes public and
+        somebody takes the place. <b style="color:#9C98AE">It stops being a locked plan and becomes a
+        room again</b> &mdash; voice, the chat, and you lock it a second time.</div>
+      <div class="btn o" style="text-align:center;font-size:11.5px;margin-top:9px;width:100%">
+        REBUILD THE NIGHT</div>
+      <div class="sub" style="font-size:8.5px;margin-top:4px;color:#6C6880">Back to the capsule with
+        the three of you. <b style="color:#9C98AE">The skeletons survive; the venues and the plan do
+        not.</b></div>
+      <div class="btn" style="text-align:center;font-size:11.5px;margin-top:9px;width:100%">
+        CONTINUE WITH THREE</div>
+      <div class="sub" style="font-size:8.5px;margin-top:4px;color:#6C6880">Nothing changes but the
+        people, the chemistry lines and the insights.</div>
+    </div>
+    <div class="srch" style="margin-top:2px"><span>&#9998;</span><span>Message</span></div>
+  </div>
+  <div class="nav"><span>HOME</span><span>PLAY</span><span class="on">MESSAGES</span></div>
+</div>
+<p class="cap"><b>55 &middot; A ditch, and the host’s three ways on</b><b>Ditching is the one thing that can reopen a locked plan</b>, and it reopens it only for the host and only until the night goes live. The message lands in the group chat because that is where the group is now; <b>the three buttons are the host’s alone</b>. <b>Host to fill the gap is the biggest of the three</b> — the active plan screen disappears and a hosted room takes its place, with everything a hosted room has: voice back on, joiners entering the chat, and <b>a second lock</b>. <b>Rebuild keeps the skeletons and throws away the night</b>, which is the honest version: the shapes are still true, the venues were chosen for four people and there are three. <b>Dev leaves the chat as well as the plan</b> — otherwise he sits in a conversation about a night he has opted out of.</p>
 </div>
 
 </div></body></html>

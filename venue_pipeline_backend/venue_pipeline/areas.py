@@ -36,27 +36,42 @@ def load_areas(path: Path) -> list[Area]:
 
 def geocode_missing(areas: list[Area], user_agent: str, sleep_seconds: float = 1.05) -> list[Area]:
     headers = {"User-Agent": user_agent, "Accept": "application/json"}
+    missing: list[Area] = []
     for index, area in enumerate(areas):
         if area.latitude is not None and area.longitude is not None:
             continue
+        area.geocode_attempts = []
         query = ", ".join(part for part in (area.area, area.city, area.state, "India") if part)
         params = urllib.parse.urlencode({"format": "jsonv2", "q": query, "limit": 1})
         request = urllib.request.Request(f"https://nominatim.openstreetmap.org/search?{params}", headers=headers)
         try:
             with urllib.request.urlopen(request, timeout=30) as response:
                 results = json.loads(response.read().decode("utf-8"))
-        except Exception:
-            # Public OSM geocoding can reject automated clients. Google is a bounded
-            # fallback for the manually supplied area seed; Overpass remains the
-            # optional venue cross-check stage after coordinates exist.
-            return geocode_with_google(areas)
-        if not results:
-            raise AreaError(f"Nominatim returned no coordinate for {query}")
-        area.latitude = float(results[0]["lat"])
-        area.longitude = float(results[0]["lon"])
-        area.geocode_source = "OpenStreetMap Nominatim"
+            if results:
+                area.latitude = float(results[0]["lat"])
+                area.longitude = float(results[0]["lon"])
+                area.geocode_source = "OpenStreetMap Nominatim"
+                area.geocode_attempts.append("nominatim:success")
+            else:
+                area.geocode_attempts.append("nominatim:no_result")
+                missing.append(area)
+        except Exception as exc:
+            area.geocode_attempts.append(f"nominatim:error:{type(exc).__name__}")
+            missing.append(area)
         if index < len(areas) - 1:
             time.sleep(sleep_seconds)
+    if missing:
+        try:
+            geocode_with_google(missing)
+        except Exception as exc:
+            for area in missing:
+                area.geocode_attempts = (area.geocode_attempts or []) + [f"google_text:unavailable:{type(exc).__name__}"]
+    still_missing = [area for area in areas if area.latitude is None or area.longitude is None]
+    if still_missing:
+        geocode_with_overpass(still_missing, user_agent)
+    unresolved = [area.area for area in areas if area.latitude is None or area.longitude is None]
+    if unresolved:
+        raise AreaError("Unable to resolve coordinates after Nominatim, Google Text Search, and Overpass: " + ", ".join(unresolved))
     return areas
 
 
@@ -71,13 +86,16 @@ def geocode_with_google(areas: list[Area]) -> list[Area]:
         try:
             results = client.text_search(query)
         except GooglePlacesError as exc:
-            raise AreaError(f"Google area fallback failed for {query}: {exc}") from exc
+            area.geocode_attempts = (area.geocode_attempts or []) + [f"google_text:error:{str(exc)[:120]}"]
+            continue
         if not results or not results[0].get("location"):
-            raise AreaError(f"Google returned no coordinate for {query}")
+            area.geocode_attempts = (area.geocode_attempts or []) + ["google_text:no_result"]
+            continue
         location = results[0]["location"]
         area.latitude = float(location["latitude"])
         area.longitude = float(location["longitude"])
         area.geocode_source = "Google Places Text Search fallback"
+        area.geocode_attempts = (area.geocode_attempts or []) + ["google_text:success"]
         if index < len(areas) - 1:
             time.sleep(0.05)
     return areas
@@ -145,6 +163,7 @@ def geocode_with_overpass(areas: list[Area], user_agent: str) -> list[Area]:
             continue
         _, area.latitude, area.longitude = sorted(choices, reverse=True)[0]
         area.geocode_source = "OpenStreetMap Overpass fallback"
+        area.geocode_attempts = (area.geocode_attempts or []) + ["overpass:success"]
     if unresolved:
         raise AreaError("No OSM coordinate found for: " + ", ".join(unresolved))
     return areas

@@ -52,6 +52,18 @@ V5 had two. There are three.
 | `ENRG` | energy | a calm night | a night that goes hard | 18 |
 | `AFFIL` | who you face | the room — meeting people | your own table, your own people | 16 |
 | `TALK` | can you hear each other | music you can't talk over | a night you can actually talk | 14 |
+
+> **`TALK` does not split, decided 2026-10-14 (entry 203).** The open question was whether it is a
+> fact about the room (can you hear each other) or a fact about the person. **It is the person.**
+>
+> **The user: "a person with high focus and high talk means they want to have discussions about the
+> event they're for, but a person with high focus low talk means they'd rather just have company
+> undisturbed while they observe the performance."**
+>
+> **That reading makes the factor more useful, not less** — and it generalises. **Two factors read
+> together say something neither says alone**, which is the chemistry lines' own move pointed at one
+> person instead of a room. **Those pairs belong on a profile**, as what somebody reads when they
+> scroll past you. Held in `REMINDERS.md` as cross-factor inference lines.
 | `FOCUS` | is there a main event | no main event; we are the thing | a gig, a set, a match, a screening | 14 |
 | `MOVE` | on your feet | sat down all night | somewhere with a floor | 12 |
 | `SPONT` | how the plan happens | booked on Tuesday | decided at nine | 10 |

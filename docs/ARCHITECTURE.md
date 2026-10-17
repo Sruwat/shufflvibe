@@ -34,8 +34,8 @@ material and is not imported by runtime code.
 ## Legacy recovery material
 
 `archive/legacy/app_code_snapshot/` is a recovery copy of the older duplicate app tree. It is not
-an active runtime source and must not be used for builds. The old duplicate root `app_code/` is
-being retired after its locked build artifacts are released.
+an active runtime source and must not be used for builds. The old duplicate root `app_code/` has
+been removed from the active repository layout.
 
 ## Validation gates before merging restructuring work
 

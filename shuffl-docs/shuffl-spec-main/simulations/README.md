@@ -8,6 +8,14 @@ venue pool; the traces they print are the ones quoted in `decisions/DECISIONS.md
 | `give.py` | the AFFIL-as-give prototype on Chemistry V2 (`specs/AFFIL_AS_GIVE.md`) — an exploration | exploration |
 | `dayflow.py` | **a user swipes the identity deck and gets a vibe** - the adaptive deck, the swipe-to-score table, latency firmness, the ranking key and the name, end to end | **current** |
 | `assess.py` | **the swipe scorer** - swipes to a scored profile and a name. The runnable reference for ASSESSMENT_ENGINE | **current** |
+| `midband.py` | **is a 50 a reading or an absence** - where the model honours it and where it does not | **current** |
+| `midsweep.py` | **the mid-band change across 4,000 rooms** - what it moves, and the two things that must move with it | **current** |
+| `peoplematch.py` | **matching people** - the chemistry engine against plain similarity, and the cases where they invert | **current** |
+| `meterband.py` | **the build-my-own meters** - blindness against jitter, what the span buys, and how often the hollow mark is on | **current** |
+| `roomrank.py` | **ranking rooms** - the plan against the shape, and what the join gates would delete at launch volume | **current** |
+| `roomfit.py` | **you against a room** - the headline from match and disturbance, and the axis lines | **current** |
+| `roomline.py` | **the room line** - one sentence describing a room, from the vector chem4 already produces | **current** |
+| `coordtag.py` | **coordinate tags against factor scores** - where quantising starts to win, and how far away that is | **current** |
 | `prefgate.py` | **the test that retired within-factor chemistry** - feasibility against the multiplier over 4,000 stops | **current** |
 | `prefserve.py` | **preference service** - the Kwality HERIT test, silence-as-absence, and within-factor chemistry | **current** |
 | `pipeline.py` | **THE PIPELINE, runnable** - `discover` / `enrich` / `build`. Cached, retried, cost-estimating. See `specs/VENUE_BUILD_RUNBOOK.md` | **current** |

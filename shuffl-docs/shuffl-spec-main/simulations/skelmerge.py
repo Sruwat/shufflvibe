@@ -55,7 +55,9 @@ def contagion(values, axis):
     return lvl, '%ss lead, share %.2f, mean %.0f' % (lead, share, base)
 
 # ------------------------------------------------------------------ stage 1: the count
-SIZE_CEILING = {2: 5, 3: 4, 4: 4, 5: 3}      # Steiner: getting five people out of a bar is not linear
+SIZE_CEILING = {1: 99, 2: 5, 3: 4, 4: 4, 5: 3}   # Steiner: getting five people out of a bar is
+                                                 # not linear. 1 is uncapped (entry 202) - a solo
+                                                 # drawer is capped by the window alone
 
 def merge_count(drawings, ceiling):
     """A COUNT is a divisible quantity, so a split is split rather than won: nobody who drew a

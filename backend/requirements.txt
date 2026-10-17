@@ -1,2 +1,8 @@
 # The pipeline uses Python's standard library only.
 # Optional: install requests if you want to replace urllib with a project HTTP client.
+fastapi>=0.110
+uvicorn[standard]>=0.29
+sqlalchemy>=2.0
+pymysql>=1.1
+openpyxl>=3.1
+python-multipart>=0.0.9

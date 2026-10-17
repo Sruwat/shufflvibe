@@ -9,6 +9,7 @@ import {
 } from "./fullEngine";
 import * as SecureStore from "expo-secure-store";
 import { splitSecureStoreValue } from "./secureStoreChunks";
+import { Platform } from "react-native";
 export type FeatureMode =
   | "venue"
   | "customOuting"
@@ -50,8 +51,19 @@ export type DemoPlanState = {
   chemistry?: Record<string, unknown>;
 };
 export type DemoCapsuleState = {
+  id?: string;
+  roomId?: string;
+  status?: "awaiting_approval" | "approved";
   members: string[];
   approvals: Record<string, boolean>;
+};
+export type SkeletonState = {
+  stops: number;
+  energy: number;
+  crowd: number;
+  tags: string[];
+  stopDurations: number[];
+  updatedAt: string;
 };
 type Screen =
   | "welcome"
@@ -89,6 +101,7 @@ type State = {
   room: DemoRoomState;
   plan: DemoPlanState;
   capsule: DemoCapsuleState;
+  skeleton: SkeletonState;
   locked: boolean;
   postVibeProfile: boolean;
   userName: string;
@@ -122,6 +135,14 @@ const initialCapsule = (): DemoCapsuleState => ({
   members: ["Bela", "Chirag"],
   approvals: { Bela: false, Chirag: false },
 });
+const initialSkeleton = (): SkeletonState => ({
+  stops: 1,
+  energy: 50,
+  crowd: 50,
+  tags: [],
+  stopDurations: [1],
+  updatedAt: "",
+});
 const STORAGE_KEY = "shuffl.frontend-demo.v1";
 const STORAGE_MANIFEST_KEY = `${STORAGE_KEY}.manifest`;
 const STORAGE_PART_PREFIX = `${STORAGE_KEY}.part`;
@@ -139,6 +160,7 @@ type SavedState = Pick<
   | "plan"
   | "room"
   | "capsule"
+  | "skeleton"
   | "activeMusic"
 >;
 const today = () => {
@@ -148,6 +170,31 @@ const today = () => {
 let saveTimer: ReturnType<typeof setTimeout> | undefined;
 let saveChain = Promise.resolve();
 let storageRevision = 0;
+
+// Expo SecureStore is native-only. The web preview needs a real persistence
+// adapter as well, otherwise every reload logs a restore failure and starts a
+// fresh session. Keep the same keys and chunking semantics on web via the
+// browser's local storage; native builds continue using SecureStore.
+async function storageGet(key: string) {
+  if (Platform.OS === "web") return globalThis.localStorage?.getItem(key) ?? null;
+  return SecureStore.getItemAsync(key);
+}
+
+async function storageSet(key: string, value: string) {
+  if (Platform.OS === "web") {
+    globalThis.localStorage?.setItem(key, value);
+    return;
+  }
+  await SecureStore.setItemAsync(key, value);
+}
+
+async function storageDelete(key: string) {
+  if (Platform.OS === "web") {
+    globalThis.localStorage?.removeItem(key);
+    return;
+  }
+  await SecureStore.deleteItemAsync(key);
+}
 
 function parseManifest(value: string | null) {
   if (!value) return undefined;
@@ -162,12 +209,12 @@ function parseManifest(value: string | null) {
 
 async function readSavedState() {
   const manifest = parseManifest(
-    await SecureStore.getItemAsync(STORAGE_MANIFEST_KEY),
+    await storageGet(STORAGE_MANIFEST_KEY),
   );
-  if (!manifest) return SecureStore.getItemAsync(STORAGE_KEY);
+  if (!manifest) return storageGet(STORAGE_KEY);
   const parts: string[] = [];
   for (let index = 0; index < manifest.count; index++) {
-    const part = await SecureStore.getItemAsync(
+    const part = await storageGet(
       `${STORAGE_PART_PREFIX}.${manifest.generation}.${index}`,
     );
     if (part === null)
@@ -181,23 +228,23 @@ async function saveState(snapshot: SavedState) {
   const serialized = JSON.stringify(snapshot);
   const chunks = splitSecureStoreValue(serialized);
   const previous = parseManifest(
-    await SecureStore.getItemAsync(STORAGE_MANIFEST_KEY),
+    await storageGet(STORAGE_MANIFEST_KEY),
   );
   const generation = `${Date.now().toString(36)}-${(++storageRevision).toString(36)}`;
   for (let index = 0; index < chunks.length; index++) {
-    await SecureStore.setItemAsync(
+    await storageSet(
       `${STORAGE_PART_PREFIX}.${generation}.${index}`,
       chunks[index],
     );
   }
-  await SecureStore.setItemAsync(
+  await storageSet(
     STORAGE_MANIFEST_KEY,
     `${generation}:${chunks.length}`,
   );
-  await SecureStore.deleteItemAsync(STORAGE_KEY);
+  await storageDelete(STORAGE_KEY);
   if (previous) {
     for (let index = 0; index < previous.count; index++) {
-      await SecureStore.deleteItemAsync(
+      await storageDelete(
         `${STORAGE_PART_PREFIX}.${previous.generation}.${index}`,
       );
     }
@@ -206,13 +253,13 @@ async function saveState(snapshot: SavedState) {
 
 async function clearSavedState() {
   const manifest = parseManifest(
-    await SecureStore.getItemAsync(STORAGE_MANIFEST_KEY),
+    await storageGet(STORAGE_MANIFEST_KEY),
   );
-  await SecureStore.deleteItemAsync(STORAGE_KEY);
-  await SecureStore.deleteItemAsync(STORAGE_MANIFEST_KEY);
+  await storageDelete(STORAGE_KEY);
+  await storageDelete(STORAGE_MANIFEST_KEY);
   if (manifest) {
     for (let index = 0; index < manifest.count; index++) {
-      await SecureStore.deleteItemAsync(
+      await storageDelete(
         `${STORAGE_PART_PREFIX}.${manifest.generation}.${index}`,
       );
     }
@@ -234,6 +281,7 @@ export const useApp = create<State>((set) => ({
   room: initialRoom(),
   plan: initialPlan(),
   capsule: initialCapsule(),
+  skeleton: initialSkeleton(),
   locked: true,
   postVibeProfile: false,
   userName: "",
@@ -268,6 +316,7 @@ export const useApp = create<State>((set) => ({
       room: initialRoom(),
       plan: initialPlan(),
       capsule: initialCapsule(),
+      skeleton: initialSkeleton(),
       locked: true,
       postVibeProfile: false,
       userName: "",
@@ -293,6 +342,7 @@ export async function hydrateDemoState() {
           .getState()
           .set({
             ...saved,
+            skeleton: saved.skeleton ?? initialSkeleton(),
             screen: "discover",
             locked: !completedToday,
             hydrated: true,
@@ -325,6 +375,7 @@ useApp.subscribe((state) => {
     plan: state.plan,
     room: state.room,
     capsule: state.capsule,
+    skeleton: state.skeleton,
     activeMusic: state.activeMusic,
   };
   saveTimer = setTimeout(() => {

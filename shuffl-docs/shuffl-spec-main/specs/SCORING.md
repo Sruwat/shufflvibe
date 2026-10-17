@@ -84,7 +84,19 @@ is ranked by how close a venue is to the shape the user drew, with preferences o
 
 **Latency firmness** (§6.2) is implemented in `assess.py` but has never run on real timings. It
 needs `card_baseline` and `position_baseline`, which are running averages across all users and do
-not exist until there are users. Until then the name's tie-break falls back to score alone, which is
+not exist until there are users.
+
+**Those two are not redundant with the per-person centre.** The centre removes what belongs to the
+person; the baselines remove what belongs to the card and the deck slot. Since every consumer ranks
+one person's factors against each other, **the between-card effect is the one that corrupts the
+answer and the centre cannot see it** (`ASSESSMENT_ENGINE.md` §6.2a).
+
+**Where latency is consumed under V6**, since it is easy to assume more than this: the mid band of a
+swiped factor in `CHEMISTRY_V4` — 0.50 becomes **0.75 if fast** — and the name's tie-break, which
+orders within a score step and never changes a score. **The skeleton reads no latency at all**: a
+drag is always deliberate, so a drawn mid position is 0.75 flat (`SKELETON_MERGE_V1.md` §4a). Every
+other consumer named in `ASSESSMENT_ENGINE.md` §6 — bend, abstention, the group weighting of wants —
+**belonged to the plan engine and went with the split.** Until then the name's tie-break falls back to score alone, which is
 what `first_factor` does when the latency map is empty.
 
 **The population mean and spread** used by rescaling are the same kind of running average. At seven

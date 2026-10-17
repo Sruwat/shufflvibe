@@ -14,10 +14,16 @@ class OverpassError(RuntimeError):
 
 
 ENDPOINT = os.getenv("OVERPASS_ENDPOINT", "https://overpass-api.de/api/interpreter")
+FALLBACK_ENDPOINTS = [
+    ENDPOINT,
+    "https://overpass.kumi.systems/api/interpreter",
+]
+TIMEOUT_SECONDS = int(os.getenv("OVERPASS_TIMEOUT_SECONDS", "25"))
 
 
-def discover(areas: list[Area], endpoint: str = ENDPOINT) -> list[dict[str, Any]]:
+def discover_with_report(areas: list[Area], endpoint: str = ENDPOINT) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     rows: dict[str, dict[str, Any]] = {}
+    errors: list[str] = []
     for area in areas:
         if area.latitude is None or area.longitude is None:
             continue
@@ -29,11 +35,19 @@ def discover(areas: list[Area], endpoint: str = ENDPOINT) -> list[dict[str, Any]
         )
         data = urllib.parse.urlencode({"data": query}).encode("utf-8")
         request = urllib.request.Request(endpoint, data=data, method="POST", headers={"User-Agent": "SHUFFL-Venue-Pipeline/1.0", "Content-Type": "application/x-www-form-urlencoded"})
-        try:
-            with urllib.request.urlopen(request, timeout=90) as response:
-                payload = json.loads(response.read().decode("utf-8"))
-        except Exception as exc:
-            raise OverpassError(f"Overpass failed for {area.area}: {exc}") from exc
+        payload = None
+        area_error = None
+        for candidate_endpoint in dict.fromkeys(FALLBACK_ENDPOINTS):
+            request = urllib.request.Request(candidate_endpoint, data=data, method="POST", headers={"User-Agent": "SHUFFL-Venue-Pipeline/1.0", "Content-Type": "application/x-www-form-urlencoded"})
+            try:
+                with urllib.request.urlopen(request, timeout=TIMEOUT_SECONDS) as response:
+                    payload = json.loads(response.read().decode("utf-8"))
+                break
+            except Exception as exc:
+                area_error = exc
+        if payload is None:
+            errors.append(f"{area.area}: {area_error}")
+            continue
         for element in payload.get("elements", []):
             tags = element.get("tags", {})
             osm_id = f"{element.get('type')}:{element.get('id')}"
@@ -55,4 +69,12 @@ def discover(areas: list[Area], endpoint: str = ENDPOINT) -> list[dict[str, Any]
                 "city": area.city,
                 "source": "OpenStreetMap Overpass",
             }
-    return list(rows.values())
+    if not rows and errors:
+        raise OverpassError("All Overpass endpoints failed: " + " | ".join(errors[:3]))
+    return list(rows.values()), [{"stage": "overpass", "error": error} for error in errors]
+
+
+def discover(areas: list[Area], endpoint: str = ENDPOINT) -> list[dict[str, Any]]:
+    """Backward-compatible discovery API returning only OSM candidates."""
+    rows, _ = discover_with_report(areas, endpoint)
+    return rows

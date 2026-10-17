@@ -64,8 +64,88 @@ worse product than a broad list with coarse scores.
 ### 2.4 Rooms, joining, and the social half
 
 **Host, Join, the room player, capsules, the group chat, profiles, friends, messages** — all of it.
+
+> **CUT 2026-10-14 (entry 203): the Messages SHUFFL button, and everything behind it.**
+>
+> **The user: "learning the group's preferences and generating outing plans for them is not a
+> priority, most of it is handled by Add friends to your night in the SHUFFL screen. Remove this from
+> the MVP, the messages section is just a point of contact in the MVP."**
+>
+> **Gone:** the animated SHUFFL button in the top right of Messages, the *SHUFFL with friends* picker,
+> the second *Name this gathering* prompt, **the insights panel** (group chemistry at *n* people, and
+> the venue a group would all like), and **the group's preferences being learned over time**.
+>
+> **What Messages is in the first release:** DMs, the group chats that nights create, and a search
+> over them. **A point of contact, nothing more.**
+>
+> **Why this is the right cut and not a loss.** Every path it offered now exists in a better place.
+> Making a group is **Add friends to your night**, which also makes the chat. Group chemistry is
+> already on the **capsule room** and in **Plan Insights**. A venue the group would like is the
+> **Suggested venues carousel**, ranked against the group's merged skeleton rather than guessed from
+> history. **The Messages button was the last of the second routes**, and it needed history the first
+> release will not have.
+>
+> **One thing goes with it and should be noticed:** this closes the *one gathering or two* question.
+> **There is one door, and it is on the SHUFFL screen.**
 **This is the other half of the sentence and it is the half we can actually deliver**, because it
 depends on users rather than on venue data.
+
+### 2.4a Ranking rooms, and no gates in the first release (2026-10-08)
+
+**A room is ranked on two things, and neither of them is a venue score against a vibe.**
+
+1. **Chemistry with the people in it** — `match` against the room's identity vector
+   (`CHEMISTRY_V4.md` §8.2).
+2. **How well the night you drew matches the plan the room is actually running.**
+
+**The second one is sharper than it first looks, and the user's own correction is why.** The
+obvious version compares your skeleton to the room's *merged skeleton* — but that is what its
+members **wanted**. The plan is what they **got**, once the venues that exist at those hours had
+their say. **Matching the plan asks whether you would enjoy this actual night. Matching the shape
+asks whether you draw like they do.**
+
+**Measured** (`simulations/roomrank.py`, 4,000 users shown 4–8 rooms each): the two methods pick
+**the same top room only 67% of the time**, order **13% of room pairs differently**, and differ by
+**3.6 points** on average. They are not interchangeable, and **the shape version fails exactly where
+supply is thin** — late, on the nights people most want to go out.
+
+**Alignment is by the clock, not by index** — *a stop is a time, not an index*
+(`SKELETON_MERGE_V1.md` §1). Your 23:00 is compared with their nearest stop within 90 minutes; a
+stop of yours with no counterpart counts as a miss.
+
+### 2.4b The join gates come off — and become labels
+
+**The gates were: 70% plan similarity, and a per-member `FLOOR` check that every member has at least
+one stop they can live with.** Both are dropped for the first release.
+
+**Measured, at launch volume:**
+
+| | |
+|---|---|
+| rooms cut by the similarity gate | **78%** |
+| rooms cut by the `FLOOR` check | 6% |
+| rooms surviving both | **16%** |
+| **users who would see an empty list** | **55%** |
+| mean rooms shown after gating | **0.6** |
+
+**At this volume the gates do not filter a list, they delete it.** A user who would have had three
+rooms to look at is left with one or none, and an empty screen teaches somebody the app is dead.
+
+**But the gates carried real information, and dropping them silently throws it away.** The `FLOOR`
+check in particular is not a quality bar — it asks *is there a single stop in this night you could
+live with*, and it only fires on **6%** of rooms, which makes it cheap and specific.
+
+**So: not a gate, and not nothing. A label.** Rank every room, show every room, and put what the
+gate would have said on the card where the person can read it — *“nothing here is pitched at your
+night”*. **This is the same move already made on the Go-here card**, where the talk floor became a
+warning rather than a veto and both buttons stayed live. The user decides; the app says what it
+knows.
+
+**When the gates come back:** when the median user has enough rooms that filtering leaves a list
+rather than a blank. That is the same shape of trigger as the heatmap threshold — measured, not
+dated.
+
+---
 
 ### 2.5 Vibe chemistry on a profile — new, and the thing to show off
 
@@ -74,6 +154,22 @@ depends on users rather than on venue data.
 ---
 
 ### 2.6 The gold promotion — shipping, and how the MVP earns its way forward
+
+> **CORRECTED 2026-10-08. Gold does not run from launch.** The marketing plan puts the **Gold
+> Campaign in December, after funding**, alongside the QR pop-up stalls and the SHUFFL events. This
+> section was written on 10-03 assuming a launch-day start and that was wrong.
+>
+> **What follows from the correction, and it is not small:**
+>
+> | | |
+> |---|---|
+> | the bands | **stay on the type curve until December.** There is no cheap band data before then |
+> | the only pre-funding capture | **posting pictures at a venue in your active plan** — unverified, unpaid, and now the sole route into the factor engine |
+> | the ₹5 lakh | a post-funding number, not an MVP cost |
+> | screens 20–26 | **post-MVP**. They are drawn and specified; they are not first-release work |
+>
+> **The section below stands as written for December.** Read it as the plan for the campaign rather
+> than as a description of the first release.
 
 **`GOLD_PROMOTION_V1.md` runs from launch.** It is not a growth gimmick bolted on — it is **the
 mechanism by which the MVP stops being a list and becomes a planner**, and it should be built with
@@ -150,6 +246,44 @@ disappear at the same moment, which is why one threshold governs both.**
 arrives the feature is a switch rather than a build.
 
 ---
+
+# 3b. What to record from day one, that nothing reads yet
+
+**Six obligations, none of them read by anything in the first release, every one of them impossible
+to backfill.** They were scattered across `REMINDERS.md` and `TESTING_WATCHLIST.md` and **none of them
+was in this document** - the one a developer builds from. Gathered here 2026-10-14 (entry 206).
+
+**Read the shape of this list before the list.** Everything here is cheap to write and worthless on
+launch day. **That combination is exactly what gets cut** when a deadline arrives, and it is the one
+category of cut that cannot be undone: a constant you can re-tune later, a screen you can redraw, but
+**a measurement you did not take in March does not exist in June.** Every number in the chemistry
+model, the merge and the naming engine is currently a judgement waiting for one of these six.
+
+| | what to write | what it replaces |
+|---|---|---|
+| **1. the card capture** | per card, per user, per session: **total latency across exposures, first deck position, exposure count** | `card_baseline`, `position_baseline`, the personal latency scale, `GLOBAL_SCALE` (today a simulation figure of 0.26 log-seconds doing real work) |
+| **2. predicted against outcome** | at every join and every accepted invite: the **chemistry score we predicted**, and then what happened - **locked, ditched, or gone out with again** | **the only measurement that can falsify the deck.** The cards have exactly one job now, and this is whether they do it |
+| **3. drawn against merged** | every `(drawn skeleton, merged result)` pair | **every constant in `SKELETON_MERGE_V1.md`** - `COUNT_PULL`, the clamp, `SIZE_CEILING`, `OPPOSED`, `AMPLITUDE` |
+| **4. `LEAD`** | wheel **requested, granted, taken**; who **hosted**, who **locked**, who **redrew** | an observed trait that was proposed as a card and rejected. **The wheel makes leading an explicit action**, so it is now loggable rather than inferable |
+| **5. stamina** | which stop a person was **last present at**, and when they left the night | how late somebody actually stays, which should bound the stop count they are merged into |
+| **6. `NOV` revisits** | the venues in each locked plan, per member | **`NOV` is not in the lexicon at all** - newness is a date, not a review sentiment - so **behaviour is the only way to score *somewhere new*** |
+
+**Five and six are nearly free.** A locked plan already records its venues and its members, so **six
+needs no new event at all** and five needs one. **Only four is genuinely new work**, and the wheel is
+being built anyway.
+
+**The honest warning on one of them.** **Number two is the only thing that can tell us the deck is
+not worth playing**, and it is the one most likely to be quietly dropped, because nothing in the
+product consumes it.
+
+**Since the split, the cards have exactly one job: matching.** They do not shape a night - the user
+draws that - so the question *are these six cards worth a swipe a day* has exactly one honest form:
+**does the chemistry we predict have anything to do with the nights people actually have?** Record the
+predicted score at the moment somebody commits, and the outcome afterwards, and in a few months the
+correlation either exists or it does not.
+
+**If it does not, six cards a day are buying nothing**, and this is the only number that would ever
+say so.
 
 # 4. Vibe chemistry on a profile — the MVP's distinctive feature
 

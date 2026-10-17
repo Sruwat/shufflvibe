@@ -1,22 +1,28 @@
 # Outing Plan Engine — Backend Specification
 
-> **2026-10-05 — read this before the body. This document predates the split and has not been
-> rewritten.**
+> ## READ THIS FIRST — 2026-10-14. The banner below it is from 2026-09-17 and is wrong.
 >
-> **Six identity factors, and only these:** `ENRG` 18 · `AFFIL` 16 · `TALK` 14 · `FOCUS` 14 ·
-> `MOVE` 12 · `SPONT` 10 (`FACTORS_V6.md`, 2026-09-30). **`CROWD`, `ROAM` and `RAMP` left the deck
-> for the skeleton** — the user draws them — and **`GAMES` became a preference**, making seven:
-> `FOOD` `LIVE` `POL` `SCEN` `NOV` `HERIT` `GAMES`.
+> **That banner names seven vibe factors including `CROWD` and `ROAM`, and says they "give the shape
+> of the night".** Two decisions removed that architecture and nothing came back to this page:
 >
-> **The identity factors no longer plan anything.** The skeleton does (`SKELETON_MERGE_V1.md`,
-> `OUTING_PLAN_ENGINE.md` §15), and **the vibe never touches a venue** (`VENUE_DATABASE_V1.md`
-> §0, 2026-10-01). What the room vector still drives: the room's name and blend style, `match`,
-> `disturbance`, the `SPONT` join window, and the profile chemistry read.
+> | | |
+> |---|---|
+> | **`FACTORS_V6.md`, 2026-09-30** | the deck is **six identity factors** — `ENRG` `AFFIL` `TALK` `FOCUS` `MOVE` `SPONT`. **`CROWD`, how many places and where the peak sits left the deck entirely**; the user draws them on the skeleton. `ROAM` became the skeleton's stop count. `GAMES` became a preference |
+> | **the MVP cut, 2026-10-05** | **the app does not generate an outing plan. It offers.** For each drawn stop it shows 5–10 venues that fit and are open, and the user picks |
 >
-> **Current successors:** names `VIBE_NAMES_V5.md`, chemistry `CHEMISTRY_V4.md`, cards
-> `CARD_SET_V10.md` (**itself stale — see its own banner**). **Where the body below disagrees with
-> this note, this note wins.**
-
+> **So the single most important thing to know about this document is that its central subject —
+> generating a plan from vibe factors — is not what the app does.** `ROAM` appears 49 times
+> below and is not a factor. **Read §5–§13 as history, §14 as the last state of the
+> generator, and `MVP_INSTRUCTIONS.md` for what is actually being built.**
+>
+> **What survives and is still authoritative here:** the per-stop readings and their words
+> (§14.3), the pros-and-cons lines, the plan card's two-lines-per-person, §13.6.3's match
+> and fit definitions, and the venue-type vocabulary. **Those are the parts other live documents
+> point back to.**
+>
+> *(This banner exists because the page opens by addressing "a backend engineer joining SHUFFL with
+> no prior context" and then tells them the wrong architecture. §15.5 was retired for the same
+> reason on 2026-10-14, entry 207.)*
 
 > **2026-09-17 — the factor set is split. Read §14 first.** Seven vibe factors (`ENRG` `AFFIL`
 > `CROWD` `TALK` `ROAM` `MOVE` `GAMES`) give the shape of the night and the venue type at each
@@ -24,11 +30,6 @@
 > type and never alter it. §5–§13 are the history and the machinery; §14 says how each part now
 > reads. `FACTORS_V5.md` defines the set. Wherever §5–§13 say "factor" without qualification,
 > read "vibe factor".
->
-> **Superseded 2026-09-30 — the sentence above is no longer true.** The seven vibe factors do
-> **not** give the shape of the night or the venue type any more: **the user draws the shape**, and
-> `CROWD`, `ROAM` and `RAMP` left the deck to become the things they draw. **§15 is the live
-> planning section; §§5–14 are history.** See the banner at the top of this file.
 
 **Audience:** a backend engineer joining SHUFFL with no prior context on this system.
 **Companion docs:** `VIEW_FLOW.md` (product flows), `FACTORS_AND_VIBES_V4.md` (factor definitions, weights, and the 42 vibes), `BLEND_STYLE_DATABASE_V2.md` (the 24 blend styles), `ASSESSMENT_ENGINE.md` (how one session of cards becomes a profile), `PREFERENCE_ENGINE.md` (how that profile is refined over weeks).
@@ -2944,7 +2945,16 @@ line.
 
 ## 15.3 Combining skeletons in a room — the chemistry still applies
 
-**Every rule in `CHEMISTRY_V3.md` holds, and it runs per stop.** It was tempting to argue that drawn intentions
+**Rewritten 2026-09-30: the full rule is now `SKELETON_MERGE_V1.md`.** What is below states the principle and is
+still correct; the merge spec adds the four things this section did not have — **alignment on the clock** (a stop
+is a time, not an index, so a three-stop drawing and a two-stop drawing can be merged at all), the **stop-count
+merge** that inherits `ROAM`'s split-the-difference clamp, the **arc rule** for two people who drew opposite nights,
+and the **drawn-firmness ladder** that fills the blank left at the end of this section.
+
+**One correction it makes to the paragraph below:** the contagion now runs on `CHEMISTRY_V4.md`'s pulls, not V3's,
+and the axes involved are only energy and crowd — because those are the only two things a skeleton states.
+
+**Every rule in `CHEMISTRY_V4.md` §0.3 holds, and it runs per stop.** It was tempting to argue that drawn intentions
 should be averaged rather than caught — that two people who each drew a loud night are not infecting each other,
 they simply agree. **That is wrong, and the user corrected it.** Contagion is about the people who will be in the
 room, not about the drawings: three people who drew three different nights will still be stood in one place, and
@@ -2955,9 +2965,17 @@ Two consequences follow from it being drawn rather than swiped:
 
 1. **Per stop, not once for the night.** The skeleton gives an energy and a crowd at every stop, so the contagion
    and cross-axis rules run at each stop rather than producing one level for the whole night.
-2. **A drawn position is firmer than a swiped one.** Dragging a line is deliberate; a swipe is a gut call. In
-   Moscovici's terms a skeleton is a more consistent statement of a position, so it should carry **more weight in
-   the strength term** than the equivalent card score. The multiplier is unset — tune it on real rooms.
+2. **A drawn position is firmer than a swiped one** — and **the blank is now filled** (`SKELETON_MERGE_V1.md`
+   §4a). It is not a multiplier, it is one row of the strength ladder: **a swiped 50 means "this card did nothing
+   for me"; a drawn 50 means "I want this stop at exactly medium"**, so drawn mid-range values count at 0.25 where
+   swiped ones count at 0. **The skeleton has no true neutrals**, because nothing on it happens by accident.
+
+   **And the consequence runs the other way from the phrase.** Measured over 4,000 rooms, drawn rooms move **6.9**
+   points from their plain mean where swiped rooms move **11.7**. Per person a drawn position is firmer; but a room
+   full of firmer positions **compromises more**, because the moderates stop being bystanders and start counting
+   against the one person at an extreme. One loud voice carries a swiped room and does not carry a drawn one. That
+   is the right direction for a plan everyone drew — but it is the opposite of what "firmer" suggests, so it is
+   recorded here before somebody "fixes" it.
 
 ## 15.4 What it retires
 
@@ -2965,6 +2983,19 @@ Two consequences follow from it being drawn rather than swiped:
   the level and the trajectory; the skeleton **is** the trajectory, stated by the person whose night it is. `RAMP`
   survives only for plans generated from cards alone — the automatic plan on the SHUFFL screen.
 - **The `ROAM` value** is the skeleton's stop count when one exists; the slider otherwise.
+
+## 15.5 The default, and the calibration it buys - RETIRED (2026-10-14, entry 207)
+
+> **This section describes a screen that no longer exists, and it has been quietly wrong for two
+> weeks.** The grid was to open **pre-drawn with the line the generated plan implied**, and the user's
+> correction of it was the calibration data.
+>
+> **Two decisions removed it.** `FACTORS_V6` (2026-09-30) took **`CROWD`, the stop count and the peak**
+> out of the deck, so the cards no longer measure the axes a line would be implied from. The **MVP cut**
+> (2026-10-05) stopped the app generating a plan at all, so there is no line to pre-draw.
+>
+> **The grid opens blank, always.** What replaces the calibration is in `MVP_INSTRUCTIONS.md` §3b
+> item 2: **the chemistry we predicted against what actually happened.**
 
 ## 15.5 The default, and the calibration it buys
 
