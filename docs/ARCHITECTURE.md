@@ -2,6 +2,24 @@
 
 This repository has one shared product backend and three user-facing surfaces.
 
+## Repository layout
+
+```text
+SHUFFL/
+├── mobile/                 Expo application (canonical app source)
+├── backend/                FastAPI API, migrations, stores and tests
+│   └── venue_db/            Venue database access and domain helpers
+├── admin_dashboard/        Admin browser frontend, served by the API
+├── website/                Public marketing website
+├── venue_pipeline_backend/ Venue discovery, enrichment and export jobs
+├── docs/                   Engineering plans, audits and architecture notes
+└── shuffl-docs/            Preserved product specifications and brand assets
+```
+
+The older top-level `decisions/`, `frontend/`, `simulations/`, `specs/` and `superseded/`
+folders are retained as reference material for existing links and historical context. New
+runtime code belongs only in the active folders above.
+
 ## Active surfaces
 
 - `mobile/` — canonical Expo mobile app source.
