@@ -61,6 +61,8 @@ import {
   profileBadges,
   profileHeaderArtwork,
   revealArtwork,
+  shfflOpeningAnimation,
+  shfflWordmark,
   venueArtwork,
   vibeCardArtwork,
   welcomeHeroArtwork,
@@ -169,14 +171,14 @@ function commitAssessment(next: ReturnType<typeof createAssessment>) {
 }
 function Brand() {
   return (
-    <View style={styles.brand}>
-      <View style={styles.brandMark}>
-        <View style={styles.dot} />
-        <View style={[styles.dot, { backgroundColor: "#FF77A8" }]} />
-        <View style={[styles.dot, { backgroundColor: colors.pink }]} />
-      </View>
-      <Text style={styles.brandText}>SHUFFL</Text>
-    </View>
+    <Image source={shfflWordmark} style={styles.brandWordmark} resizeMode="contain" accessibilityLabel="SHFFL" />
+  );
+}
+function OpeningAnimation() {
+  return (
+    <SafeAreaView style={styles.openingScreen}>
+      <Image source={shfflOpeningAnimation} style={styles.openingAnimation} resizeMode="contain" accessibilityLabel="SHFFL opening animation" />
+    </SafeAreaView>
   );
 }
 function resolveRevealArtwork(name: string) {
@@ -2797,10 +2799,12 @@ function AssessmentStrict() {
 }
 function AppContent() {
   assertReleaseScope();
+  const [opening, setOpening] = useState(true);
   const screen = useApp((s) => s.screen);
   const featureMode = useApp((s) => s.featureMode);
   const hydrated = useApp((s) => s.hydrated);
   useEffect(() => {
+    const timer = setTimeout(() => setOpening(false), 1650);
     void hydrateDemoState();
     void getService().getLatestSkeleton().then((latest) => {
       if (!latest) return;
@@ -2815,7 +2819,9 @@ function AppContent() {
         },
       });
     }).catch(() => undefined);
+    return () => clearTimeout(timer);
   }, []);
+  if (opening) return <OpeningAnimation />;
   if (!hydrated)
     return (
       <SafeAreaView style={styles.safe}>
@@ -2874,21 +2880,9 @@ const styles = StyleSheet.create({
     letterSpacing: 1.5,
     textTransform: "uppercase",
   },
-  brand: { flexDirection: "row", alignItems: "center", gap: 8 },
-  brandText: {
-    color: colors.text,
-    fontWeight: "800",
-    letterSpacing: 3,
-    fontSize: 18,
-  },
-  brandMark: { flexDirection: "row", gap: 3 },
-  dot: {
-    width: 7,
-    height: 18,
-    borderRadius: 4,
-    backgroundColor: colors.mint,
-    transform: [{ rotate: "25deg" }],
-  },
+  brandWordmark: { width: 122, height: 30 },
+  openingScreen: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#050507" },
+  openingAnimation: { width: "100%", maxWidth: 760, height: 340 },
   iconButton: {
     width: 44,
     height: 44,

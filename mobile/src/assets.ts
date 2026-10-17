@@ -2,6 +2,8 @@ import type { ImageSourcePropType } from "react-native";
 
 export const welcomeHeroArtwork = require("../assets/welcome_night_shape.png");
 export const homeCityArtwork = require("../assets/home_city_night.png");
+export const shfflOpeningAnimation = require("../assets/brand_opening.gif");
+export const shfflWordmark = require("../assets/shffl_wordmark.png");
 
 // Static Metro imports keep the artwork bundled for offline APK use.
 export const preferenceArtwork: Record<string, ImageSourcePropType> = {
