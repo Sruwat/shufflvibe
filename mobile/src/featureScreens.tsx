@@ -23,7 +23,6 @@ import { FeatureMode, useApp } from "./store";
 import {
   factorCopy,
   factors,
-  preferences as preferenceFactors,
   venues,
 } from "./data";
 import { venueArtwork } from "./assets";
@@ -36,6 +35,7 @@ import {
   JoinerScores,
   JoinRequestRecord,
   PrivacySettings,
+  PersonRecord,
   RoomRecord,
 } from "./services";
 import { latencyFirmness } from "./fullEngine";
@@ -1232,13 +1232,44 @@ const customStyles = StyleSheet.create({
 function HostRoomScreen() {
   const { room, plan, set } = useApp();
   const [venueQuery, setVenueQuery] = useState("");
-  const [hostVenue, setHostVenue] = useState("");
+  const [venueFeed, setVenueFeed] = useState<VenueCard[]>([]);
+  const [venueLoading, setVenueLoading] = useState(false);
+  const [venueError, setVenueError] = useState("");
   const [hostIntent, setHostIntent] = useState<"choose" | "cohosts">("choose");
   const [cohostQuery, setCohostQuery] = useState("");
+  const [people, setPeople] = useState<PersonRecord[]>([]);
+  const [peopleLoading, setPeopleLoading] = useState(false);
   const [selectedCohosts, setSelectedCohosts] = useState<string[]>(room.cohosts);
   const [confirm, setConfirm] = useState<"create" | "host" | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  useEffect(() => {
+    if (hostIntent !== "choose") return undefined;
+    let active = true;
+    setVenueLoading(true);
+    setVenueError("");
+    getService().getDiscovery().then((items) => {
+      if (active) setVenueFeed(items);
+    }).catch((cause) => {
+      if (active) setVenueError(cause instanceof Error ? cause.message : "Could not load published venues.");
+    }).finally(() => {
+      if (active) setVenueLoading(false);
+    });
+    return () => { active = false; };
+  }, [hostIntent]);
+  useEffect(() => {
+    if (hostIntent !== "cohosts") return undefined;
+    let active = true;
+    setPeopleLoading(true);
+    getService().listPeople(cohostQuery).then((items) => {
+      if (active) setPeople(items);
+    }).catch((cause) => {
+      if (active) setError(cause instanceof Error ? cause.message : "Could not load discoverable friends.");
+    }).finally(() => {
+      if (active) setPeopleLoading(false);
+    });
+    return () => { active = false; };
+  }, [cohostQuery, hostIntent]);
   // WebSocket clients receive pushes; this lightweight polling path keeps the
   // room state correct after reconnects or on networks that block WebSockets.
   useEffect(() => {
@@ -1296,11 +1327,10 @@ function HostRoomScreen() {
     }
   };
   const confirmAction = () => (confirm === "host" ? host() : createPlan());
-  const suggestedVenues = venues.filter((venue) => {
+  const suggestedVenues = venueFeed.filter((venue) => {
     const query = venueQuery.trim().toLowerCase();
     return !query || `${venue.name} ${venue.area} ${venue.type}`.toLowerCase().includes(query);
   }).slice(0, 5);
-  const friends = ["Bela Shah", "Chirag Mehta", "Maya Kapoor", "Dev Malhotra"];
   if (!room.id && !plan.exists && !room.public && !room.cohosts.length && hostIntent === "choose") {
     return (
       <SafeAreaView style={styles.safe}>
@@ -1316,13 +1346,15 @@ function HostRoomScreen() {
           <FeatureButton label="Make a custom plan" onPress={() => set({ screen: "feature", featureMode: "customOuting" })} />
           <FeatureButton label="Make a custom plan with friends" secondary onPress={() => setHostIntent("cohosts")} />
           <Text style={styles.eyebrow}>SUGGESTED FOR YOUR VIBE</Text>
+          {venueLoading ? <Text style={styles.secondaryText}>Loading published venues…</Text> : null}
+          {venueError ? <Text accessibilityRole="alert" style={styles.notice}>{venueError}</Text> : null}
+          {!venueLoading && !venueError && !suggestedVenues.length ? <Text style={styles.secondaryText}>No published venues match this search.</Text> : null}
           {suggestedVenues.map((venue) => <Pressable key={venue.name} onPress={() => set({ selectedVenueName: venue.name, screen: "feature", featureMode: "venue" })} style={styles.route}><View style={{ width: 52, height: 52, borderRadius: 14, overflow: "hidden", backgroundColor: venue.color + "28", alignItems: "center", justifyContent: "center", marginRight: 12 }}>{venueArtwork[venue.name] ? <Image source={venueArtwork[venue.name]} style={{ width: "100%", height: "100%" }} /> : <Ionicons name="location-outline" size={24} color={venue.color} />}</View><View style={{ flex: 1 }}><Text style={styles.routeText}>{venue.name}</Text><Text style={styles.secondaryText}>{venue.type} · {venue.area}</Text><Text style={styles.notice}>{venue.tag}</Text></View><Ionicons name="chevron-forward" size={19} color={colors.muted} /></Pressable>)}
         </ScrollView>
       </SafeAreaView>
     );
   }
   if (!room.id && !plan.exists && !room.public && !room.cohosts.length && hostIntent === "cohosts") {
-    const visibleFriends = friends.filter((friend) => friend.toLowerCase().includes(cohostQuery.trim().toLowerCase()));
     return (
       <SafeAreaView style={styles.safe}>
         <FeatureHeader label="ADD CO-HOSTS" onBack={() => setHostIntent("choose")} />
@@ -1331,7 +1363,9 @@ function HostRoomScreen() {
           <Text style={styles.title}>Add co-hosts</Text>
           <Text style={styles.body}>Everyone draws their own night shape before the plan becomes public.</Text>
           <View style={inboxStyles.inboxSearch}><Ionicons name="search" size={18} color={colors.muted} /><TextInput accessibilityLabel="Search co-hosts" value={cohostQuery} onChangeText={setCohostQuery} placeholder="Search usernames" placeholderTextColor={colors.muted} style={inboxStyles.inboxSearchText} /></View>
-          {visibleFriends.map((friend) => { const selected = selectedCohosts.includes(friend); return <Pressable key={friend} accessibilityRole="checkbox" accessibilityState={{ checked: selected }} onPress={() => setSelectedCohosts((current) => selected ? current.filter((item) => item !== friend) : [...current, friend])} style={styles.route}><View style={capsuleStyles.friendAvatar}><Text style={capsuleStyles.friendInitial}>{friend.charAt(0)}</Text></View><View style={{ flex: 1 }}><Text style={styles.routeText}>{friend}</Text><Text style={styles.secondaryText}>Vibe available · co-host candidate</Text></View><Ionicons name={selected ? "checkmark-circle" : "ellipse-outline"} size={24} color={selected ? colors.pink : colors.muted} /></Pressable>; })}
+          {peopleLoading ? <Text style={styles.secondaryText}>Loading discoverable friends…</Text> : null}
+          {!peopleLoading && !people.length ? <Text style={styles.secondaryText}>No discoverable friends match that search.</Text> : null}
+          {people.map((person) => { const selected = selectedCohosts.includes(person.id); return <Pressable key={person.id} accessibilityRole="checkbox" accessibilityState={{ checked: selected }} onPress={() => setSelectedCohosts((current) => selected ? current.filter((item) => item !== person.id) : [...current, person.id])} style={styles.route}><View style={capsuleStyles.friendAvatar}><Text style={capsuleStyles.friendInitial}>{person.name.charAt(0)}</Text></View><View style={{ flex: 1 }}><Text style={styles.routeText}>{person.name}</Text><Text style={styles.secondaryText}>{person.city || "Delhi NCR"} · discoverable member</Text></View><Ionicons name={selected ? "checkmark-circle" : "ellipse-outline"} size={24} color={selected ? colors.pink : colors.muted} /></Pressable>; })}
           <FeatureButton label={selectedCohosts.length ? `Continue with ${selectedCohosts.length} co-host${selectedCohosts.length > 1 ? "s" : ""}` : "Choose at least one co-host"} onPress={() => { if (!selectedCohosts.length) return; set({ room: { ...room, cohosts: selectedCohosts, members: ["Aarav", ...selectedCohosts] }, screen: "feature", featureMode: "customOuting" }); }} />
         </ScrollView>
       </SafeAreaView>
@@ -1747,51 +1781,9 @@ function PrivacySafetyScreen() {
 }
 
 function ActivePlanScreen() {
-  const { room, plan, scores, preferences: preferenceState, selectedVenueName, set } = useApp();
+  const { room, plan, set } = useApp();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const generate = async () => {
-    if (busy || plan.locked || room.public) return;
-    setBusy(true);
-    setError("");
-    try {
-      const vibeScores = Object.fromEntries(
-        factors.map((factor) => [factor, scores[factor] ?? 50]),
-      );
-      const preferenceScores = Object.fromEntries(
-        preferenceFactors.map((factor) => [
-          factor,
-          preferenceState.readings[factor]?.score ?? 50,
-        ]),
-      );
-      const generated = await getService().generatePlan({
-        scores: vibeScores,
-        preferences: preferenceScores,
-        pol_sense: preferenceState.sense ?? "both",
-        members: room.members,
-        selectedVenueName: selectedVenueName || undefined,
-      });
-      set({
-        plan: {
-          ...plan,
-          id: generated.id,
-          exists: true,
-          locked: false,
-          style: generated.style,
-          stops: generated.stops,
-          chemistry: generated.chemistry,
-        },
-      });
-    } catch (cause) {
-      setError(
-        cause instanceof Error
-          ? cause.message
-          : "Could not build a plan. Please try again.",
-      );
-    } finally {
-      setBusy(false);
-    }
-  };
   const lock = async () => {
     if (!plan.id || busy || plan.locked || room.public) return;
     setBusy(true);
@@ -1834,8 +1826,8 @@ function ActivePlanScreen() {
             : plan.locked
               ? "This plan is locked. Its chemistry and stops will not change."
               : plan.exists
-                ? "Review the selected stops. Refresh recalculates from your current vibe and preference answers."
-                : "No plan has been created yet. Build one from your completed vibe and preference answers."}
+                ? "Review the selected stops. Change any venue before you lock the night."
+                : "No plan has been created yet. Draw your night and choose one published venue for every stop."}
         </Text>
         {plan.exists ? (
           plan.stops.map((stop, index) => {
@@ -1926,8 +1918,8 @@ function ActivePlanScreen() {
         ) : null}
         {!plan.exists && (
           <FeatureButton
-            label={busy ? "Building plan…" : "Build my plan"}
-            onPress={generate}
+            label="Draw my night and choose venues"
+            onPress={() => set({ screen: "feature", featureMode: "customOuting" })}
           />
         )}
         {plan.exists && !plan.locked && !room.public && (
@@ -1938,8 +1930,8 @@ function ActivePlanScreen() {
         )}
         {plan.exists && !plan.locked && !room.public && (
           <FeatureButton
-            label={busy ? "Recalculating…" : "Refresh from my answers"}
-            onPress={generate}
+            label="Change selected venues"
+            onPress={() => set({ screen: "feature", featureMode: "customOuting" })}
             secondary
           />
         )}
@@ -2333,22 +2325,32 @@ function JoinRequestsScreen() {
 function CapsuleScreen() {
   const { capsule, room, set } = useApp();
   const [query, setQuery] = useState("");
+  const [people, setPeople] = useState<PersonRecord[]>([]);
+  const [peopleLoading, setPeopleLoading] = useState(false);
   const [selected, setSelected] = useState<string[]>(capsule.members);
   const [invitesSent, setInvitesSent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const friends = ["Bela Shah", "Chirag Mehta", "Maya Kapoor", "Dev Malhotra"];
-  const visibleFriends = friends.filter((name) =>
-    name.toLowerCase().includes(query.trim().toLowerCase()),
-  );
+  useEffect(() => {
+    let active = true;
+    setPeopleLoading(true);
+    getService().listPeople(query).then((items) => {
+      if (active) setPeople(items);
+    }).catch((cause) => {
+      if (active) setError(cause instanceof Error ? cause.message : "Could not load discoverable friends.");
+    }).finally(() => {
+      if (active) setPeopleLoading(false);
+    });
+    return () => { active = false; };
+  }, [query]);
   const ready =
     capsule.members.length > 0 &&
     capsule.members.every((member) => capsule.approvals[member] === true);
-  const toggleFriend = (name: string) =>
+  const toggleFriend = (id: string) =>
     setSelected((current) =>
-      current.includes(name)
-        ? current.filter((item) => item !== name)
-        : [...current, name],
+      current.includes(id)
+        ? current.filter((item) => item !== id)
+        : [...current, id],
     );
   const sendInvites = async () => {
     if (!selected.length) return;
@@ -2408,25 +2410,26 @@ function CapsuleScreen() {
           />
         </View>
         <Text style={styles.eyebrow}>YOUR SHUFFL FRIENDS</Text>
-        {visibleFriends.map((name) => {
-          const checked = selected.includes(name);
+        {peopleLoading ? <Text style={styles.secondaryText}>Loading discoverable friends…</Text> : null}
+        {people.map((person) => {
+          const checked = selected.includes(person.id);
           return (
             <Pressable
-              key={name}
+              key={person.id}
               accessibilityRole="checkbox"
               accessibilityState={{ checked }}
-              onPress={() => toggleFriend(name)}
+              onPress={() => toggleFriend(person.id)}
               style={styles.route}
             >
               <View style={capsuleStyles.friendAvatar}>
                 <Text style={capsuleStyles.friendInitial}>
-                  {name.charAt(0)}
+                  {person.name.charAt(0)}
                 </Text>
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={styles.routeText}>{name}</Text>
+                <Text style={styles.routeText}>{person.name}</Text>
                 <Text style={styles.secondaryText}>
-                  Vibe available · demo friend
+                  {person.city || "Delhi NCR"} · discoverable member
                 </Text>
               </View>
               <Ionicons
@@ -2437,8 +2440,8 @@ function CapsuleScreen() {
             </Pressable>
           );
         })}
-        {!visibleFriends.length && (
-          <Text style={styles.secondaryText}>No friends match that name.</Text>
+        {!peopleLoading && !people.length && (
+          <Text style={styles.secondaryText}>No discoverable friends match that name.</Text>
         )}
         <FeatureButton label={busy ? "Saving…" : "Send capsule invites"} onPress={() => void sendInvites()} />
         {error ? <Text accessibilityRole="alert" style={styles.notice}>{error}</Text> : null}

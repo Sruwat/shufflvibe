@@ -24,5 +24,7 @@ export function assertReleaseScope(): void {
 }
 
 export function demoFallbackAllowed(): boolean {
-  return !isProductionBuild();
+  // Demo data is useful for isolated unit tests, but the running app must not
+  // silently look healthy while disconnected from the shared backend.
+  return process.env.EXPO_PUBLIC_DEMO_MODE?.trim() === "1";
 }

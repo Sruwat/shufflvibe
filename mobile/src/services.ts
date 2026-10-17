@@ -37,6 +37,7 @@ export type ChatMessage = { id: string; conversation_id: string; body: string; s
 export type ConversationRecord = { id: string; kind: 'group' | 'direct'; title: string; unread: number; messages: ChatMessage[] };
 export type NotificationRecord = { id: string; kind: string; title: string; body?: string; read: boolean; room_id?: string; created_at?: string };
 export type ProfileRecord = { name: string; city: string; pronouns?: string; bio?: string; preferences: Record<string, number>; updated_at?: string };
+export type PersonRecord = { id: string; name: string; city?: string; bio?: string };
 export type VenueCard = (typeof venues)[number] & { id?: string; google_place_id?: string; google_lookup_url?: string; official_url?: string; hours_mode?: string; match_distance?: number; live?: Record<string, unknown> | null; address?: string; website_url?: string; menu_url?: string; social_urls?: string[]; tags?: string[]; rating?: number; review_count?: number; photos?: string[] };
 export type VenueDetail = { venue: VenueCard | Record<string, unknown>; normalized: Record<string, unknown>; google_place_id?: string; google_lookup_url?: string; live_fields: { source: string; persisted: boolean } };
 export type SkeletonPayload = { scores: Record<string, number>; stops: number; energy: number; crowd: number; tags: string[]; stop_durations: number[]; source?: string };
@@ -79,6 +80,7 @@ export type Service = {
   listNotifications: (unreadOnly?: boolean) => Promise<NotificationRecord[]>;
   markNotificationRead: (notificationId: string) => Promise<NotificationRecord>;
   getProfile: () => Promise<ProfileRecord>;
+  listPeople: (query?: string) => Promise<PersonRecord[]>;
   saveProfile: (profile: ProfileRecord) => Promise<ProfileRecord>;
   deleteAccount: () => Promise<{ deleted: boolean; message: string }>;
   lockPlan: (planId: string) => Promise<void>;
@@ -138,6 +140,7 @@ export const DemoService: Service = {
   listNotifications: async () => [{ id: 'demo-notification-1', kind: 'room_request', title: 'A room is forming', body: 'Friday night, open to the city has join requests open.', read: false }],
   markNotificationRead: async (notificationId) => ({ id: notificationId, kind: 'room_request', title: 'Notification', read: true }),
   getProfile: async () => ({ name: 'Aarav Mehta', city: 'New Delhi', preferences: { FOOD: 88, SCEN: 88, NOV: 62 } }),
+  listPeople: async (query = '') => [{ id: 'demo-user-2', name: 'Bela Shah', city: 'New Delhi', bio: '' }, { id: 'demo-user-3', name: 'Chirag Mehta', city: 'New Delhi', bio: '' }, { id: 'demo-user-4', name: 'Maya Kapoor', city: 'New Delhi', bio: '' }, { id: 'demo-user-5', name: 'Dev Malhotra', city: 'New Delhi', bio: '' }].filter((person) => person.name.toLowerCase().includes(query.trim().toLowerCase())),
   saveProfile: async (profile) => profile,
   deleteAccount: async () => ({ deleted: true, message: 'Local account data reset.' }),
   lockPlan: async () => undefined,
@@ -362,6 +365,10 @@ export function createApiService(baseUrl: string): Service {
     listNotifications: async (unreadOnly = false) => (await request(`/v1/notifications?unread_only=${String(unreadOnly)}`)).items as NotificationRecord[],
     markNotificationRead: async (notificationId) => await request(`/v1/notifications/${encodeURIComponent(notificationId)}/read`, { method: 'POST' }) as unknown as NotificationRecord,
     getProfile: async () => await request('/v1/profiles/me') as unknown as ProfileRecord,
+    listPeople: async (query = '') => {
+      const result = await request(`/v1/people?${new URLSearchParams({ q: query, limit: '24' }).toString()}`);
+      return Array.isArray(result.items) ? result.items as PersonRecord[] : [];
+    },
     saveProfile: async (profile) => await request('/v1/profiles/me', { method: 'PATCH', body: JSON.stringify(profile) }) as unknown as ProfileRecord,
     deleteAccount: async () => await request('/v1/account', { method: 'DELETE' }) as { deleted: boolean; message: string },
     lockPlan: async (planId) => {
@@ -392,10 +399,8 @@ export function createApiService(baseUrl: string): Service {
 export function getService(): Service {
   const apiUrl = process.env.EXPO_PUBLIC_API_URL?.trim();
   if (apiUrl) return createApiService(apiUrl);
-  if (process.env.NODE_ENV === 'production') {
-    throw new Error('SHUFFL API is not configured. Set EXPO_PUBLIC_API_URL before building the release app.');
-  }
-  return DemoService;
+  if (process.env.EXPO_PUBLIC_DEMO_MODE?.trim() === '1') return DemoService;
+  throw new Error('SHUFFL API is not configured. Set EXPO_PUBLIC_API_URL or explicitly enable EXPO_PUBLIC_DEMO_MODE=1 for fixture mode.');
 }
 
 export { RELEASE_SCOPE };

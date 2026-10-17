@@ -158,6 +158,28 @@ class DomainStore:
             except ValueError: preferences = {}
         return {"name": row.get("display_name") or "", "city": row.get("city") or "New Delhi", "pronouns": row.get("pronouns") or "", "bio": row.get("bio") or "", "preferences": preferences}
 
+    def people_search(self, user_id: str, query: str = "", limit: int = 24) -> list[dict[str, Any]]:
+        """Return discoverable member profiles for room and capsule invites."""
+        self.ensure_user(user_id)
+        needle = f"%{query.strip().lower()}%"
+        with self.engine.connect() as conn:
+            rows = conn.execute(text("""
+                SELECT u.id AS id,
+                       COALESCE(NULLIF(p.display_name, ''), u.name, '') AS name,
+                       COALESCE(p.city, 'New Delhi') AS city,
+                       COALESCE(p.bio, '') AS bio
+                FROM auth_users u
+                LEFT JOIN profiles p ON p.user_id = u.id
+                LEFT JOIN privacy_settings ps ON ps.user_id = u.id
+                WHERE u.id <> :user_id
+                  AND COALESCE(u.status, 'active') = 'active'
+                  AND COALESCE(ps.discoverability, 1) = 1
+                  AND (:query = '' OR LOWER(COALESCE(NULLIF(p.display_name, ''), u.name, '')) LIKE :needle)
+                ORDER BY LOWER(COALESCE(NULLIF(p.display_name, ''), u.name, '')) ASC
+                LIMIT :limit
+            """), {"user_id": user_id, "query": query.strip().lower(), "needle": needle, "limit": limit}).mappings().all()
+        return [dict(row) for row in rows]
+
     def profile_update(self, user_id: str, payload: dict[str, Any]) -> dict[str, Any]:
         self.ensure_user(user_id, name=payload.get("name", ""))
         with self.engine.begin() as conn:

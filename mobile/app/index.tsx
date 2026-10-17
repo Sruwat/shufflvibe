@@ -50,7 +50,7 @@ import {
 } from "../src/fullEngine";
 import { hydrateDemoState, useApp } from "../src/store";
 import { FeatureScreen } from "../src/featureScreens";
-import { getService } from "../src/services";
+import { getService, RoomRecord } from "../src/services";
 import { assertReleaseScope } from "../src/releaseScope";
 
 WebBrowser.maybeCompleteAuthSession();
@@ -1892,11 +1892,21 @@ function Discover() {
 function HomeDashboard() {
   const { set, locked, scores, assessment, userName, userPronouns, avatarUri, lastVibeName, plan, skeleton } = useApp();
   const [venueFeed, setVenueFeed] = useState(venues);
+  const [hostedRooms, setHostedRooms] = useState<RoomRecord[]>([]);
   useEffect(() => {
     let alive = true;
     getService().getDiscovery().then((items) => {
       if (alive && items.length) setVenueFeed(items);
     }).catch(() => undefined);
+    return () => { alive = false; };
+  }, []);
+  useEffect(() => {
+    let alive = true;
+    getService().listHostedRooms().then((items) => {
+      if (alive) setHostedRooms(items.filter((item) => item.status === 'hosted'));
+    }).catch(() => {
+      if (alive) setHostedRooms([]);
+    });
     return () => { alive = false; };
   }, []);
   const todayName = vibeName(scores, latencyFirmness(assessment), assessment.chosenTop);
@@ -1937,7 +1947,7 @@ function HomeDashboard() {
         <View style={artworkStyles.dashboardSectionHeader}><View><Text style={styles.sectionTitle}>TONIGHT’S LINE-UP</Text><Text style={artworkStyles.shelfSubhead}>Built around your vibe</Text></View><Ionicons name="map-outline" size={20} color={colors.pink} /></View>
         {plan.exists ? <><Pressable accessibilityRole="button" onPress={() => set({ screen: 'feature', featureMode: plan.locked ? 'activePlan' : 'customOuting' })} style={artworkStyles.dashboardPlanCard}><View style={artworkStyles.dashboardPlanTop}><Text style={styles.cardTitle}>{plan.title || plan.style}</Text><Text style={artworkStyles.homeShelfLabel}>{plan.locked ? 'LOCKED' : 'DRAFT'}</Text></View>{plan.stops.slice(0, 2).map((stop, index) => <Text key={`${stop}-${index}`} style={styles.small}>{index + 1}. {stop}</Text>)}<Text style={styles.small}>{plan.durationHours} hours · Delhi NCR · {plan.locked ? 'Tap to view active plan' : 'Tap to review'}</Text><View style={artworkStyles.dashboardPlanActions}><Text style={artworkStyles.venueFooterText}>VIEW PLAN</Text><Ionicons name="arrow-forward" size={18} color={colors.pink} /></View></Pressable><View style={artworkStyles.planQuickActions}><Pressable accessibilityRole="button" onPress={() => set({ screen: 'feature', featureMode: 'customOuting' })}><Text style={artworkStyles.planActionText}>CUSTOM</Text></Pressable>{!plan.locked && <Pressable accessibilityRole="button" onPress={() => set({ screen: 'shuffl', plan: { ...plan, exists: false, locked: false, stops: [] } })}><Text style={artworkStyles.planActionText}>SHUFFLE</Text></Pressable>}<Pressable accessibilityRole="button" onPress={() => set({ screen: 'feature', featureMode: 'hostRoom' })}><Text style={artworkStyles.planActionText}>HOST THIS</Text></Pressable></View></> : <View style={artworkStyles.dashboardEmpty}><Text style={styles.cardTitle}>No plan yet</Text><Text style={styles.small}>Build your night from your vibe.</Text><Button onPress={() => set({ screen: 'shuffl' })}>Build my night</Button></View>}
         <View style={artworkStyles.dashboardSectionHeader}><View><Text style={styles.sectionTitle}>ROOMS LIVE NOW</Text><Text style={artworkStyles.shelfSubhead}>Find a night already forming</Text></View><Ionicons name="people-outline" size={20} color={colors.pink} /></View>
-        <Pressable accessibilityRole="button" accessibilityLabel="Open Friday night room" onPress={() => set({ screen: 'feature', featureMode: 'joinRoom' })} style={artworkStyles.dashboardRoomCard}><View style={artworkStyles.dashboardLive}><View style={styles.liveDot} /><Text style={artworkStyles.homeShelfLabel}>LIVE</Text></View><Text style={styles.cardTitle}>Friday night, open to the city</Text><Text style={styles.small}>Greater Kailash II · Aarav’s room · 3 members</Text><View style={artworkStyles.dashboardRoomMeta}><Text style={artworkStyles.venueFooterText}>82% MATCH</Text><Text style={artworkStyles.dashboardChemistry}>SETTLE THEN ROAM</Text></View></Pressable>
+        {hostedRooms.length ? hostedRooms.slice(0, 2).map((room) => <Pressable key={room.id} accessibilityRole="button" accessibilityLabel={`Open ${room.title} room`} onPress={() => set({ screen: 'feature', featureMode: 'joinRoom' })} style={artworkStyles.dashboardRoomCard}><View style={artworkStyles.dashboardLive}><View style={styles.liveDot} /><Text style={artworkStyles.homeShelfLabel}>LIVE</Text></View><Text style={styles.cardTitle}>{room.title}</Text><Text style={styles.small}>{room.members?.length ?? 0} members · {room.stop_count ?? room.selected_stops?.length ?? 0} stops · requests open</Text><View style={artworkStyles.dashboardRoomMeta}><Text style={artworkStyles.venueFooterText}>OPEN ROOM</Text><Text style={artworkStyles.dashboardChemistry}>{room.stop_types?.join(' · ') || 'SHAPE YOUR NIGHT'}</Text></View></Pressable>) : <View style={artworkStyles.dashboardEmpty}><Text style={styles.cardTitle}>No rooms live right now</Text><Text style={styles.small}>Host a plan and invite people into a night that fits.</Text><Button onPress={() => set({ screen: 'feature', featureMode: 'hostRoom' })}>Host a room</Button></View>}
         <View style={artworkStyles.dashboardSectionHeader}><View><Text style={styles.sectionTitle}>EXPLORE</Text><Text style={artworkStyles.shelfSubhead}>See what Delhi is feeling tonight</Text></View><Ionicons name="pulse-outline" size={20} color={colors.pink} /></View>
         <View style={artworkStyles.exploreGrid}>{[['Hauz Khas', 'High energy · high crowd'], ['Khan Market', 'Polished · early evening'], ['Cyber Hub', 'Busy · late-night']].map(([area, copy]) => <Pressable key={area} accessibilityRole="button" onPress={() => set({ screen: 'search' })} style={artworkStyles.exploreCard}><Text style={artworkStyles.exploreArea}>{area}</Text><Text style={styles.small}>{copy}</Text><Ionicons name="arrow-forward" size={17} color={colors.pink} /></Pressable>)}</View>
         <ImageBackground source={homeCityArtwork} imageStyle={artworkStyles.homeCityImage} style={artworkStyles.homeCityCard}><View style={artworkStyles.homeCityShade} /><Text style={artworkStyles.cityTitle}>New Delhi is moving tonight.</Text><Text style={styles.small}>Neighbourhood-level recommendations, kept approximate.</Text><Button kind="secondary" onPress={() => set({ screen: 'search' })}>Explore places</Button></ImageBackground>
@@ -2220,37 +2230,33 @@ function Plans() {
 }
 function Rooms() {
   const { set } = useApp();
+  const [rooms, setRooms] = useState<RoomRecord[]>([]);
+  useEffect(() => {
+    let alive = true;
+    getService().listHostedRooms().then((items) => {
+      if (alive) setRooms(items.filter((room) => room.status === 'hosted'));
+    }).catch(() => {
+      if (alive) setRooms([]);
+    });
+    return () => { alive = false; };
+  }, []);
   return (
     <SafeAreaView style={styles.safe}>
       <Header label="Rooms" />
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.kicker}>PEOPLE, NOT PROFILES</Text>
         <Text style={styles.h2}>Rooms built around a reason to go.</Text>
-        <View style={styles.roomCard}>
-          <View style={styles.roomIcon}>
-            <Ionicons name="people" size={24} color={colors.mint} />
-          </View>
-          <Text style={styles.cardTitle}>Friday night, open to the city</Text>
-          <Text style={styles.small}>
-            3 people · Common Ground · requests open
-          </Text>
-          <Button onPress={() => set({ screen: "plans" })}>
-            View room plan
-          </Button>
-        </View>
-        <View style={styles.roomCard}>
-          <View style={[styles.roomIcon, { backgroundColor: "#2B1D41" }]}>
-            <Ionicons name="lock-open-outline" size={24} color={colors.pink} />
-          </View>
-          <Text style={styles.cardTitle}>Aarav’s capsule</Text>
-          <Text style={styles.small}>Invite-only · 2 members approved</Text>
-          <Button
-            kind="secondary"
-            onPress={() => set({ screen: "profileHome" })}
-          >
-            Open capsule
-          </Button>
-        </View>
+        {rooms.length ? rooms.map((room) => <View style={styles.roomCard} key={room.id}>
+          <View style={styles.roomIcon}><Ionicons name="people" size={24} color={colors.mint} /></View>
+          <Text style={styles.cardTitle}>{room.title}</Text>
+          <Text style={styles.small}>{room.members?.length ?? 0} people · {room.stop_count ?? room.selected_stops?.length ?? 0} stops · requests open</Text>
+          <Button onPress={() => set({ screen: "feature", featureMode: "joinRoom" })}>View room</Button>
+        </View>) : <View style={styles.roomCard}>
+          <View style={[styles.roomIcon, { backgroundColor: "#2B1D41" }]}><Ionicons name="moon-outline" size={24} color={colors.pink} /></View>
+          <Text style={styles.cardTitle}>No hosted rooms yet</Text>
+          <Text style={styles.small}>Rooms appear here after someone hosts a published plan.</Text>
+          <Button kind="secondary" onPress={() => set({ screen: "feature", featureMode: "hostRoom" })}>Host a room</Button>
+        </View>}
         <Button
           kind="secondary"
           onPress={() => set({ screen: "feature", featureMode: "joinRoom" })}

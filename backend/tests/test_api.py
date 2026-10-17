@@ -39,6 +39,11 @@ def test_public_live_requires_published_venue():
     response = client.get('/v1/venues/not-published/live')
     assert response.status_code == 404
 
+def test_people_directory_returns_discoverable_members():
+    result = client.get('/v1/people', params={'limit': 10})
+    assert result.status_code == 200
+    assert isinstance(result.json()['items'], list)
+
 def test_plan_generation():
     result = client.post('/v1/plans/generate', json={'scores': {'ENRG': 88, 'ROAM': 80}})
     assert result.status_code == 200

@@ -1438,6 +1438,27 @@ def update_profile(payload: ProfileUpdate, authorization: str | None = Header(de
     return _domain_store.profile_update(user_id, payload.model_dump())
 
 
+@app.get("/v1/people")
+def people(
+    q: str = Query(default="", max_length=120),
+    limit: int = Query(default=24, ge=1, le=50),
+    authorization: str | None = Header(default=None),
+) -> dict[str, Any]:
+    """List discoverable members for co-host and capsule selection."""
+    user_id = _request_user_id(authorization)
+    if _domain_store.available:
+        return {"items": _domain_store.people_search(user_id, q, limit)}
+    fallback = []
+    for account in _auth_accounts.values():
+        if str(account.get("id")) == user_id or str(account.get("status", "active")) != "active":
+            continue
+        name = str(account.get("name", "")).strip()
+        if q.strip().lower() not in name.lower():
+            continue
+        fallback.append({"id": str(account["id"]), "name": name, "city": "New Delhi", "bio": ""})
+    return {"items": fallback[:limit]}
+
+
 @app.delete("/v1/account")
 def delete_account(authorization: str | None = Header(default=None)) -> dict[str, Any]:
     """Reset user-owned runtime state for the current MVP account."""
