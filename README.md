@@ -1,5 +1,9 @@
 # SHUFFL — engine specs, front-end flows, and the reasoning
 
+> Runtime layout and service wiring are documented in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+> The active mobile app is under `mobile/`; the preserved product specification remains under
+> `shuffl-docs/shuffl-spec-main/`.
+
 **Assembled:** 2026-09-15 · **Refreshed:** 2026-09-17
 **For:** the developer building the vibe assessment, the outing-plan engine, the front end and the backend
 **Start with:** `specs/BACKEND_BRIEF_ASSESSMENT.md`. This file is the map; that one is the brief.

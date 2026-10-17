@@ -7,6 +7,7 @@
 **/data/
 **/data_market_ready/
 **/data_market_ready_v2/
+**/data_auto_only/
 **/google_details_raw.json
 **/*.inspect.ndjson
 **/*.xlsx
@@ -24,6 +25,15 @@
 
 # Local artifacts, renders and temporary files
 artifacts/
-.tmp-sheet/
+archive/
+.backups/
+output/
+reports/
+tmp/
 _docx_review/
 docx-reference-render/
+.playwright-mcp/
+.pytest_cache/
+.gradle-home/
+.shuffl-native-build/
+.tmp-sheet/
