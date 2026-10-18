@@ -38,7 +38,7 @@ export type ConversationRecord = { id: string; kind: 'group' | 'direct'; title: 
 export type NotificationRecord = { id: string; kind: string; title: string; body?: string; read: boolean; room_id?: string; created_at?: string };
 export type ProfileRecord = { name: string; city: string; pronouns?: string; bio?: string; preferences: Record<string, number>; updated_at?: string };
 export type PersonRecord = { id: string; name: string; city?: string; bio?: string };
-export type VenueCard = (typeof venues)[number] & { id?: string; google_place_id?: string; google_lookup_url?: string; official_url?: string; hours_mode?: string; match_distance?: number; live?: Record<string, unknown> | null; address?: string; website_url?: string; menu_url?: string; social_urls?: string[]; tags?: string[]; rating?: number; review_count?: number; photos?: string[] };
+export type VenueCard = (typeof venues)[number] & { id?: string; google_place_id?: string; google_lookup_url?: string; official_url?: string; hours_mode?: string; match_distance?: number; live?: Record<string, unknown> | null; address?: string; website_url?: string; menu_url?: string; social_urls?: string[]; tags?: string[]; rating?: number; review_count?: number; photos?: string[]; selectable?: boolean; admission_badge?: string; eligibility_status?: string };
 export type VenueDetail = { venue: VenueCard | Record<string, unknown>; normalized: Record<string, unknown>; google_place_id?: string; google_lookup_url?: string; live_fields: { source: string; persisted: boolean } };
 export type SkeletonPayload = { scores: Record<string, number>; stops: number; energy: number; crowd: number; tags: string[]; stop_durations: number[]; source?: string };
 export type SkeletonRecord = SkeletonPayload & { id: string; created_at: string };
@@ -245,6 +245,9 @@ export function createApiService(baseUrl: string): Service {
       rating: typeof item.rating === 'number' ? item.rating : undefined,
       review_count: typeof item.review_count === 'number' ? item.review_count : undefined,
       photos: Array.isArray(item.photos) ? item.photos.map(String) : [],
+      selectable: item.selectable !== false,
+      admission_badge: item.admission_badge ? String(item.admission_badge) : undefined,
+      eligibility_status: item.eligibility_status ? String(item.eligibility_status) : undefined,
       hours_mode: item.hours_mode ? String(item.hours_mode) : undefined,
       match_distance: typeof item.match_distance === 'number' ? item.match_distance : undefined,
       live: (item.live as Record<string, unknown> | null | undefined) ?? null,

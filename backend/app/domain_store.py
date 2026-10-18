@@ -371,6 +371,7 @@ class DomainStore:
             for member in members:
                 self.ensure_user(member)
                 conn.execute(text("INSERT INTO room_members(room_id,user_id,role,joined_at) VALUES (:room,:user,:role,:now)"), {"room": room["id"], "user": member, "role": "host" if member == room["owner_id"] else "member", "now": self._now().isoformat()})
+            conn.execute(text("INSERT INTO conversations(id,room_id,kind,title) VALUES (:id,:room,'group',:title)"), {"id": f"conversation-{room['id']}", "room": room["id"], "title": room["title"]})
         return self.get_room(room["id"])
 
     def get_room(self, room_id: str) -> dict[str, Any] | None:
@@ -471,8 +472,22 @@ class DomainStore:
 
     def conversation_ids(self, user_id: str) -> list[str]:
         with self.engine.connect() as conn:
-            rows = conn.execute(text("SELECT DISTINCT c.id FROM conversations c JOIN messages m ON m.conversation_id=c.id JOIN room_members rm ON rm.room_id=c.room_id WHERE rm.user_id=:user ORDER BY c.id"), {"user": user_id}).all()
-        return [str(row[0]) for row in rows] or ["conversation-demo"]
+            rows = conn.execute(text("SELECT DISTINCT c.id FROM conversations c JOIN room_members rm ON rm.room_id=c.room_id WHERE rm.user_id=:user ORDER BY c.id"), {"user": user_id}).all()
+        return [str(row[0]) for row in rows]
+
+    def conversation_member(self, conversation_id: str, user_id: str) -> bool:
+        with self.engine.connect() as conn:
+            return bool(conn.execute(text("""SELECT 1 FROM conversations c
+                JOIN room_members rm ON rm.room_id=c.room_id
+                WHERE c.id=:conversation AND rm.user_id=:user"""), {"conversation": conversation_id, "user": user_id}).first())
+
+    def conversation_room_members(self, conversation_id: str) -> tuple[str | None, list[str]]:
+        with self.engine.connect() as conn:
+            room_id = conn.execute(text("SELECT room_id FROM conversations WHERE id=:id"), {"id": conversation_id}).scalar()
+            if not room_id:
+                return None, []
+            members = conn.execute(text("SELECT user_id FROM room_members WHERE room_id=:room ORDER BY joined_at"), {"room": room_id}).all()
+        return str(room_id), [str(row[0]) for row in members]
 
     def conversation_summary(self, conversation_id: str, user_id: str) -> dict[str, Any]:
         messages = self.conversation_messages(conversation_id)
@@ -480,7 +495,9 @@ class DomainStore:
             unread = conn.execute(text("""SELECT COUNT(*) FROM messages m
                 WHERE m.conversation_id=:conversation AND m.sender_id<>:user
                 AND NOT EXISTS (SELECT 1 FROM message_receipts r WHERE r.message_id=m.id AND r.user_id=:user)"""), {"conversation": conversation_id, "user": user_id}).scalar()
-        return {"id": conversation_id, "kind": "group", "title": "Friday Room" if conversation_id == "conversation-demo" else conversation_id, "unread": int(unread or 0), "messages": messages}
+        with self.engine.connect() as conn:
+            title = conn.execute(text("SELECT title FROM conversations WHERE id=:id"), {"id": conversation_id}).scalar()
+        return {"id": conversation_id, "kind": "group", "title": str(title or conversation_id), "unread": int(unread or 0), "messages": messages}
 
     def conversation_messages(self, conversation_id: str) -> list[dict[str, Any]]:
         if not self.available:
@@ -494,7 +511,7 @@ class DomainStore:
         with self.Session.begin() as session:
             conversation = session.get(Conversation, conversation_id)
             if not conversation:
-                session.add(Conversation(id=conversation_id, kind="group", title="SHUFFL conversation"))
+                raise ValueError("Conversation not found")
             row = Message(id=message_id, conversation_id=conversation_id, sender_id=sender_id, body=body)
             session.add(row)
         return {"id": message_id, "conversation_id": conversation_id, "sender_id": sender_id, "body": body, "created_at": self._now().isoformat(), "read": False}

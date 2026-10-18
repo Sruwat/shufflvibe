@@ -736,14 +736,16 @@ class AdminStore:
             items.append(item)
         return items
 
-    def public_venues(self, query: str = "", city: str = "") -> list[dict[str, Any]]:
+    def public_venues(self, query: str = "", city: str = "", include_needs_review: bool = False) -> list[dict[str, Any]]:
         """Return app-safe venue cards from the admin source of truth.
 
         Google display fields are intentionally not copied here. The mobile/web
         client uses google_place_id with its live Places adapter for those fields.
         """
         with self.engine.connect() as conn:
-            rows = conn.execute(text("SELECT * FROM admin_venues WHERE publication_status='PUBLISHED' AND eligibility_status IN ('AUTO_APPROVED','PROVISIONAL') AND verification_status <> 'rejected' ORDER BY area, display_name")).fetchall()
+            eligibility = "('AUTO_APPROVED','PROVISIONAL','NEEDS_REVIEW')" if include_needs_review else "('AUTO_APPROVED','PROVISIONAL')"
+            publication = "('PUBLISHED','DRAFT')" if include_needs_review else "('PUBLISHED')"
+            rows = conn.execute(text(f"SELECT * FROM admin_venues WHERE publication_status IN {publication} AND eligibility_status IN {eligibility} AND verification_status <> 'rejected' ORDER BY area, display_name")).fetchall()
         items: list[dict[str, Any]] = []
         for row in rows:
             item = self._row(row)
@@ -762,6 +764,8 @@ class AdminStore:
                 "scores": {row.get("factor"): row.get("score") for row in item.get("venue_scores", [])}, "verification_status": item.get("verification_status"),
                 "manual_vibe": override.get("manual_vibe", ""), "published": item.get("publication_status") == "PUBLISHED",
                 "eligibility_status": item.get("eligibility_status"), "publication_status": item.get("publication_status"),
+                "selectable": item.get("eligibility_status") in {"AUTO_APPROVED", "PROVISIONAL"} and item.get("publication_status") == "PUBLISHED",
+                "admission_badge": "Needs review" if item.get("eligibility_status") == "NEEDS_REVIEW" else "Admitted",
                 "updated_at": item.get("updated_at"), "photos": override.get("photos", []), "dto_version": "venue-dto-v1",
             })
         return items

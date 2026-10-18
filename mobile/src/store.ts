@@ -110,6 +110,7 @@ type State = {
   avatarUri: string;
   activeConversation: string;
   selectedVenueName: string;
+  savedVenueNames: string[];
   pendingVenueShare: string;
   activeMusic: string;
   set: (p: Partial<State>) => void;
@@ -162,6 +163,7 @@ type SavedState = Pick<
   | "capsule"
   | "skeleton"
   | "activeMusic"
+  | "savedVenueNames"
 >;
 const today = () => {
   const date = new Date();
@@ -290,6 +292,7 @@ export const useApp = create<State>((set) => ({
   avatarUri: "",
   activeConversation: "Friday Room",
   selectedVenueName: "",
+  savedVenueNames: [],
   pendingVenueShare: "",
   activeMusic: "",
   set: (p) => set(p),
@@ -325,6 +328,7 @@ export const useApp = create<State>((set) => ({
       avatarUri: "",
       activeConversation: "Friday Room",
       selectedVenueName: "",
+      savedVenueNames: [],
       pendingVenueShare: "",
       activeMusic: "",
     });
@@ -342,6 +346,7 @@ export async function hydrateDemoState() {
           .getState()
           .set({
             ...saved,
+            savedVenueNames: saved.savedVenueNames ?? [],
             skeleton: saved.skeleton ?? initialSkeleton(),
             screen: "discover",
             locked: !completedToday,
@@ -377,6 +382,7 @@ useApp.subscribe((state) => {
     capsule: state.capsule,
     skeleton: state.skeleton,
     activeMusic: state.activeMusic,
+    savedVenueNames: state.savedVenueNames,
   };
   saveTimer = setTimeout(() => {
     saveChain = saveChain

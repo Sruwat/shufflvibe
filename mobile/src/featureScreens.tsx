@@ -49,11 +49,11 @@ const reportReasons = [
 ];
 
 function VenueDetailScreen() {
-  const { selectedVenueName, lastVibeName, set } = useApp();
+  const { selectedVenueName, lastVibeName, savedVenueNames, set } = useApp();
   const [showPairing, setShowPairing] = useState(false);
   const fallbackVenue = (venues.find((item) => item.name === selectedVenueName) ?? {
     name: selectedVenueName,
-    type: "Demo venue",
+    type: "Venue",
     area: "Delhi NCR",
     tag: "A place to make the night yours",
     color: "#20DDA9",
@@ -109,7 +109,7 @@ function VenueDetailScreen() {
     const query = encodeURIComponent(`${venue.name}, ${venue.area}, Delhi`);
     try {
       await Linking.openURL(
-        `https://www.google.com/maps/search/?api=1&query=${query}`,
+        venue.google_lookup_url || `https://www.google.com/maps/search/?api=1&query=${query}`,
       );
     } catch {
       setMapError("Maps couldn’t be opened on this device.");
@@ -122,6 +122,12 @@ function VenueDetailScreen() {
       screen: "feature",
       featureMode: "inbox",
     });
+  const saved = savedVenueNames.includes(venue.name);
+  const toggleSaved = () => set({
+    savedVenueNames: saved
+      ? savedVenueNames.filter((name) => name !== venue.name)
+      : [...savedVenueNames, venue.name],
+  });
   const preferenceLabels: Record<string, string> = {
     FOOD: "Food",
     LIVE: "Live music",
@@ -176,7 +182,7 @@ function VenueDetailScreen() {
           {venueArtwork[venue.name] ? (
             <Image source={venueArtwork[venue.name]} style={venueStyles.posterImage} accessibilityLabel={`${venue.name} venue artwork`} />
           ) : (
-            <Text style={venueStyles.mediaFallback}>VENUE MEDIA NOT AVAILABLE IN THIS DEMO</Text>
+            <Text style={venueStyles.mediaFallback}>VENUE MEDIA NOT AVAILABLE</Text>
           )}
         </View>
         <View style={venueStyles.titleRow}>
@@ -255,8 +261,8 @@ function VenueDetailScreen() {
         <View style={styles.roomCard}>
           <Text style={styles.routeText}>Why it matches tonight</Text>
           <Text style={styles.secondaryText}>{venue.tag}. Good fit for your {lastVibeName || "current"} energy.</Text>
-          <Text style={styles.secondaryText}>Pros · Easy to settle into · Strong neighbourhood fit</Text>
-          <Text style={styles.secondaryText}>Cons · Live crowd availability is not guaranteed</Text>
+          <Text style={styles.secondaryText}>{evidence.length ? `Pros · ${evidence.slice(0, 2).join(" · ")}` : "Pros · No verified pros recorded yet"}</Text>
+          <Text style={styles.secondaryText}>{tags.length ? `Cons · Live conditions may vary · ${tags.slice(0, 1).join(" · ")}` : "Cons · No verified cons recorded yet"}</Text>
         </View>
         {false && <Pressable
           accessibilityRole="button"
@@ -332,6 +338,14 @@ function VenueDetailScreen() {
         >
           <Ionicons name="map" size={19} color={colors.bg} />
           <Text style={venueStyles.goHereText}>Go Here</Text>
+        </Pressable>
+        <Pressable accessibilityRole="button" accessibilityState={{ selected: saved }} onPress={toggleSaved} style={venueStyles.mapsButton}>
+          <Ionicons name={saved ? "bookmark" : "bookmark-outline"} size={19} color={colors.text} />
+          <Text style={venueStyles.mapsButtonText}>{saved ? "Saved" : "Save venue"}</Text>
+        </Pressable>
+        <Pressable accessibilityRole="button" onPress={() => set({ screen: "feature", featureMode: "joinRoom" })} style={venueStyles.mapsButton}>
+          <Ionicons name="people-outline" size={19} color={colors.text} />
+          <Text style={venueStyles.mapsButtonText}>Find rooms</Text>
         </Pressable>
         <Pressable accessibilityRole="button" onPress={() => set({ screen: "feature", featureMode: "customOuting", selectedVenueName: venue.name })} style={venueStyles.mapsButton}><Ionicons name="add-circle-outline" size={19} color={colors.text}/><Text style={venueStyles.mapsButtonText}>Build my night around this</Text></Pressable>
       </ScrollView>
@@ -1327,7 +1341,7 @@ function HostRoomScreen() {
     }
   };
   const confirmAction = () => (confirm === "host" ? host() : createPlan());
-  const suggestedVenues = venueFeed.filter((venue) => {
+  const suggestedVenues = venueFeed.filter((venue) => venue.selectable !== false).filter((venue) => {
     const query = venueQuery.trim().toLowerCase();
     return !query || `${venue.name} ${venue.area} ${venue.type}`.toLowerCase().includes(query);
   }).slice(0, 5);

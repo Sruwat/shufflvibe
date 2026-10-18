@@ -1681,7 +1681,7 @@ async def room_websocket(websocket: WebSocket, room_id: str):
 
 @app.get("/v1/discovery")
 def discovery() -> dict[str, Any]:
-    items = store.public_venues()
+    items = store.public_venues(include_needs_review=True)
     if not items and os.getenv("SHUFFL_DEMO_MODE", "0") == "1":
         items = [{"name": venue["name"], "type": venue["type"], "area": venue["area"]} for venue in DEMO_VENUES]
     return {"items": items, "source": "demo" if os.getenv("SHUFFL_DEMO_MODE", "0") == "1" and not store.public_venues() else "published_venue_api", "version": "venue-dto-v1"}
@@ -1690,12 +1690,25 @@ def discovery() -> dict[str, Any]:
 @app.get("/v1/release")
 def release_metadata() -> dict[str, Any]:
     """Expose the immutable MVP scope to clients and launch diagnostics."""
-    return release_scope()
+    scope = release_scope()
+    # The catalogue lock is an operational setting persisted in MySQL. The
+    # environment variable remains the bootstrap/default for fresh installs,
+    # but the API contract must reflect the live database state after an admin
+    # changes it from the dashboard.
+    try:
+        scope["venue_catalogue"]["locked"] = bool(
+            store.summary().get("pipeline_locked", scope["venue_catalogue"]["locked"])
+        )
+    except Exception:
+        # Keep the static release contract available while readiness reports the
+        # underlying database failure separately.
+        pass
+    return scope
 
 
 @app.get("/v1/venues")
 def venues(query: str = "", city: str = "") -> dict[str, Any]:
-    items = store.public_venues(query, city)
+    items = store.public_venues(query, city, include_needs_review=True)
     if not items and os.getenv("SHUFFL_DEMO_MODE", "0") == "1":
         items = discovery()["items"]
         if query:
@@ -1738,10 +1751,10 @@ def venue_stop_options(
 def public_venue(venue_id: str) -> dict[str, Any]:
     """Return one published normalized venue; Google display fields stay live-only."""
     item = store.get_venue(venue_id)
-    if not item or item.get("publication_status") != "PUBLISHED" or item.get("eligibility_status") not in {"AUTO_APPROVED", "PROVISIONAL"}:
+    if not item or item.get("publication_status") not in {"PUBLISHED", "DRAFT"} or item.get("eligibility_status") not in {"AUTO_APPROVED", "PROVISIONAL", "NEEDS_REVIEW"} or item.get("verification_status") == "rejected":
         raise HTTPException(status_code=404, detail="Published venue not found")
     normalized = store.normalized_venue(venue_id)
-    card = next((candidate for candidate in store.public_venues() if candidate.get("id") == venue_id), None)
+    card = next((candidate for candidate in store.public_venues(include_needs_review=True) if candidate.get("id") == venue_id), None)
     return {"venue": card or {"id": venue_id, "name": item.get("display_name")}, "normalized": normalized, "google_place_id": item.get("google_place_id"), "google_lookup_url": item.get("google_lookup_url"), "live_fields": {"source": "google_places_display_time", "persisted": False}}
 
 
@@ -1751,8 +1764,8 @@ def public_live_venue(venue_id: str) -> dict[str, Any]:
     item = store.get_venue(venue_id)
     if (
         not item
-        or item.get("publication_status") != "PUBLISHED"
-        or item.get("eligibility_status") not in {"AUTO_APPROVED", "PROVISIONAL"}
+        or item.get("publication_status") not in {"PUBLISHED", "DRAFT"}
+        or item.get("eligibility_status") not in {"AUTO_APPROVED", "PROVISIONAL", "NEEDS_REVIEW"}
         or item.get("verification_status") == "rejected"
         or not item.get("google_place_id")
     ):
@@ -2030,10 +2043,20 @@ def send_message(payload: MessageRequest, authorization: str | None = Header(def
     if not _domain_store.available:
         raise HTTPException(status_code=503, detail="Canonical MySQL domain storage is unavailable")
     sender_id = _request_user_id(authorization)
+    if not _domain_store.conversation_member(payload.conversation_id, sender_id):
+        raise HTTPException(status_code=403, detail="You are not a member of this conversation")
     message_id = new_id("message")
-    message = _domain_store.add_message(message_id=message_id, conversation_id=payload.conversation_id, sender_id=sender_id, body=payload.body)
+    try:
+        message = _domain_store.add_message(message_id=message_id, conversation_id=payload.conversation_id, sender_id=sender_id, body=payload.body)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
     message.update({"status": "sent", "read": True})
-    _queue_room_event(payload.conversation_id, "message_received", message=message)
+    room_id, members = _domain_store.conversation_room_members(payload.conversation_id)
+    if room_id:
+        for member_id in members:
+            if member_id != sender_id:
+                _record_notification(member_id, "message_received", {"title": "New room message", "body": payload.body, "room_id": room_id, "conversation_id": payload.conversation_id})
+        _queue_room_event(room_id, "message_received", message=message)
     return message
 
 
@@ -2041,7 +2064,10 @@ def send_message(payload: MessageRequest, authorization: str | None = Header(def
 def mark_conversation_read(conversation_id: str, authorization: str | None = Header(default=None)) -> dict[str, Any]:
     if not _domain_store.available:
         raise HTTPException(status_code=503, detail="Canonical MySQL domain storage is unavailable")
-    count = _domain_store.mark_conversation_read(conversation_id, _request_user_id(authorization))
+    user_id = _request_user_id(authorization)
+    if not _domain_store.conversation_member(conversation_id, user_id):
+        raise HTTPException(status_code=403, detail="You are not a member of this conversation")
+    count = _domain_store.mark_conversation_read(conversation_id, user_id)
     return {"conversation_id": conversation_id, "marked_read": count}
 
 

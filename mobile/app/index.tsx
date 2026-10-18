@@ -50,7 +50,7 @@ import {
 } from "../src/fullEngine";
 import { hydrateDemoState, useApp } from "../src/store";
 import { FeatureScreen } from "../src/featureScreens";
-import { getService, RoomRecord } from "../src/services";
+import { getService, RoomRecord, VenueCard } from "../src/services";
 import { assertReleaseScope } from "../src/releaseScope";
 
 WebBrowser.maybeCompleteAuthSession();
@@ -1893,15 +1893,24 @@ function Discover() {
 }
 function HomeDashboard() {
   const { set, locked, scores, assessment, userName, userPronouns, avatarUri, lastVibeName, plan, skeleton } = useApp();
-  const [venueFeed, setVenueFeed] = useState(venues);
+  const [venueFeed, setVenueFeed] = useState<VenueCard[]>([]);
+  const [venueError, setVenueError] = useState("");
+  const [venueRetry, setVenueRetry] = useState(0);
   const [hostedRooms, setHostedRooms] = useState<RoomRecord[]>([]);
   useEffect(() => {
     let alive = true;
+    setVenueError("");
     getService().getDiscovery().then((items) => {
       if (alive && items.length) setVenueFeed(items);
-    }).catch(() => undefined);
+      if (alive && !items.length) setVenueError("No published venues are available right now.");
+    }).catch((cause) => {
+      if (alive) {
+        setVenueFeed([]);
+        setVenueError(cause instanceof Error ? cause.message : "Venue catalogue unavailable.");
+      }
+    });
     return () => { alive = false; };
-  }, []);
+  }, [venueRetry]);
   useEffect(() => {
     let alive = true;
     getService().listHostedRooms().then((items) => {
@@ -1918,11 +1927,11 @@ function HomeDashboard() {
   const gated = () => set({ screen: lastVibeName ? 'dailyCheckin' : 'instructions' });
   const openVibe = () => locked ? gated() : set({ screen: 'reveal' });
   const initials = (userName || 'You').trim().split(/\s+/).map(part => part[0]).join('').slice(0, 2).toUpperCase();
-  const recommendation = (venue: typeof venues[number], index: number) => <Pressable key={venue.name} accessibilityRole="button" accessibilityLabel={`Open ${venue.name} venue detail`} onPress={() => set({ screen: 'feature', featureMode: 'venue', selectedVenueName: venue.name })} style={artworkStyles.homeVenueCard}>
+  const recommendation = (venue: VenueCard, index: number) => <Pressable key={venue.name} accessibilityRole="button" accessibilityLabel={`Open ${venue.name} venue detail`} onPress={() => set({ screen: 'feature', featureMode: 'venue', selectedVenueName: venue.name })} style={artworkStyles.homeVenueCard}>
     <Image source={venueArtwork[venue.name] ?? homeCityArtwork} style={artworkStyles.homeVenueImage} accessibilityLabel={`${venue.name} artwork`} />
     <View style={artworkStyles.homeVenueShade} />
     <View style={artworkStyles.homeVenueContent}>
-      <View style={artworkStyles.homeVenueTop}><Text style={artworkStyles.homeVenueArea}>{venue.area.toUpperCase()}</Text><Text style={[artworkStyles.homeVenueMatch, { color: [colors.mint, colors.cyan, colors.pink, colors.amber][index] }]}>{92 - index * 5}% MATCH</Text></View>
+      <View style={artworkStyles.homeVenueTop}><Text style={artworkStyles.homeVenueArea}>{venue.area.toUpperCase()}</Text><Text style={[artworkStyles.homeVenueMatch, { color: venue.selectable === false ? colors.amber : [colors.mint, colors.cyan, colors.pink, colors.amber][index] }]}>{venue.selectable === false ? (venue.admission_badge || 'NEEDS REVIEW').toUpperCase() : `${92 - index * 5}% MATCH`}</Text></View>
       <View><Text style={artworkStyles.homeVenueName}>{venue.name.toUpperCase()}</Text><Text style={artworkStyles.homeVenueMeta}>{venue.type} · {venue.tag}</Text><Text style={styles.small}>{index === 0 ? 'Good energy, still easy to talk' : index === 1 ? 'Space to roam and reset' : 'A room that knows the next song'}</Text><View style={artworkStyles.homeVenueAction}><Text style={artworkStyles.venueFooterText}>VIEW PLACE</Text><Ionicons name="arrow-forward" size={18} color={colors.pink} /></View></View>
     </View>
   </Pressable>;
@@ -1945,7 +1954,7 @@ function HomeDashboard() {
       </Pressable>
       {locked ? <View style={artworkStyles.dashboardLocked}><Text style={styles.cardTitle}>Tonight’s picks are locked</Text><Text style={styles.small}>Play the swipe game and get your vibe for the day to unlock this feature.</Text><Button onPress={gated}>Play today</Button></View> : <>
         <View style={artworkStyles.homeSectionHeader}><View><Text style={styles.sectionTitle}>TONIGHT’S PICKS</Text><Text style={artworkStyles.shelfSubhead}>Picked for your vibe</Text></View><Pressable accessibilityRole="button" onPress={() => set({ screen: 'search' })}><Text style={artworkStyles.homeShelfLabel}>SEE ALL</Text></Pressable></View>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={artworkStyles.venueShelf}>{venueFeed.map(recommendation)}</ScrollView>
+        {venueError ? <View style={artworkStyles.dashboardEmpty}><Text accessibilityRole="alert" style={styles.small}>{venueError}</Text><Button kind="secondary" onPress={() => setVenueRetry((value) => value + 1)}>Retry venues</Button></View> : <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={artworkStyles.venueShelf}>{venueFeed.map(recommendation)}</ScrollView>}
         <View style={artworkStyles.dashboardSectionHeader}><View><Text style={styles.sectionTitle}>TONIGHT’S LINE-UP</Text><Text style={artworkStyles.shelfSubhead}>Built around your vibe</Text></View><Ionicons name="map-outline" size={20} color={colors.pink} /></View>
         {plan.exists ? <><Pressable accessibilityRole="button" onPress={() => set({ screen: 'feature', featureMode: plan.locked ? 'activePlan' : 'customOuting' })} style={artworkStyles.dashboardPlanCard}><View style={artworkStyles.dashboardPlanTop}><Text style={styles.cardTitle}>{plan.title || plan.style}</Text><Text style={artworkStyles.homeShelfLabel}>{plan.locked ? 'LOCKED' : 'DRAFT'}</Text></View>{plan.stops.slice(0, 2).map((stop, index) => <Text key={`${stop}-${index}`} style={styles.small}>{index + 1}. {stop}</Text>)}<Text style={styles.small}>{plan.durationHours} hours · Delhi NCR · {plan.locked ? 'Tap to view active plan' : 'Tap to review'}</Text><View style={artworkStyles.dashboardPlanActions}><Text style={artworkStyles.venueFooterText}>VIEW PLAN</Text><Ionicons name="arrow-forward" size={18} color={colors.pink} /></View></Pressable><View style={artworkStyles.planQuickActions}><Pressable accessibilityRole="button" onPress={() => set({ screen: 'feature', featureMode: 'customOuting' })}><Text style={artworkStyles.planActionText}>CUSTOM</Text></Pressable>{!plan.locked && <Pressable accessibilityRole="button" onPress={() => set({ screen: 'shuffl', plan: { ...plan, exists: false, locked: false, stops: [] } })}><Text style={artworkStyles.planActionText}>SHUFFLE</Text></Pressable>}<Pressable accessibilityRole="button" onPress={() => set({ screen: 'feature', featureMode: 'hostRoom' })}><Text style={artworkStyles.planActionText}>HOST THIS</Text></Pressable></View></> : <View style={artworkStyles.dashboardEmpty}><Text style={styles.cardTitle}>No plan yet</Text><Text style={styles.small}>Build your night from your vibe.</Text><Button onPress={() => set({ screen: 'shuffl' })}>Build my night</Button></View>}
         <View style={artworkStyles.dashboardSectionHeader}><View><Text style={styles.sectionTitle}>ROOMS LIVE NOW</Text><Text style={artworkStyles.shelfSubhead}>Find a night already forming</Text></View><Ionicons name="people-outline" size={20} color={colors.pink} /></View>
