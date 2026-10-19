@@ -2316,7 +2316,7 @@ function Rooms() {
           <View style={styles.roomIcon}><Ionicons name="people" size={24} color={colors.mint} /></View>
           <Text style={styles.cardTitle}>{room.title}</Text>
           <Text style={styles.small}>{room.members?.length ?? 0} people · {room.stop_count ?? room.selected_stops?.length ?? 0} stops · requests open</Text>
-          <Button onPress={() => set({ screen: "feature", featureMode: "joinRoom" })}>View room</Button>
+          <Button onPress={() => set({ screen: "shuffl" })}>View night</Button>
         </View>) : <View style={styles.roomCard}>
           <View style={[styles.roomIcon, { backgroundColor: "#2B1D41" }]}><Ionicons name="moon-outline" size={24} color={colors.pink} /></View>
           <Text style={styles.cardTitle}>No hosted rooms yet</Text>
@@ -2325,9 +2325,9 @@ function Rooms() {
         </View>}
         <Button
           kind="secondary"
-          onPress={() => set({ screen: "feature", featureMode: "joinRoom" })}
+          onPress={() => set({ screen: "shuffl" })}
         >
-          Find a room to join
+          Explore the SHUFFL flow
         </Button>
       </ScrollView>
       <Nav />

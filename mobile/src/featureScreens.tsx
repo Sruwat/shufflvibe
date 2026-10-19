@@ -37,6 +37,8 @@ import {
   PrivacySettings,
   PersonRecord,
   RoomRecord,
+  GatheringRecord,
+  GatheringProposal,
 } from "./services";
 import { latencyFirmness } from "./fullEngine";
 
@@ -343,7 +345,7 @@ function VenueDetailScreen() {
           <Ionicons name={saved ? "bookmark" : "bookmark-outline"} size={19} color={colors.text} />
           <Text style={venueStyles.mapsButtonText}>{saved ? "Saved" : "Save venue"}</Text>
         </Pressable>
-        <Pressable accessibilityRole="button" onPress={() => set({ screen: "feature", featureMode: "joinRoom" })} style={venueStyles.mapsButton}>
+        <Pressable accessibilityRole="button" onPress={() => set({ screen: "shuffl" })} style={venueStyles.mapsButton}>
           <Ionicons name="people-outline" size={19} color={colors.text} />
           <Text style={venueStyles.mapsButtonText}>Find rooms</Text>
         </Pressable>
@@ -1118,10 +1120,14 @@ function CustomOutingScreen() {
 }
 
 function GatheringScreen() {
-  const { set } = useApp();
+  const { set, scores } = useApp();
   const [name, setName] = useState("Tonight together");
   const [people, setPeople] = useState<PersonRecord[]>([]);
   const [selected, setSelected] = useState<string[]>([]);
+  const [gathering, setGathering] = useState<GatheringRecord | null>(null);
+  const [proposals, setProposals] = useState<GatheringProposal[]>([]);
+  const [stage, setStage] = useState<"invite" | "draw" | "proposal">("invite");
+  const [skeleton, setSkeleton] = useState<Record<string, unknown> | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   useEffect(() => {
@@ -1135,10 +1141,37 @@ function GatheringScreen() {
     setError("");
     try {
       const gathering = await getService().createGathering(name.trim(), selected);
-      set({ room: { ...useApp.getState().room, name: gathering.name, members: gathering.members.map((member) => member.user_id), cohosts: selected }, screen: "shuffl" });
+      setGathering(gathering);
+      setStage("draw");
+      set({ room: { ...useApp.getState().room, name: gathering.name, members: gathering.members.map((member) => member.user_id), cohosts: selected } });
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Could not start the gathering.");
     } finally { setBusy(false); }
+  };
+  const draw = async () => {
+    if (!gathering || busy) return;
+    setBusy(true); setError("");
+    try {
+      const payload = { scores: Object.fromEntries(Object.entries(scores).map(([key, value]) => [key, Number(value ?? 50)])), stops: 2, energy: Number(scores.ENRG ?? 50), crowd: Number(scores.CROWD ?? 50), tags: ["good food", "somewhere to roam"], stop_durations: [90, 120], source: "mobile" };
+      await getService().saveGatheringSkeleton(gathering.id, payload);
+      const merged = await getService().mergeGatheringSkeleton(gathering.id);
+      const result = await getService().listGatheringProposals(gathering.id);
+      setSkeleton((merged.merged ?? {}) as Record<string, unknown>);
+      setProposals(result);
+      setStage("proposal");
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Every active member must draw before the night can be merged.");
+    } finally { setBusy(false); }
+  };
+  const decide = async (proposal: GatheringProposal, status: "accepted" | "declined") => {
+    if (!gathering || busy) return;
+    setBusy(true); setError("");
+    try {
+      const result = await getService().decideGatheringProposal(gathering.id, proposal.id, status);
+      setProposals((items) => items.map((item) => item.id === result.id ? result : item));
+      if (status === "accepted") set({ screen: "shuffl" });
+    } catch (cause) { setError(cause instanceof Error ? cause.message : "Could not update this proposal."); }
+    finally { setBusy(false); }
   };
   return (
     <FeatureShell>
@@ -1146,16 +1179,26 @@ function GatheringScreen() {
         <FeatureHeader label="ADD FRIENDS" onBack={() => set({ screen: "shuffl" })} />
         <ScrollView contentContainerStyle={styles.content}>
           <Text style={styles.eyebrow}>ONE NIGHT · TOGETHER</Text>
-          <Text style={styles.title}>Give the night a name.</Text>
-          <Text style={styles.body}>Add the people who want your kind of night today. Everyone draws their own shape before the room comes together.</Text>
-          <TextInput accessibilityLabel="Gathering name" value={name} onChangeText={setName} style={styles.input} placeholder="Tonight together" placeholderTextColor={colors.muted} />
-          <Text style={styles.fieldLabel}>YOUR PEOPLE</Text>
-          {people.length ? people.map((person) => {
-            const isSelected = selected.includes(person.id);
-            return <Pressable key={person.id} accessibilityRole="checkbox" accessibilityState={{ checked: isSelected }} onPress={() => setSelected((current) => isSelected ? current.filter((id) => id !== person.id) : [...current, person.id])} style={[styles.route, isSelected && { borderColor: colors.pink, backgroundColor: colors.pink + "12" }]}><View style={{ flex: 1 }}><Text style={styles.routeText}>{person.name}</Text><Text style={styles.secondaryText}>{person.city ?? "Delhi NCR"}</Text></View><Ionicons name={isSelected ? "checkmark-circle" : "add-circle-outline"} size={23} color={isSelected ? colors.pink : colors.muted} /></Pressable>;
-          }) : <Text style={styles.secondaryText}>No discoverable friends yet. You can start your own night and add people later.</Text>}
+          <Text style={styles.title}>{stage === "invite" ? "Give the night a name." : stage === "draw" ? "Draw your shape." : "Choose the room proposal."}</Text>
+          <Text style={styles.body}>{stage === "invite" ? "Add the people who want your kind of night today. Everyone draws their own shape before the room comes together." : stage === "draw" ? "Your wheel is active. Submit your shape, then SHUFFL will merge the room when every active member has drawn." : "The merged shape is ready. Accept it to continue into ranked rooms, or decline and draw again."}</Text>
+          {stage === "invite" ? <>
+            <TextInput accessibilityLabel="Gathering name" value={name} onChangeText={setName} style={styles.input} placeholder="Tonight together" placeholderTextColor={colors.muted} />
+            <Text style={styles.fieldLabel}>YOUR PEOPLE</Text>
+            {people.length ? people.map((person) => {
+              const isSelected = selected.includes(person.id);
+              return <Pressable key={person.id} accessibilityRole="checkbox" accessibilityState={{ checked: isSelected }} onPress={() => setSelected((current) => isSelected ? current.filter((id) => id !== person.id) : [...current, person.id])} style={[styles.route, isSelected && { borderColor: colors.pink, backgroundColor: colors.pink + "12" }]}><View style={{ flex: 1 }}><Text style={styles.routeText}>{person.name}</Text><Text style={styles.secondaryText}>{person.city ?? "Delhi NCR"}</Text></View><Ionicons name={isSelected ? "checkmark-circle" : "add-circle-outline"} size={23} color={isSelected ? colors.pink : colors.muted} /></Pressable>;
+            }) : <Text style={styles.secondaryText}>No discoverable friends yet. You can start your own night and add people later.</Text>}
+            <FeatureButton label={busy ? "Starting…" : "Start gathering"} onPress={() => void create()} />
+          </> : null}
+          {stage === "draw" ? <>
+            <View style={styles.roomCard}><Text style={styles.routeText}>{gathering?.name}</Text><Text style={styles.secondaryText}>{gathering?.members.length ?? 1} members · wheel held by you</Text><Text style={styles.body}>Invited members must accept and draw before the merge can complete.</Text></View>
+            <FeatureButton label={busy ? "Merging…" : "Submit my shape"} onPress={() => void draw()} />
+          </> : null}
+          {stage === "proposal" ? <>
+            <View style={styles.roomCard}><Text style={styles.routeText}>Merged room shape</Text><Text style={styles.secondaryText}>{skeleton ? `${String(skeleton.stops ?? 2)} stops · ${Array.isArray(skeleton.tags) ? (skeleton.tags as string[]).join(" · ") : "matched to the room"}` : "Ready for review"}</Text></View>
+            {proposals.map((proposal) => <View key={proposal.id} style={styles.roomCard}><Text style={styles.routeText}>{proposal.kind.toUpperCase()} PROPOSAL</Text><Text style={styles.secondaryText}>{proposal.status === "pending" ? "Waiting for your decision" : `Proposal ${proposal.status}`}</Text>{proposal.status === "pending" ? <View style={styles.inlineActions}><FeatureButton label="Accept room" onPress={() => void decide(proposal, "accepted")} /><FeatureButton label="Decline" secondary onPress={() => void decide(proposal, "declined")} /></View> : null}</View>)}
+          </> : null}
           {error ? <Text accessibilityRole="alert" style={styles.notice}>{error}</Text> : null}
-          <FeatureButton label={busy ? "Starting…" : "Start gathering"} onPress={() => void create()} />
         </ScrollView>
       </SafeAreaView>
     </FeatureShell>
@@ -3034,7 +3077,7 @@ function NotificationsScreen() {
   const [error, setError] = useState("");
   const [retryKey, setRetryKey] = useState(0);
   useEffect(() => { service.listNotifications().then(setItems).catch((cause) => setError(cause instanceof Error ? cause.message : "Could not load notifications.")); }, [service, retryKey]);
-  const nextFor = (kind: string) => kind.includes("room") ? { screen: "feature" as const, featureMode: "joinRoom" as const } : kind.includes("capsule") ? { screen: "feature" as const, featureMode: "capsule" as const } : kind.includes("message") ? { screen: "feature" as const, featureMode: "inbox" as const } : { screen: "feature" as const, featureMode: "activePlan" as const };
+  const nextFor = (kind: string) => kind.includes("room") || kind.includes("capsule") || kind.includes("gathering") ? { screen: "feature" as const, featureMode: "gathering" as const } : kind.includes("message") ? { screen: "feature" as const, featureMode: "inbox" as const } : { screen: "feature" as const, featureMode: "activePlan" as const };
   return <FeatureShell><SafeAreaView style={styles.safe}><FeatureHeader label="NOTIFICATIONS" onBack={() => set({ screen: "discover" })}/><ScrollView contentContainerStyle={styles.content}><Text style={styles.eyebrow}>YOUR NIGHT, IN THE LOOP</Text><Text style={styles.title}>Notifications</Text><Text style={styles.body}>Join requests, room invitations, capsule approvals and plan updates stay visible here.</Text>{error ? <><Text accessibilityRole="alert" style={styles.notice}>{error}</Text><FeatureButton label="Retry notifications" onPress={() => { setError(""); setRetryKey((value) => value + 1); }} secondary /></> : null}{items.map(item => <Pressable key={item.id} accessibilityRole="button" onPress={() => { void service.markNotificationRead(item.id); setItems((current) => current.map((entry) => entry.id === item.id ? { ...entry, read: true } : entry)); set(nextFor(item.kind)); }} style={styles.route}><View style={styles.heroIcon}><Ionicons name={item.read ? "notifications-outline" : "notifications"} size={22} color={item.read ? colors.muted : colors.pink}/></View><View style={{flex:1}}><Text style={styles.routeText}>{item.title}</Text><Text style={styles.secondaryText}>{item.body || "No additional detail."}</Text><Text style={styles.notice}>{item.read ? "Read" : "Unread · tap to open"}</Text></View><Ionicons name="chevron-forward" size={19} color={colors.muted}/></Pressable>)}{!items.length && !error ? <Text style={styles.secondaryText}>No notifications yet.</Text> : null}</ScrollView></SafeAreaView></FeatureShell>;
 }
 
@@ -3109,34 +3152,12 @@ export function FeatureScreen({ mode }: { mode: FeatureMode }) {
         <ArrivalScreen />
       </FeatureShell>
     );
-  if (mode === "hostRoom")
-    return (
-      <FeatureShell>
-        <HostRoomScreen />
-      </FeatureShell>
-    );
+  if (mode === "hostRoom" || mode === "joinRequests" || mode === "joinRoom" || mode === "capsule")
+    return <GatheringScreen />;
   if (mode === "activePlan")
     return (
       <FeatureShell>
         <ActivePlanScreen />
-      </FeatureShell>
-    );
-  if (mode === "joinRequests")
-    return (
-      <FeatureShell>
-        <JoinRequestsScreen />
-      </FeatureShell>
-    );
-  if (mode === "joinRoom")
-    return (
-      <FeatureShell>
-        <JoinRoomScreen />
-      </FeatureShell>
-    );
-  if (mode === "capsule")
-    return (
-      <FeatureShell>
-        <CapsuleScreen />
       </FeatureShell>
     );
   if (mode === "chat")
@@ -3181,7 +3202,7 @@ export function FeatureScreen({ mode }: { mode: FeatureMode }) {
           </Pressable>
           {mode === "settings" && (
             <View style={styles.routeList}>
-              {(Object.keys(content) as FeatureMode[]).map((route) => (
+              {(Object.keys(content) as FeatureMode[]).filter((route) => !["hostRoom", "joinRequests", "joinRoom", "capsule"].includes(route)).map((route) => (
                 <Pressable
                   key={route}
                   onPress={() => set({ screen: "feature", featureMode: route })}
@@ -3318,6 +3339,7 @@ const styles = StyleSheet.create({
     gap: 20,
     marginTop: 8,
   },
+  inlineActions: { gap: 10, marginTop: 14 },
   routeList: { marginTop: 18, borderTopWidth: 1, borderTopColor: colors.line },
   route: {
     minHeight: 50,

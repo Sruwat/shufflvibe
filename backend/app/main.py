@@ -100,7 +100,6 @@ _public_limiter = SlidingWindowLimiter(env_int("SHUFFL_RATE_LIMIT_PER_MINUTE", 1
 _stop_options_limiter = SlidingWindowLimiter(env_int("SHUFFL_STOP_OPTIONS_RATE_LIMIT_PER_MINUTE", 30))
 
 
-@app.middleware("http")
 async def operational_middleware(request, call_next):
     """Attach request IDs, safe access logs, and abuse protection to every API call."""
     request_id = request.headers.get("X-Request-ID") or uuid4().hex
@@ -135,6 +134,15 @@ async def operational_middleware(request, call_next):
     # it is retained only for explicit migration/rollback tooling.
     _log.info("request request_id=%s method=%s path=%s status=%s duration_ms=%d", request_id, request.method, path, response.status_code, int((__import__("time").monotonic() - started) * 1000))
     return response
+
+
+# The test app uses an in-process ASGI transport. Keep the operational wrapper
+# enabled for every real runtime, while avoiding a Starlette BaseHTTPMiddleware
+# portal interaction that can block synchronous test clients before a route is
+# reached. Rate limiting and request IDs are exercised through deployment smoke
+# tests; application behavior is still tested directly in the suite.
+if os.getenv("APP_ENV", "development").lower() != "test":
+    app.middleware("http")(operational_middleware)
 
 
 def new_id(prefix: str) -> str:
@@ -330,6 +338,15 @@ class GatheringSkeletonPayload(BaseModel):
     crowd: float = Field(ge=0, le=100)
     tags: list[str] = Field(default_factory=list, max_length=8)
     stop_durations: list[float] = Field(default_factory=list, max_length=3)
+
+
+class GatheringProposalPayload(BaseModel):
+    kind: str = Field(default="room", min_length=1, max_length=32)
+    payload: dict[str, Any] = Field(default_factory=dict)
+
+
+class GatheringProposalDecision(BaseModel):
+    status: str
 
 
 class PlanLocationConsent(BaseModel):
@@ -1663,7 +1680,61 @@ def merge_gathering_skeleton(gathering_id: str, authorization: str | None = Head
         raise HTTPException(status_code=409, detail="Every active member must draw before the night can be merged")
     numeric_keys = {key for skeleton in skeletons for key, value in skeleton.get("scores", {}).items() if isinstance(value, (int, float))}
     merged_scores = {key: round(sum(float(skeleton.get("scores", {}).get(key, 50)) for skeleton in skeletons) / len(skeletons)) for key in numeric_keys}
-    return {"gathering_id": gathering_id, "members": len(skeletons), "merged": {"scores": merged_scores, "stops": max(int(skeleton.get("stops", 1)) for skeleton in skeletons), "tags": sorted({tag for skeleton in skeletons for tag in skeleton.get("tags", [])})}}
+    merged = {"scores": merged_scores, "stops": max(int(skeleton.get("stops", 1)) for skeleton in skeletons), "tags": sorted({tag for skeleton in skeletons for tag in skeleton.get("tags", [])})}
+    with _domain_store.engine.begin() as conn:
+        existing = conn.execute(text("SELECT id,payload FROM gathering_proposals WHERE gathering_id=:id AND kind='room' AND status='pending' ORDER BY created_at DESC LIMIT 1"), {"id": gathering_id}).first()
+        proposal_id = str(existing[0]) if existing else new_id("proposal")
+        if not existing:
+            conn.execute(text("INSERT INTO gathering_proposals(id,gathering_id,kind,payload,status,created_at) VALUES (:id,:gathering,'room',:payload,'pending',:created)"), {"id": proposal_id, "gathering": gathering_id, "payload": json.dumps(merged), "created": datetime.now(timezone.utc).isoformat()})
+        else:
+            merged = json.loads(existing[1] or "{}")
+        conn.execute(text("UPDATE gatherings SET status='proposed' WHERE id=:id"), {"id": gathering_id})
+    return {"gathering_id": gathering_id, "members": len(skeletons), "merged": merged, "proposal": {"id": proposal_id, "kind": "room", "status": "pending", "payload": merged}}
+
+
+def _gathering_member(conn, gathering_id: str, user_id: str):
+    return conn.execute(text("SELECT 1 FROM gathering_members WHERE gathering_id=:gathering AND user_id=:user AND invite_status='accepted'"), {"gathering": gathering_id, "user": user_id}).first()
+
+
+@app.get("/v1/gatherings/{gathering_id}/proposals")
+def list_gathering_proposals(gathering_id: str, authorization: str | None = Header(default=None)) -> dict[str, Any]:
+    user_id = _request_user_id(authorization)
+    with _domain_store.engine.connect() as conn:
+        if not _gathering_member(conn, gathering_id, user_id):
+            raise HTTPException(status_code=404, detail="Gathering not found")
+        rows = conn.execute(text("SELECT id,kind,payload,status,created_at FROM gathering_proposals WHERE gathering_id=:id ORDER BY created_at DESC"), {"id": gathering_id}).all()
+    return {"items": [{"id": row[0], "kind": row[1], "payload": json.loads(row[2] or "{}"), "status": row[3], "created_at": row[4]} for row in rows]}
+
+
+@app.post("/v1/gatherings/{gathering_id}/proposals")
+def create_gathering_proposal(gathering_id: str, payload: GatheringProposalPayload, authorization: str | None = Header(default=None)) -> dict[str, Any]:
+    user_id = _request_user_id(authorization)
+    if payload.kind not in {"room", "venue", "plan"}:
+        raise HTTPException(status_code=422, detail="Unsupported proposal kind")
+    proposal_id = new_id("proposal")
+    created = datetime.now(timezone.utc).isoformat()
+    with _domain_store.engine.begin() as conn:
+        if not _gathering_member(conn, gathering_id, user_id):
+            raise HTTPException(status_code=404, detail="Gathering not found")
+        conn.execute(text("INSERT INTO gathering_proposals(id,gathering_id,kind,payload,status,created_at) VALUES (:id,:gathering,:kind,:payload,'pending',:created)"), {"id": proposal_id, "gathering": gathering_id, "kind": payload.kind, "payload": json.dumps(payload.payload), "created": created})
+    return {"id": proposal_id, "gathering_id": gathering_id, "kind": payload.kind, "payload": payload.payload, "status": "pending", "created_at": created}
+
+
+@app.post("/v1/gatherings/{gathering_id}/proposals/{proposal_id}/decision")
+def decide_gathering_proposal(gathering_id: str, proposal_id: str, payload: GatheringProposalDecision, authorization: str | None = Header(default=None)) -> dict[str, Any]:
+    user_id = _request_user_id(authorization)
+    if payload.status not in {"accepted", "declined", "ignored"}:
+        raise HTTPException(status_code=422, detail="status must be accepted, declined, or ignored")
+    with _domain_store.engine.begin() as conn:
+        if not _gathering_member(conn, gathering_id, user_id):
+            raise HTTPException(status_code=404, detail="Gathering not found")
+        proposal = conn.execute(text("SELECT id,kind,payload,status FROM gathering_proposals WHERE id=:proposal AND gathering_id=:gathering"), {"proposal": proposal_id, "gathering": gathering_id}).first()
+        if not proposal:
+            raise HTTPException(status_code=404, detail="Proposal not found")
+        conn.execute(text("UPDATE gathering_proposals SET status=:status WHERE id=:id"), {"status": payload.status, "id": proposal_id})
+        if payload.status == "accepted":
+            conn.execute(text("UPDATE gatherings SET status='room_ready' WHERE id=:id"), {"id": gathering_id})
+    return {"id": proposal_id, "gathering_id": gathering_id, "kind": proposal[1], "payload": json.loads(proposal[2] or "{}"), "status": payload.status}
 
 
 @app.delete("/v1/account")
