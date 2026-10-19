@@ -1132,7 +1132,9 @@ function GatheringScreen() {
   const [error, setError] = useState("");
   useEffect(() => {
     let active = true;
-    getService().listPeople().then((items) => { if (active) setPeople(items); }).catch(() => undefined);
+    getService().listFriends().then((items) => {
+      if (active) setPeople(items.filter((item) => item.status === "accepted"));
+    }).catch(() => undefined);
     return () => { active = false; };
   }, []);
   const create = async () => {

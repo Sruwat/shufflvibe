@@ -1568,6 +1568,18 @@ def create_gathering(payload: GatheringCreate, authorization: str | None = Heade
     now = datetime.now(timezone.utc).isoformat()
     members = list(dict.fromkeys([user_id, *payload.member_ids]))
     with _domain_store.engine.begin() as conn:
+        for member_id in members:
+            if member_id == user_id:
+                continue
+            is_friend = conn.execute(text("""
+                SELECT 1 FROM friendships
+                WHERE status='accepted'
+                  AND ((requester_id=:user AND addressee_id=:member)
+                    OR (requester_id=:member AND addressee_id=:user))
+                LIMIT 1
+            """), {"user": user_id, "member": member_id}).first()
+            if not is_friend:
+                raise HTTPException(status_code=403, detail="Gatherings can only include accepted friends")
         conn.execute(text("INSERT INTO conversations(id,room_id,kind,title) VALUES (:id,NULL,'group',:title)"), {"id": conversation_id, "title": payload.name.strip()})
         conn.execute(text("INSERT INTO gatherings(id,owner_id,name,status,wheel_owner_id,conversation_id,created_at) VALUES (:id,:owner,:name,'gathering',:wheel,:conversation,:created)"), {"id": gathering_id, "owner": user_id, "name": payload.name.strip(), "wheel": user_id, "conversation": conversation_id, "created": now})
         for member_id in members:
@@ -1575,7 +1587,21 @@ def create_gathering(payload: GatheringCreate, authorization: str | None = Heade
     for member_id in members:
         if member_id != user_id:
             _record_notification(member_id, "gathering_invite", {"title": payload.name.strip(), "body": "You have been invited to draw a night together.", "gathering_id": gathering_id})
-    return {"id": gathering_id, "name": payload.name.strip(), "status": "gathering", "wheel_owner_id": user_id, "conversation_id": conversation_id, "members": members}
+    return {
+        "id": gathering_id,
+        "name": payload.name.strip(),
+        "status": "gathering",
+        "wheel_owner_id": user_id,
+        "conversation_id": conversation_id,
+        "members": [
+            {
+                "user_id": member_id,
+                "role": "owner" if member_id == user_id else "member",
+                "invite_status": "accepted" if member_id == user_id else "pending",
+            }
+            for member_id in members
+        ],
+    }
 
 
 @app.get("/v1/gatherings/{gathering_id}")
@@ -1596,6 +1622,15 @@ def add_gathering_member(gathering_id: str, payload: GatheringMemberPayload, aut
         owner = conn.execute(text("SELECT owner_id,name FROM gatherings WHERE id=:id"), {"id": gathering_id}).first()
         if not owner or str(owner[0]) != user_id:
             raise HTTPException(status_code=403, detail="Only the gathering owner can add members")
+        is_friend = conn.execute(text("""
+            SELECT 1 FROM friendships
+            WHERE status='accepted'
+              AND ((requester_id=:user AND addressee_id=:member)
+                OR (requester_id=:member AND addressee_id=:user))
+            LIMIT 1
+        """), {"user": user_id, "member": payload.user_id}).first()
+        if not is_friend:
+            raise HTTPException(status_code=403, detail="Gatherings can only include accepted friends")
         conn.execute(text("INSERT INTO gathering_members(gathering_id,user_id,role,invite_status,skeleton) VALUES (:gathering,:user,'member','pending','{}')"), {"gathering": gathering_id, "user": payload.user_id})
     _record_notification(payload.user_id, "gathering_invite", {"title": str(owner[1]), "body": "You have been invited to draw a night together.", "gathering_id": gathering_id})
     return {"gathering_id": gathering_id, "user_id": payload.user_id, "invite_status": "pending"}
