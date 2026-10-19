@@ -1679,6 +1679,17 @@ def decide_wheel(gathering_id: str, payload: WheelDecisionPayload, authorization
     return {"gathering_id": gathering_id, "status": payload.status, "wheel_owner_id": request[1] if payload.status == "accepted" else user_id}
 
 
+@app.get("/v1/gatherings/{gathering_id}/wheel/requests")
+def list_wheel_requests(gathering_id: str, authorization: str | None = Header(default=None)) -> dict[str, Any]:
+    user_id = _request_user_id(authorization)
+    with _domain_store.engine.connect() as conn:
+        owner = conn.execute(text("SELECT wheel_owner_id FROM gatherings WHERE id=:id"), {"id": gathering_id}).first()
+        if not owner or str(owner[0]) != user_id:
+            raise HTTPException(status_code=403, detail="Only the wheel holder can view wheel requests")
+        rows = conn.execute(text("SELECT id,gathering_id,requester_id,status,created_at FROM wheel_requests WHERE gathering_id=:id AND status='pending' ORDER BY created_at"), {"id": gathering_id}).all()
+    return {"items": [{"id": row[0], "gathering_id": row[1], "requester_id": row[2], "status": row[3], "created_at": row[4]} for row in rows]}
+
+
 @app.post("/v1/gatherings/{gathering_id}/skeletons")
 def save_gathering_skeleton(gathering_id: str, payload: GatheringSkeletonPayload, authorization: str | None = Header(default=None)) -> dict[str, Any]:
     user_id = _request_user_id(authorization)

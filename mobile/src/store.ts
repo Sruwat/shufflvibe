@@ -114,6 +114,7 @@ type State = {
   userBio: string;
   avatarUri: string;
   activeConversation: string;
+  activeGatheringId: string;
   selectedVenueName: string;
   savedVenueNames: string[];
   pendingVenueShare: string;
@@ -299,6 +300,7 @@ export const useApp = create<State>((set) => ({
   userBio: "",
   avatarUri: "",
   activeConversation: "Friday Room",
+  activeGatheringId: "",
   selectedVenueName: "",
   savedVenueNames: [],
   pendingVenueShare: "",
@@ -338,6 +340,7 @@ export const useApp = create<State>((set) => ({
       userBio: "",
       avatarUri: "",
       activeConversation: "Friday Room",
+      activeGatheringId: "",
       selectedVenueName: "",
       savedVenueNames: [],
       pendingVenueShare: "",
