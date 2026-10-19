@@ -17,9 +17,6 @@ export type FeatureMode =
   | "activePlan"
   | "arrival"
   | "feedback"
-  | "hostRoom"
-  | "joinRequests"
-  | "capsule"
   | "notifications"
   | "inbox"
   | "chat"
@@ -30,7 +27,6 @@ export type FeatureMode =
   | "settings"
   | "report"
   | "support"
-  | "joinRoom"
   | "music"
   | "gathering";
 export type DemoRoomState = {
@@ -105,7 +101,6 @@ type State = {
   preferences: PreferenceState;
   room: DemoRoomState;
   plan: DemoPlanState;
-  capsule: DemoCapsuleState;
   skeleton: SkeletonState;
   locked: boolean;
   postVibeProfile: boolean;
@@ -166,7 +161,6 @@ type SavedState = Pick<
   | "avatarUri"
   | "plan"
   | "room"
-  | "capsule"
   | "skeleton"
   | "activeMusic"
   | "savedVenueNames"
@@ -291,7 +285,6 @@ export const useApp = create<State>((set) => ({
   preferences: createPreferences(),
   room: initialRoom(),
   plan: initialPlan(),
-  capsule: initialCapsule(),
   skeleton: initialSkeleton(),
   locked: true,
   postVibeProfile: false,
@@ -331,7 +324,6 @@ export const useApp = create<State>((set) => ({
       preferences: createPreferences(),
       room: initialRoom(),
       plan: initialPlan(),
-      capsule: initialCapsule(),
       skeleton: initialSkeleton(),
       locked: true,
       postVibeProfile: false,
@@ -400,7 +392,6 @@ useApp.subscribe((state) => {
     avatarUri: state.avatarUri,
     plan: state.plan,
     room: state.room,
-    capsule: state.capsule,
     skeleton: state.skeleton,
     activeMusic: state.activeMusic,
     savedVenueNames: state.savedVenueNames,
