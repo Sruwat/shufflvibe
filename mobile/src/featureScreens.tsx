@@ -2278,8 +2278,8 @@ function JoinRoomScreen() {
           </Text>
         ) : null}
         <FeatureButton
-          label="Host a room instead"
-          onPress={() => set({ screen: "feature", featureMode: "hostRoom" })}
+          label="Add friends to your night"
+          onPress={() => set({ screen: "feature", featureMode: "gathering" })}
           secondary
         />
       </ScrollView>
@@ -2423,8 +2423,8 @@ function JoinRequestsScreen() {
           secondary
         />
         <FeatureButton
-          label="Open capsule"
-          onPress={() => set({ screen: "feature", featureMode: "capsule" })}
+          label="Return to your gathering"
+          onPress={() => set({ screen: "feature", featureMode: "gathering" })}
           secondary
         />
       </ScrollView>

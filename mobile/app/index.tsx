@@ -1920,11 +1920,11 @@ function HomeDashboard() {
     });
     return () => { alive = false; };
   }, []);
+  const gated = () => set({ screen: lastVibeName ? 'dailyCheckin' : 'instructions' });
   const todayName = vibeName(scores, latencyFirmness(assessment), assessment.chosenTop);
   const currentName = lastVibeName || todayName;
   const shape = skeleton.updatedAt ? { tags: skeleton.tags, stopCount: skeleton.stops } : chemistryV2([scores]);
   const vibeImage = resolveVibeArtwork(scores);
-  const gated = () => set({ screen: lastVibeName ? 'dailyCheckin' : 'instructions' });
   const openVibe = () => locked ? gated() : set({ screen: 'reveal' });
   const initials = (userName || 'You').trim().split(/\s+/).map(part => part[0]).join('').slice(0, 2).toUpperCase();
   return <SafeAreaView style={styles.safe}>
@@ -1939,11 +1939,9 @@ function HomeDashboard() {
       <Text style={styles.kicker}>YOUR SHUFFL</Text>
       <Text style={styles.homeTitle}>Keep the night close.</Text>
       <Pressable accessibilityRole="button" accessibilityLabel="Open profile" onPress={() => set({ screen: 'profileHome' })} style={artworkStyles.homeProfilePill}><View style={styles.liveDot} /><Text style={artworkStyles.profilePillText}>{userName || 'Your profile'}{userPronouns ? ` · ${userPronouns}` : ''}</Text><Ionicons name="chevron-forward" size={17} color={colors.muted} /></Pressable>
-      <View style={artworkStyles.profileSignalCard}><Text style={styles.kicker}>TONIGHT’S SHAPE</Text><Text style={styles.cardTitle}>{locked ? (lastVibeName || 'Your vibe is waiting') : currentName}</Text><Text style={styles.small}>{locked ? 'Your daily draw unlocks the SHUFFL screen.' : 'Your current vibe is ready when you are.'}</Text><Button onPress={openVibe}>{locked ? 'Draw tonight' : 'Review vibe'}</Button></View>
+      <View style={artworkStyles.profileSignalCard}><Text style={styles.kicker}>YOUR NEXT MOVE</Text><Text style={styles.cardTitle}>Everything about tonight lives in SHUFFL.</Text><Text style={styles.small}>{locked ? 'Play today’s draw to unlock your night.' : 'Open the Play button to shape a night, find people and choose a place.'}</Text><Button onPress={() => set({ screen: 'shuffl' })}>{locked ? 'Open SHUFFL' : 'Plan tonight'}</Button></View>
       <View style={artworkStyles.dashboardSectionHeader}><View><Text style={styles.sectionTitle}>SOCIAL</Text><Text style={artworkStyles.shelfSubhead}>People and messages, in one place</Text></View><Ionicons name="people-outline" size={20} color={colors.pink} /></View>
       <Pressable accessibilityRole="button" onPress={() => set({ screen: 'feature', featureMode: 'inbox' })} style={styles.surface}><Text style={styles.cardTitle}>Messages</Text><Text style={styles.small}>Open conversations, room updates and shared places.</Text><Text style={[styles.small, { color: colors.pink, marginTop: 10 }]}>Open social →</Text></Pressable>
-      <Pressable accessibilityRole="button" onPress={() => set({ screen: 'feature', featureMode: 'gathering' })} style={styles.surface}><Text style={styles.cardTitle}>Your people</Text><Text style={styles.small}>Start a named gathering when you are ready to draw together.</Text><Text style={[styles.small, { color: colors.pink, marginTop: 10 }]}>Add friends →</Text></Pressable>
-      {plan.exists && <Pressable accessibilityRole="button" onPress={() => set({ screen: 'feature', featureMode: plan.locked ? 'activePlan' : 'customOuting' })} style={styles.surface}><Text style={styles.kicker}>ACTIVE NIGHT</Text><Text style={styles.cardTitle}>{plan.title || plan.style}</Text><Text style={styles.small}>{plan.stops.length} stops · {plan.locked ? 'locked' : 'draft'}</Text></Pressable>}
       <Pressable accessibilityRole="button" onPress={() => set({ screen: 'profileHome' })} style={styles.surface}><Text style={styles.cardTitle}>Profile, privacy and settings</Text><Text style={styles.small}>Your preferences, safety controls and account details.</Text></Pressable>
     </ScrollView>
     <Nav />
@@ -1993,12 +1991,13 @@ function HomeDashboard() {
 function ShufflScreen() {
   const { set, locked, plan, skeleton } = useApp();
   const [friends, setFriends] = useState<Array<{ id: string; name: string; status: string }>>([]);
+  const needsNightShape = !locked && !skeleton.updatedAt && !plan.exists;
   useEffect(() => {
-    if (locked) return;
+    if (locked || needsNightShape) return;
     let active = true;
     getService().listFriends().then((items) => { if (active) setFriends(items.filter((item) => item.status === "accepted")); }).catch(() => undefined);
     return () => { active = false; };
-  }, [locked]);
+  }, [locked, needsNightShape]);
   const openPicker = useCallback(() => {
     if (locked) {
       set({ screen: "dailyCheckin" });
@@ -2010,7 +2009,7 @@ function ShufflScreen() {
     <SafeAreaView style={styles.safe}>
       <Header label="SHUFFL" onBack={() => set({ screen: "discover" })} />
       <ScrollView contentContainerStyle={styles.content}>
-        {locked && (
+        {(locked || needsNightShape) && (
           <View style={[styles.surface, { minHeight: 340, justifyContent: "center", alignItems: "center", borderColor: colors.pink + "66", backgroundColor: colors.surface + "dd" }]}>
             <View style={{ position: "absolute", top: 18, left: 18, right: 18, bottom: 18, opacity: 0.18 }} pointerEvents="none">
               <View style={{ height: 92, borderRadius: 24, backgroundColor: colors.cyan, marginBottom: 14 }} />
@@ -2018,12 +2017,12 @@ function ShufflScreen() {
               <View style={{ height: 92, borderRadius: 24, backgroundColor: colors.amber, marginRight: 34 }} />
             </View>
             <Text style={[styles.kicker, { color: colors.pink }]}>LOCKED</Text>
-            <Text style={[styles.h1, { textAlign: "center", marginTop: 8 }]}>Draw tonight first.</Text>
-            <Text style={[styles.body, { textAlign: "center", maxWidth: 300 }]}>Three sliders and a line. Then all of this is yours.</Text>
-            <Button onPress={() => set({ screen: "dailyCheckin" })}>Start tonight’s draw</Button>
+            <Text style={[styles.h1, { textAlign: "center", marginTop: 8 }]}>{locked ? "Draw tonight first." : "Shape tonight first."}</Text>
+            <Text style={[styles.body, { textAlign: "center", maxWidth: 300 }]}>{locked ? "Play today’s vibe draw, then your SHUFFL opens." : "Three choices and a line. Then all of this is yours."}</Text>
+            <Button onPress={() => set({ screen: locked ? "dailyCheckin" : "feature", featureMode: locked ? undefined : "customOuting" })}>{locked ? "Start tonight’s draw" : "Start shaping tonight"}</Button>
           </View>
         )}
-        {!locked && <>
+        {!locked && !needsNightShape && <>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Add friends to your night"
@@ -2069,10 +2068,10 @@ function ShufflScreen() {
           {plan.exists ? (
             <Button onPress={() => set({ screen: "feature", featureMode: plan.locked ? "activePlan" : "customOuting" })}>Choose venues</Button>
           ) : (
-            <Button onPress={openPicker} disabled={locked}>Build my night</Button>
+          <Button onPress={openPicker}>Build my night</Button>
           )}
         </View>
-        <Button kind="secondary" onPress={openPicker} disabled={locked}>Redraw skeleton</Button>
+        <Button kind="secondary" onPress={openPicker}>Redraw skeleton</Button>
         <Text style={styles.sectionTitle}>Presets</Text>
         <View style={styles.surface}><Text style={styles.cardTitle}>Start with a shape</Text><Text style={styles.small}>Choose a starting point, then make it yours.</Text><View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 }}>{["Pub crawl", "Clubbing", "Brunch + cocktails"].map((preset) => <Pressable key={preset} accessibilityRole="button" onPress={openPicker} style={[styles.pill, { borderColor: colors.line }]}><Text style={styles.pillText}>{preset}</Text></Pressable>)}</View></View>
         <Pressable accessibilityRole="button" onPress={() => set({ screen: "plans" })} style={styles.surface}>
