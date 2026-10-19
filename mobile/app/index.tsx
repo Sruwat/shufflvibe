@@ -332,13 +332,13 @@ function Nav() {
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Choose what to do on SHUFFL"
-        onPress={() => set({ screen: "playMenu" })}
+        onPress={() => set({ screen: "shuffl" })}
         style={styles.navPlayItem}
       >
         <View style={artworkStyles.playNav}>
           <Ionicons name="play" size={22} color={colors.bg} />
         </View>
-        <Text style={styles.navPlayLabel}>PLAY</Text>
+        <Text style={styles.navPlayLabel}>SHUFFL</Text>
       </Pressable>
       <Pressable
         accessibilityRole="button"
@@ -515,7 +515,7 @@ function DailyCheckin() {
     <SafeAreaView style={styles.safe}>
       <Header
         label="Your daily vibe"
-        onBack={() => set({ screen: "playMenu" })}
+        onBack={() => set({ screen: "shuffl" })}
       />
       <View style={[styles.content, { flex: 1, justifyContent: "center" }]}>
         <View style={styles.pill}>
@@ -592,8 +592,8 @@ function Welcome() {
             A daily vibe, a better room, and people who are up for the same kind
             of night.
           </Text>
-          <Button onPress={() => set({ screen: "profile" })}>
-            Enter SHUFFL
+          <Button onPress={() => set({ screen: "login" })}>
+            Create your SHUFFL account
           </Button>
           <Button kind="ghost" onPress={() => set({ screen: "login" })}>
             Sign in
@@ -666,7 +666,7 @@ function Login() {
     setBusy(true);
     setError("");
     getService().loginWithGoogle(idToken)
-      .then((session) => { if (active) set({ screen: "profile", userName: session.user.name || "" }); })
+      .then((session) => { if (active) set({ screen: "profile", userName: session.user.name || "", authUser: session.user, isAuthenticated: true }); })
       .catch((cause) => { if (active) setError(cause instanceof Error ? cause.message : "Could not sign in with Google."); })
       .finally(() => { if (active) setBusy(false); });
     return () => { active = false; };
@@ -691,7 +691,7 @@ function Login() {
       const session = createAccount
         ? await service.register(identifier.trim(), password)
         : await service.login(identifier.trim(), password);
-      set({ screen: "profile", userName: session.user.name || "" });
+      set({ screen: "profile", userName: session.user.name || "", authUser: session.user, isAuthenticated: true });
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Could not sign you in.");
     } finally {
@@ -1798,7 +1798,7 @@ function Discover() {
             >
               {venues.map((venue, index) => (
                 <Pressable
-                  key={venue.name}
+                  key={`${venue.name}-${index}`}
                   onPress={() =>
                     set({
                       screen: "feature",
@@ -1927,7 +1927,28 @@ function HomeDashboard() {
   const gated = () => set({ screen: lastVibeName ? 'dailyCheckin' : 'instructions' });
   const openVibe = () => locked ? gated() : set({ screen: 'reveal' });
   const initials = (userName || 'You').trim().split(/\s+/).map(part => part[0]).join('').slice(0, 2).toUpperCase();
-  const recommendation = (venue: VenueCard, index: number) => <Pressable key={venue.name} accessibilityRole="button" accessibilityLabel={`Open ${venue.name} venue detail`} onPress={() => set({ screen: 'feature', featureMode: 'venue', selectedVenueName: venue.name })} style={artworkStyles.homeVenueCard}>
+  return <SafeAreaView style={styles.safe}>
+    <View style={artworkStyles.dashboardHeader}>
+      <Brand />
+      <View style={artworkStyles.dashboardHeaderActions}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Open notifications" onPress={() => set({ screen: 'feature', featureMode: 'notifications' })} style={styles.iconButton}><Ionicons name="notifications-outline" size={21} color={colors.text} /></Pressable>
+        <Pressable accessibilityRole="button" accessibilityLabel="Open profile" onPress={() => set({ screen: 'profileHome' })} style={artworkStyles.dashboardAvatar}>{avatarUri ? <Image source={{ uri: avatarUri }} style={artworkStyles.dashboardAvatarImage} /> : <Text style={artworkStyles.dashboardAvatarText}>{initials}</Text>}</Pressable>
+      </View>
+    </View>
+    <ScrollView contentContainerStyle={styles.homeContent}>
+      <Text style={styles.kicker}>YOUR SHUFFL</Text>
+      <Text style={styles.homeTitle}>Keep the night close.</Text>
+      <Pressable accessibilityRole="button" accessibilityLabel="Open profile" onPress={() => set({ screen: 'profileHome' })} style={artworkStyles.homeProfilePill}><View style={styles.liveDot} /><Text style={artworkStyles.profilePillText}>{userName || 'Your profile'}{userPronouns ? ` · ${userPronouns}` : ''}</Text><Ionicons name="chevron-forward" size={17} color={colors.muted} /></Pressable>
+      <View style={artworkStyles.profileSignalCard}><Text style={styles.kicker}>TONIGHT’S SHAPE</Text><Text style={styles.cardTitle}>{locked ? (lastVibeName || 'Your vibe is waiting') : currentName}</Text><Text style={styles.small}>{locked ? 'Your daily draw unlocks the SHUFFL screen.' : 'Your current vibe is ready when you are.'}</Text><Button onPress={openVibe}>{locked ? 'Draw tonight' : 'Review vibe'}</Button></View>
+      <View style={artworkStyles.dashboardSectionHeader}><View><Text style={styles.sectionTitle}>SOCIAL</Text><Text style={artworkStyles.shelfSubhead}>People and messages, in one place</Text></View><Ionicons name="people-outline" size={20} color={colors.pink} /></View>
+      <Pressable accessibilityRole="button" onPress={() => set({ screen: 'feature', featureMode: 'inbox' })} style={styles.surface}><Text style={styles.cardTitle}>Messages</Text><Text style={styles.small}>Open conversations, room updates and shared places.</Text><Text style={[styles.small, { color: colors.pink, marginTop: 10 }]}>Open social →</Text></Pressable>
+      <Pressable accessibilityRole="button" onPress={() => set({ screen: 'feature', featureMode: 'gathering' })} style={styles.surface}><Text style={styles.cardTitle}>Your people</Text><Text style={styles.small}>Start a named gathering when you are ready to draw together.</Text><Text style={[styles.small, { color: colors.pink, marginTop: 10 }]}>Add friends →</Text></Pressable>
+      {plan.exists && <Pressable accessibilityRole="button" onPress={() => set({ screen: 'feature', featureMode: plan.locked ? 'activePlan' : 'customOuting' })} style={styles.surface}><Text style={styles.kicker}>ACTIVE NIGHT</Text><Text style={styles.cardTitle}>{plan.title || plan.style}</Text><Text style={styles.small}>{plan.stops.length} stops · {plan.locked ? 'locked' : 'draft'}</Text></Pressable>}
+      <Pressable accessibilityRole="button" onPress={() => set({ screen: 'profileHome' })} style={styles.surface}><Text style={styles.cardTitle}>Profile, privacy and settings</Text><Text style={styles.small}>Your preferences, safety controls and account details.</Text></Pressable>
+    </ScrollView>
+    <Nav />
+  </SafeAreaView>;
+  const recommendation = (venue: VenueCard, index: number) => <Pressable key={`${venue.google_place_id ?? venue.id ?? venue.name}-${index}`} accessibilityRole="button" accessibilityLabel={`Open ${venue.name} venue detail`} onPress={() => set({ screen: 'feature', featureMode: 'venue', selectedVenueName: venue.name })} style={artworkStyles.homeVenueCard}>
     <Image source={venueArtwork[venue.name] ?? homeCityArtwork} style={artworkStyles.homeVenueImage} accessibilityLabel={`${venue.name} artwork`} />
     <View style={artworkStyles.homeVenueShade} />
     <View style={artworkStyles.homeVenueContent}>
@@ -1956,33 +1977,57 @@ function HomeDashboard() {
         <View style={artworkStyles.homeSectionHeader}><View><Text style={styles.sectionTitle}>TONIGHT’S PICKS</Text><Text style={artworkStyles.shelfSubhead}>Picked for your vibe</Text></View><Pressable accessibilityRole="button" onPress={() => set({ screen: 'search' })}><Text style={artworkStyles.homeShelfLabel}>SEE ALL</Text></Pressable></View>
         {venueError ? <View style={artworkStyles.dashboardEmpty}><Text accessibilityRole="alert" style={styles.small}>{venueError}</Text><Button kind="secondary" onPress={() => setVenueRetry((value) => value + 1)}>Retry venues</Button></View> : <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={artworkStyles.venueShelf}>{venueFeed.map(recommendation)}</ScrollView>}
         <View style={artworkStyles.dashboardSectionHeader}><View><Text style={styles.sectionTitle}>TONIGHT’S LINE-UP</Text><Text style={artworkStyles.shelfSubhead}>Built around your vibe</Text></View><Ionicons name="map-outline" size={20} color={colors.pink} /></View>
-        {plan.exists ? <><Pressable accessibilityRole="button" onPress={() => set({ screen: 'feature', featureMode: plan.locked ? 'activePlan' : 'customOuting' })} style={artworkStyles.dashboardPlanCard}><View style={artworkStyles.dashboardPlanTop}><Text style={styles.cardTitle}>{plan.title || plan.style}</Text><Text style={artworkStyles.homeShelfLabel}>{plan.locked ? 'LOCKED' : 'DRAFT'}</Text></View>{plan.stops.slice(0, 2).map((stop, index) => <Text key={`${stop}-${index}`} style={styles.small}>{index + 1}. {stop}</Text>)}<Text style={styles.small}>{plan.durationHours} hours · Delhi NCR · {plan.locked ? 'Tap to view active plan' : 'Tap to review'}</Text><View style={artworkStyles.dashboardPlanActions}><Text style={artworkStyles.venueFooterText}>VIEW PLAN</Text><Ionicons name="arrow-forward" size={18} color={colors.pink} /></View></Pressable><View style={artworkStyles.planQuickActions}><Pressable accessibilityRole="button" onPress={() => set({ screen: 'feature', featureMode: 'customOuting' })}><Text style={artworkStyles.planActionText}>CUSTOM</Text></Pressable>{!plan.locked && <Pressable accessibilityRole="button" onPress={() => set({ screen: 'shuffl', plan: { ...plan, exists: false, locked: false, stops: [] } })}><Text style={artworkStyles.planActionText}>SHUFFLE</Text></Pressable>}<Pressable accessibilityRole="button" onPress={() => set({ screen: 'feature', featureMode: 'hostRoom' })}><Text style={artworkStyles.planActionText}>HOST THIS</Text></Pressable></View></> : <View style={artworkStyles.dashboardEmpty}><Text style={styles.cardTitle}>No plan yet</Text><Text style={styles.small}>Build your night from your vibe.</Text><Button onPress={() => set({ screen: 'shuffl' })}>Build my night</Button></View>}
+        {plan.exists ? <><Pressable accessibilityRole="button" onPress={() => set({ screen: 'feature', featureMode: plan.locked ? 'activePlan' : 'customOuting' })} style={artworkStyles.dashboardPlanCard}><View style={artworkStyles.dashboardPlanTop}><Text style={styles.cardTitle}>{plan.title || plan.style}</Text><Text style={artworkStyles.homeShelfLabel}>{plan.locked ? 'LOCKED' : 'DRAFT'}</Text></View>{plan.stops.slice(0, 2).map((stop, index) => <Text key={`${stop}-${index}`} style={styles.small}>{index + 1}. {stop}</Text>)}<Text style={styles.small}>{plan.durationHours} hours · Delhi NCR · {plan.locked ? 'Tap to view active plan' : 'Tap to review'}</Text><View style={artworkStyles.dashboardPlanActions}><Text style={artworkStyles.venueFooterText}>VIEW PLAN</Text><Ionicons name="arrow-forward" size={18} color={colors.pink} /></View></Pressable><View style={artworkStyles.planQuickActions}><Pressable accessibilityRole="button" onPress={() => set({ screen: 'feature', featureMode: 'customOuting' })}><Text style={artworkStyles.planActionText}>CUSTOM</Text></Pressable>{!plan.locked && <Pressable accessibilityRole="button" onPress={() => set({ screen: 'shuffl', plan: { ...plan, exists: false, locked: false, stops: [] } })}><Text style={artworkStyles.planActionText}>SHUFFLE</Text></Pressable>}<Pressable accessibilityRole="button" onPress={() => set({ screen: 'feature', featureMode: 'gathering' })}><Text style={artworkStyles.planActionText}>ADD FRIENDS</Text></Pressable></View></> : <View style={artworkStyles.dashboardEmpty}><Text style={styles.cardTitle}>No plan yet</Text><Text style={styles.small}>Build your night from your vibe.</Text><Button onPress={() => set({ screen: 'shuffl' })}>Build my night</Button></View>}
         <View style={artworkStyles.dashboardSectionHeader}><View><Text style={styles.sectionTitle}>ROOMS LIVE NOW</Text><Text style={artworkStyles.shelfSubhead}>Find a night already forming</Text></View><Ionicons name="people-outline" size={20} color={colors.pink} /></View>
-        {hostedRooms.length ? hostedRooms.slice(0, 2).map((room) => <Pressable key={room.id} accessibilityRole="button" accessibilityLabel={`Open ${room.title} room`} onPress={() => set({ screen: 'feature', featureMode: 'joinRoom' })} style={artworkStyles.dashboardRoomCard}><View style={artworkStyles.dashboardLive}><View style={styles.liveDot} /><Text style={artworkStyles.homeShelfLabel}>LIVE</Text></View><Text style={styles.cardTitle}>{room.title}</Text><Text style={styles.small}>{room.members?.length ?? 0} members · {room.stop_count ?? room.selected_stops?.length ?? 0} stops · requests open</Text><View style={artworkStyles.dashboardRoomMeta}><Text style={artworkStyles.venueFooterText}>OPEN ROOM</Text><Text style={artworkStyles.dashboardChemistry}>{room.stop_types?.join(' · ') || 'SHAPE YOUR NIGHT'}</Text></View></Pressable>) : <View style={artworkStyles.dashboardEmpty}><Text style={styles.cardTitle}>No rooms live right now</Text><Text style={styles.small}>Host a plan and invite people into a night that fits.</Text><Button onPress={() => set({ screen: 'feature', featureMode: 'hostRoom' })}>Host a room</Button></View>}
+        {hostedRooms.length ? hostedRooms.slice(0, 2).map((room) => <Pressable key={room.id} accessibilityRole="button" accessibilityLabel={`Open ${room.title} room`} onPress={() => set({ screen: 'feature', featureMode: 'joinRoom' })} style={artworkStyles.dashboardRoomCard}><View style={artworkStyles.dashboardLive}><View style={styles.liveDot} /><Text style={artworkStyles.homeShelfLabel}>LIVE</Text></View><Text style={styles.cardTitle}>{room.title}</Text><Text style={styles.small}>{room.members?.length ?? 0} people · {room.stop_count ?? room.selected_stops?.length ?? 0} stops · requests open</Text><View style={artworkStyles.dashboardRoomMeta}><Text style={artworkStyles.venueFooterText}>OPEN ROOM</Text><Text style={artworkStyles.dashboardChemistry}>{room.stop_types?.join(' · ') || 'SHAPE YOUR NIGHT'}</Text></View></Pressable>) : <View style={artworkStyles.dashboardEmpty}><Text style={styles.cardTitle}>No rooms live right now</Text><Text style={styles.small}>Rooms appear after a gathering chooses a night.</Text><Button onPress={() => set({ screen: 'feature', featureMode: 'gathering' })}>Add friends</Button></View>}
         <View style={artworkStyles.dashboardSectionHeader}><View><Text style={styles.sectionTitle}>EXPLORE</Text><Text style={artworkStyles.shelfSubhead}>See what Delhi is feeling tonight</Text></View><Ionicons name="pulse-outline" size={20} color={colors.pink} /></View>
         <View style={artworkStyles.exploreGrid}>{[['Hauz Khas', 'High energy · high crowd'], ['Khan Market', 'Polished · early evening'], ['Cyber Hub', 'Busy · late-night']].map(([area, copy]) => <Pressable key={area} accessibilityRole="button" onPress={() => set({ screen: 'search' })} style={artworkStyles.exploreCard}><Text style={artworkStyles.exploreArea}>{area}</Text><Text style={styles.small}>{copy}</Text><Ionicons name="arrow-forward" size={17} color={colors.pink} /></Pressable>)}</View>
         <ImageBackground source={homeCityArtwork} imageStyle={artworkStyles.homeCityImage} style={artworkStyles.homeCityCard}><View style={artworkStyles.homeCityShade} /><Text style={artworkStyles.cityTitle}>New Delhi is moving tonight.</Text><Text style={styles.small}>Neighbourhood-level recommendations, kept approximate.</Text><Button kind="secondary" onPress={() => set({ screen: 'search' })}>Explore places</Button></ImageBackground>
       </>}
     </ScrollView>
     {plan.locked ? <Pressable accessibilityRole="button" onPress={() => set({ screen: 'feature', featureMode: 'activePlan' })} style={artworkStyles.nowPlaying}><View><Text style={artworkStyles.homeShelfLabel}>NOW PLAYING</Text><Text style={styles.cardTitle}>{plan.title || 'Tonight, finally'}</Text></View><Text style={styles.small}>{plan.stops.length} stops · locked</Text></Pressable> : null}
-    <View style={styles.nav}><Pressable accessibilityRole="button" accessibilityLabel="Home" onPress={() => set({ screen: 'discover' })} style={styles.navItem}><Ionicons name="home-outline" size={23} color={colors.pink} /><Text style={[styles.navText, { color: colors.pink }]}>Home</Text></Pressable><Pressable accessibilityRole="button" accessibilityLabel="Open SHUFFL planning" onPress={() => set({ screen: 'playMenu' })} style={styles.navPlayItem}><View style={artworkStyles.playNav}><Ionicons name="play" size={22} color={colors.bg} /></View><Text style={styles.navPlayLabel}>SHUFFL</Text></Pressable><Pressable accessibilityRole="button" accessibilityLabel="Open Social and Messages" onPress={() => set({ screen: 'feature', featureMode: 'inbox' })} style={styles.navItem}><Ionicons name="chatbubbles-outline" size={23} color={colors.muted} /><Text style={styles.navText}>Social</Text></Pressable></View>
+    <View style={styles.nav}><Pressable accessibilityRole="button" accessibilityLabel="Home" onPress={() => set({ screen: 'discover' })} style={styles.navItem}><Ionicons name="home-outline" size={23} color={colors.pink} /><Text style={[styles.navText, { color: colors.pink }]}>Home</Text></Pressable><Pressable accessibilityRole="button" accessibilityLabel="Open SHUFFL planning" onPress={() => set({ screen: 'shuffl' })} style={styles.navPlayItem}><View style={artworkStyles.playNav}><Ionicons name="play" size={22} color={colors.bg} /></View><Text style={styles.navPlayLabel}>SHUFFL</Text></Pressable><Pressable accessibilityRole="button" accessibilityLabel="Open Social and Messages" onPress={() => set({ screen: 'feature', featureMode: 'inbox' })} style={styles.navItem}><Ionicons name="chatbubbles-outline" size={23} color={colors.muted} /><Text style={styles.navText}>Social</Text></Pressable></View>
   </SafeAreaView>;
 }
 
 function ShufflScreen() {
   const { set, locked, plan, skeleton } = useApp();
-  const openPicker = useCallback(() => {
+  const [friends, setFriends] = useState<Array<{ id: string; name: string; status: string }>>([]);
+  useEffect(() => {
     if (locked) return;
+    let active = true;
+    getService().listFriends().then((items) => { if (active) setFriends(items.filter((item) => item.status === "accepted")); }).catch(() => undefined);
+    return () => { active = false; };
+  }, [locked]);
+  const openPicker = useCallback(() => {
+    if (locked) {
+      set({ screen: "dailyCheckin" });
+      return;
+    }
     set({ screen: "feature", featureMode: "customOuting" });
   }, [locked, set]);
   return (
     <SafeAreaView style={styles.safe}>
       <Header label="SHUFFL" onBack={() => set({ screen: "discover" })} />
       <ScrollView contentContainerStyle={styles.content}>
+        {locked && (
+          <View style={[styles.surface, { minHeight: 340, justifyContent: "center", alignItems: "center", borderColor: colors.pink + "66", backgroundColor: colors.surface + "dd" }]}>
+            <View style={{ position: "absolute", top: 18, left: 18, right: 18, bottom: 18, opacity: 0.18 }} pointerEvents="none">
+              <View style={{ height: 92, borderRadius: 24, backgroundColor: colors.cyan, marginBottom: 14 }} />
+              <View style={{ height: 92, borderRadius: 24, backgroundColor: colors.pink, marginLeft: 34, marginBottom: 14 }} />
+              <View style={{ height: 92, borderRadius: 24, backgroundColor: colors.amber, marginRight: 34 }} />
+            </View>
+            <Text style={[styles.kicker, { color: colors.pink }]}>LOCKED</Text>
+            <Text style={[styles.h1, { textAlign: "center", marginTop: 8 }]}>Draw tonight first.</Text>
+            <Text style={[styles.body, { textAlign: "center", maxWidth: 300 }]}>Three sliders and a line. Then all of this is yours.</Text>
+            <Button onPress={() => set({ screen: "dailyCheckin" })}>Start tonight’s draw</Button>
+          </View>
+        )}
+        {!locked && <>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Add friends to your night"
-          onPress={() => set({ screen: "feature", featureMode: "hostRoom" })}
+          onPress={() => set({ screen: "feature", featureMode: "gathering" })}
           style={artworkStyles.lineupCard}
         >
           <Text style={styles.kicker}>TONIGHT</Text>
@@ -1999,11 +2044,15 @@ function ShufflScreen() {
           <Text style={[styles.small, { flex: 1 }]}>Search through venues and rooms here</Text>
           <Ionicons name="arrow-forward" size={18} color={colors.pink} />
         </Pressable>
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
+          <Text style={styles.sectionTitle}>YOUR NIGHT FILTER</Text>
+          <Pressable accessibilityRole="button" onPress={() => set({ screen: "search" })} style={[styles.pill, { borderColor: colors.pink + "88" }]}><Ionicons name="options-outline" size={15} color={colors.pink} /><Text style={[styles.pillText, { color: colors.pink }]}>FILTER</Text></Pressable>
+        </View>
         <Text style={styles.sectionTitle}>Friends that want your kind of night today</Text>
         <View style={styles.surface}>
-          <Text style={styles.cardTitle}>Your people appear here</Text>
-          <Text style={styles.small}>Invite friends or start with your own shape.</Text>
-          <Button kind="secondary" onPress={() => set({ screen: "feature", featureMode: "hostRoom" })}>Add friends</Button>
+          <Text style={styles.cardTitle}>{friends.length ? `${friends.length} friend${friends.length === 1 ? "" : "s"} match today` : "No matching friends yet"}</Text>
+          <Text style={styles.small}>{friends.length ? friends.slice(0, 3).map((friend) => friend.name).join(" · ") : "Invite friends or start with your own shape."}</Text>
+          <Button kind="secondary" onPress={() => set({ screen: "feature", featureMode: "gathering" })}>Add friends</Button>
         </View>
         <Text style={styles.sectionTitle}>Ranked rooms</Text>
         <Pressable onPress={() => set({ screen: "rooms" })} style={styles.surface}>
@@ -2024,7 +2073,13 @@ function ShufflScreen() {
           )}
         </View>
         <Button kind="secondary" onPress={openPicker} disabled={locked}>Redraw skeleton</Button>
-        <Button kind="ghost" onPress={() => set({ screen: "plans" })}>Past plans</Button>
+        <Text style={styles.sectionTitle}>Presets</Text>
+        <View style={styles.surface}><Text style={styles.cardTitle}>Start with a shape</Text><Text style={styles.small}>Choose a starting point, then make it yours.</Text><View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 }}>{["Pub crawl", "Clubbing", "Brunch + cocktails"].map((preset) => <Pressable key={preset} accessibilityRole="button" onPress={openPicker} style={[styles.pill, { borderColor: colors.line }]}><Text style={styles.pillText}>{preset}</Text></Pressable>)}</View></View>
+        <Pressable accessibilityRole="button" onPress={() => set({ screen: "plans" })} style={styles.surface}>
+          <View style={{ flex: 1 }}><Text style={styles.cardTitle}>Past plans</Text><Text style={styles.small}>Keep the nights that felt like you.</Text></View>
+          <Ionicons name="chevron-forward" size={20} color={colors.muted} />
+        </Pressable>
+        </>}
       </ScrollView>
       <Nav />
     </SafeAreaView>
@@ -2149,9 +2204,9 @@ function Search() {
             We could not refresh venues right now. Check your connection and try again.
           </Text>
         )}
-        {results.map((venue) => (
+        {results.map((venue, index) => (
           <Pressable
-            key={venue.name}
+            key={`${venue.name}-${index}`}
             onPress={() =>
               set({
                 screen: "feature",
@@ -2265,8 +2320,8 @@ function Rooms() {
         </View>) : <View style={styles.roomCard}>
           <View style={[styles.roomIcon, { backgroundColor: "#2B1D41" }]}><Ionicons name="moon-outline" size={24} color={colors.pink} /></View>
           <Text style={styles.cardTitle}>No hosted rooms yet</Text>
-          <Text style={styles.small}>Rooms appear here after someone hosts a published plan.</Text>
-          <Button kind="secondary" onPress={() => set({ screen: "feature", featureMode: "hostRoom" })}>Host a room</Button>
+          <Text style={styles.small}>Rooms appear here after a gathering chooses a published plan.</Text>
+          <Button kind="secondary" onPress={() => set({ screen: "feature", featureMode: "gathering" })}>Add friends</Button>
         </View>}
         <Button
           kind="secondary"
@@ -2448,6 +2503,7 @@ function ProfileHome() {
             </Pressable>
           ))}
         </View>
+        <Button kind="ghost" onPress={() => { void getService().logout().finally(() => useApp.getState().reset()); }}>Sign out</Button>
       </ScrollView>
       <Nav />
     </SafeAreaView>
@@ -2812,6 +2868,7 @@ function AppContent() {
   const screen = useApp((s) => s.screen);
   const featureMode = useApp((s) => s.featureMode);
   const hydrated = useApp((s) => s.hydrated);
+  const authHydrating = useApp((s) => s.authHydrating);
   useEffect(() => {
     const timer = setTimeout(() => setOpening(false), 1650);
     void hydrateDemoState();
@@ -2831,7 +2888,7 @@ function AppContent() {
     return () => clearTimeout(timer);
   }, []);
   if (opening) return <OpeningAnimation />;
-  if (!hydrated)
+  if (!hydrated || authHydrating)
     return (
       <SafeAreaView style={styles.safe}>
         <View style={[styles.hero, { alignItems: "center" }]}>

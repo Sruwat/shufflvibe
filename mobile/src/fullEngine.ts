@@ -25,6 +25,7 @@ export const PREFERENCE_CARDS: PreferenceCard[] = [
   { id: 'P-SCEN', factor: 'SCEN', title: 'A beautiful room', subtitle: 'The light, the table, the walls, and the details you notice.' },
   { id: 'P-NOV', factor: 'NOV', title: 'An unmarked door', subtitle: 'Somewhere new, with a corner you have not found before.' },
   { id: 'P-HERIT', factor: 'HERIT', title: 'An old building', subtitle: 'A place with a past, materials, and a story in the walls.' },
+  { id: 'P-GAMES', factor: 'GAMES', title: 'Something to play', subtitle: 'A pool table, a board, or a reason to lean into the room together.' },
 ];
 export function createPreferences(): PreferenceState { return { queue: PREFERENCE_CARDS, cursor: 0, answers: {}, readings: {}, stage: 'deck' }; }
 export function currentPreference(state: PreferenceState): PreferenceCard | undefined { return state.stage === 'deck' ? state.queue[state.cursor] : undefined; }

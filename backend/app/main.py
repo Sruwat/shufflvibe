@@ -302,6 +302,36 @@ class ProfileUpdate(BaseModel):
     preferences: dict[str, float] = Field(default_factory=dict)
 
 
+class FriendRequestPayload(BaseModel):
+    user_id: str = Field(min_length=1, max_length=180)
+
+
+class FriendDecisionPayload(BaseModel):
+    status: str
+
+
+class GatheringCreate(BaseModel):
+    name: str = Field(min_length=1, max_length=160)
+    member_ids: list[str] = Field(default_factory=list, max_length=24)
+
+
+class GatheringMemberPayload(BaseModel):
+    user_id: str = Field(min_length=1, max_length=180)
+
+
+class WheelDecisionPayload(BaseModel):
+    status: str
+
+
+class GatheringSkeletonPayload(BaseModel):
+    scores: dict[str, float] = Field(default_factory=dict)
+    stops: int = Field(ge=1, le=3)
+    energy: float = Field(ge=0, le=100)
+    crowd: float = Field(ge=0, le=100)
+    tags: list[str] = Field(default_factory=list, max_length=8)
+    stop_durations: list[float] = Field(default_factory=list, max_length=3)
+
+
 class PlanLocationConsent(BaseModel):
     approved: bool
 
@@ -1269,9 +1299,13 @@ def _require_user(authorization: str | None = Header(default=None)) -> dict[str,
 
 
 def _request_user_id(authorization: str | None) -> str:
-    """Return the authenticated owner, retaining the development demo user."""
+    """Return the authenticated owner; anonymous domain mutations are forbidden."""
     user = _auth_user(authorization)
-    return str(user["id"]) if user else "demo-user"
+    if user:
+        return str(user["id"])
+    if os.getenv("APP_ENV", "development").lower() == "test" or (os.getenv("SHUFFL_ALLOW_ANONYMOUS_DEMO", "0").strip() == "1" and os.getenv("APP_ENV", "development").lower() == "development"):
+        return "demo-user"
+    raise HTTPException(status_code=401, detail="Authentication required")
 
 
 @app.post("/v1/auth/register")
@@ -1459,6 +1493,179 @@ def people(
     return {"items": fallback[:limit]}
 
 
+@app.get("/v1/friends")
+def friends(authorization: str | None = Header(default=None)) -> dict[str, Any]:
+    user_id = _request_user_id(authorization)
+    if not _domain_store.available:
+        raise HTTPException(status_code=503, detail="Canonical MySQL domain storage is unavailable")
+    with _domain_store.engine.connect() as conn:
+        rows = conn.execute(text("""
+            SELECT f.id, f.requester_id, f.addressee_id, f.status,
+                   COALESCE(p1.display_name, u1.email, f.requester_id),
+                   COALESCE(p2.display_name, u2.email, f.addressee_id)
+            FROM friendships f
+            LEFT JOIN users u1 ON u1.id=f.requester_id
+            LEFT JOIN users u2 ON u2.id=f.addressee_id
+            LEFT JOIN profiles p1 ON p1.user_id=f.requester_id
+            LEFT JOIN profiles p2 ON p2.user_id=f.addressee_id
+            WHERE f.requester_id=:user OR f.addressee_id=:user ORDER BY f.created_at DESC
+        """), {"user": user_id}).all()
+    return {"items": [{"id": str(row[0]), "user_id": str(row[2] if str(row[1]) == user_id else row[1]), "status": str(row[3]), "name": str(row[5] if str(row[1]) == user_id else row[4])} for row in rows]}
+
+
+@app.post("/v1/friends/requests")
+def create_friend_request(payload: FriendRequestPayload, authorization: str | None = Header(default=None)) -> dict[str, Any]:
+    user_id = _request_user_id(authorization)
+    if payload.user_id == user_id:
+        raise HTTPException(status_code=422, detail="You cannot add yourself")
+    if not _domain_store.available:
+        raise HTTPException(status_code=503, detail="Canonical MySQL domain storage is unavailable")
+    record = {"id": new_id("friend"), "requester_id": user_id, "addressee_id": payload.user_id, "status": "pending", "created_at": datetime.now(timezone.utc).isoformat()}
+    try:
+        with _domain_store.engine.begin() as conn:
+            conn.execute(text("INSERT INTO friendships(id,requester_id,addressee_id,status,created_at) VALUES (:id,:requester,:addressee,:status,:created)"), record)
+    except Exception as exc:
+        raise HTTPException(status_code=409, detail="A friendship request already exists") from exc
+    _record_notification(payload.user_id, "friend_request", {"title": "New friend request", "body": "Someone wants to add you to their night."})
+    return record
+
+
+@app.post("/v1/friends/requests/{request_id}/decision")
+def decide_friend_request(request_id: str, payload: FriendDecisionPayload, authorization: str | None = Header(default=None)) -> dict[str, Any]:
+    user_id = _request_user_id(authorization)
+    if payload.status not in {"accepted", "declined"}:
+        raise HTTPException(status_code=422, detail="status must be accepted or declined")
+    with _domain_store.engine.begin() as conn:
+        row = conn.execute(text("SELECT requester_id,addressee_id FROM friendships WHERE id=:id"), {"id": request_id}).first()
+        if not row or str(row[1]) != user_id:
+            raise HTTPException(status_code=404, detail="Friend request not found")
+        conn.execute(text("UPDATE friendships SET status=:status WHERE id=:id"), {"status": payload.status, "id": request_id})
+    return {"id": request_id, "status": payload.status}
+
+
+@app.post("/v1/gatherings")
+def create_gathering(payload: GatheringCreate, authorization: str | None = Header(default=None)) -> dict[str, Any]:
+    user_id = _request_user_id(authorization)
+    gathering_id = new_id("gathering")
+    conversation_id = new_id("conversation")
+    now = datetime.now(timezone.utc).isoformat()
+    members = list(dict.fromkeys([user_id, *payload.member_ids]))
+    with _domain_store.engine.begin() as conn:
+        conn.execute(text("INSERT INTO conversations(id,room_id,kind,title) VALUES (:id,NULL,'group',:title)"), {"id": conversation_id, "title": payload.name.strip()})
+        conn.execute(text("INSERT INTO gatherings(id,owner_id,name,status,wheel_owner_id,conversation_id,created_at) VALUES (:id,:owner,:name,'gathering',:wheel,:conversation,:created)"), {"id": gathering_id, "owner": user_id, "name": payload.name.strip(), "wheel": user_id, "conversation": conversation_id, "created": now})
+        for member_id in members:
+            conn.execute(text("INSERT INTO gathering_members(gathering_id,user_id,role,invite_status,skeleton,joined_at) VALUES (:gathering,:user,:role,:status,'{}',:joined)"), {"gathering": gathering_id, "user": member_id, "role": "owner" if member_id == user_id else "member", "status": "accepted" if member_id == user_id else "pending", "joined": now if member_id == user_id else None})
+    for member_id in members:
+        if member_id != user_id:
+            _record_notification(member_id, "gathering_invite", {"title": payload.name.strip(), "body": "You have been invited to draw a night together.", "gathering_id": gathering_id})
+    return {"id": gathering_id, "name": payload.name.strip(), "status": "gathering", "wheel_owner_id": user_id, "conversation_id": conversation_id, "members": members}
+
+
+@app.get("/v1/gatherings/{gathering_id}")
+def get_gathering(gathering_id: str, authorization: str | None = Header(default=None)) -> dict[str, Any]:
+    user_id = _request_user_id(authorization)
+    with _domain_store.engine.connect() as conn:
+        gathering = conn.execute(text("SELECT id,owner_id,name,status,wheel_owner_id,conversation_id,created_at FROM gatherings WHERE id=:id"), {"id": gathering_id}).first()
+        members = conn.execute(text("SELECT user_id,role,invite_status,skeleton FROM gathering_members WHERE gathering_id=:id"), {"id": gathering_id}).all()
+    if not gathering or not any(str(member[0]) == user_id for member in members):
+        raise HTTPException(status_code=404, detail="Gathering not found")
+    return {"id": gathering[0], "owner_id": gathering[1], "name": gathering[2], "status": gathering[3], "wheel_owner_id": gathering[4], "conversation_id": gathering[5], "members": [{"user_id": row[0], "role": row[1], "invite_status": row[2], "skeleton": json.loads(row[3] or "{}")} for row in members]}
+
+
+@app.post("/v1/gatherings/{gathering_id}/members")
+def add_gathering_member(gathering_id: str, payload: GatheringMemberPayload, authorization: str | None = Header(default=None)) -> dict[str, Any]:
+    user_id = _request_user_id(authorization)
+    with _domain_store.engine.begin() as conn:
+        owner = conn.execute(text("SELECT owner_id,name FROM gatherings WHERE id=:id"), {"id": gathering_id}).first()
+        if not owner or str(owner[0]) != user_id:
+            raise HTTPException(status_code=403, detail="Only the gathering owner can add members")
+        conn.execute(text("INSERT INTO gathering_members(gathering_id,user_id,role,invite_status,skeleton) VALUES (:gathering,:user,'member','pending','{}')"), {"gathering": gathering_id, "user": payload.user_id})
+    _record_notification(payload.user_id, "gathering_invite", {"title": str(owner[1]), "body": "You have been invited to draw a night together.", "gathering_id": gathering_id})
+    return {"gathering_id": gathering_id, "user_id": payload.user_id, "invite_status": "pending"}
+
+
+@app.post("/v1/gatherings/{gathering_id}/invites/{invite_id}/decision")
+def decide_gathering_invite(gathering_id: str, invite_id: str, payload: FriendDecisionPayload, authorization: str | None = Header(default=None)) -> dict[str, Any]:
+    user_id = _request_user_id(authorization)
+    if payload.status not in {"accepted", "declined"}:
+        raise HTTPException(status_code=422, detail="status must be accepted or declined")
+    with _domain_store.engine.begin() as conn:
+        row = conn.execute(text("SELECT user_id FROM gathering_members WHERE gathering_id=:gathering AND user_id=:invite"), {"gathering": gathering_id, "invite": invite_id}).first()
+        if not row or str(row[0]) != user_id:
+            raise HTTPException(status_code=404, detail="Gathering invite not found")
+        conn.execute(text("UPDATE gathering_members SET invite_status=:status, joined_at=:joined WHERE gathering_id=:gathering AND user_id=:invite"), {"status": payload.status, "joined": datetime.now(timezone.utc).isoformat() if payload.status == "accepted" else None, "gathering": gathering_id, "invite": invite_id})
+    return {"gathering_id": gathering_id, "user_id": invite_id, "invite_status": payload.status}
+
+
+@app.post("/v1/gatherings/{gathering_id}/wheel/request")
+def request_wheel(gathering_id: str, authorization: str | None = Header(default=None)) -> dict[str, Any]:
+    user_id = _request_user_id(authorization)
+    request_id = new_id("wheel")
+    with _domain_store.engine.begin() as conn:
+        member = conn.execute(text("SELECT 1 FROM gathering_members WHERE gathering_id=:gathering AND user_id=:user AND invite_status='accepted'"), {"gathering": gathering_id, "user": user_id}).first()
+        if not member:
+            raise HTTPException(status_code=403, detail="You are not an active gathering member")
+        conn.execute(text("INSERT INTO wheel_requests(id,gathering_id,requester_id,status,created_at) VALUES (:id,:gathering,:user,'pending',:created)"), {"id": request_id, "gathering": gathering_id, "user": user_id, "created": datetime.now(timezone.utc).isoformat()})
+    return {"id": request_id, "gathering_id": gathering_id, "requester_id": user_id, "status": "pending"}
+
+
+@app.post("/v1/gatherings/{gathering_id}/wheel/decision")
+def decide_wheel(gathering_id: str, payload: WheelDecisionPayload, authorization: str | None = Header(default=None)) -> dict[str, Any]:
+    user_id = _request_user_id(authorization)
+    if payload.status not in {"accepted", "declined"}:
+        raise HTTPException(status_code=422, detail="status must be accepted or declined")
+    with _domain_store.engine.begin() as conn:
+        owner = conn.execute(text("SELECT wheel_owner_id FROM gatherings WHERE id=:id"), {"id": gathering_id}).first()
+        if not owner or str(owner[0]) != user_id:
+            raise HTTPException(status_code=403, detail="Only the wheel holder can decide requests")
+        request = conn.execute(text("SELECT id,requester_id FROM wheel_requests WHERE gathering_id=:id AND status='pending' ORDER BY created_at LIMIT 1"), {"id": gathering_id}).first()
+        if not request:
+            raise HTTPException(status_code=404, detail="No pending wheel request")
+        conn.execute(text("UPDATE wheel_requests SET status=:status WHERE id=:id"), {"status": payload.status, "id": request[0]})
+        if payload.status == "accepted":
+            conn.execute(text("UPDATE gatherings SET wheel_owner_id=:owner WHERE id=:id"), {"owner": request[1], "id": gathering_id})
+    return {"gathering_id": gathering_id, "status": payload.status, "wheel_owner_id": request[1] if payload.status == "accepted" else user_id}
+
+
+@app.post("/v1/gatherings/{gathering_id}/skeletons")
+def save_gathering_skeleton(gathering_id: str, payload: GatheringSkeletonPayload, authorization: str | None = Header(default=None)) -> dict[str, Any]:
+    user_id = _request_user_id(authorization)
+    with _domain_store.engine.begin() as conn:
+        member = conn.execute(text("SELECT 1 FROM gathering_members WHERE gathering_id=:gathering AND user_id=:user AND invite_status='accepted'"), {"gathering": gathering_id, "user": user_id}).first()
+        if not member:
+            raise HTTPException(status_code=403, detail="You are not an active gathering member")
+        skeleton = json.dumps(payload.model_dump())
+        conn.execute(text("UPDATE gathering_members SET skeleton=:skeleton WHERE gathering_id=:gathering AND user_id=:user"), {"skeleton": skeleton, "gathering": gathering_id, "user": user_id})
+    return {"gathering_id": gathering_id, "user_id": user_id, "skeleton": payload.model_dump()}
+
+
+@app.get("/v1/gatherings/{gathering_id}/skeleton")
+def get_gathering_skeleton(gathering_id: str, authorization: str | None = Header(default=None)) -> dict[str, Any]:
+    user_id = _request_user_id(authorization)
+    with _domain_store.engine.connect() as conn:
+        rows = conn.execute(text("SELECT user_id,skeleton FROM gathering_members WHERE gathering_id=:id AND invite_status='accepted'"), {"id": gathering_id}).all()
+    if not any(str(row[0]) == user_id for row in rows):
+        raise HTTPException(status_code=404, detail="Gathering not found")
+    submitted = [{"user_id": row[0], "skeleton": json.loads(row[1] or "{}")} for row in rows if row[1] and row[1] != "{}"]
+    return {"gathering_id": gathering_id, "members": submitted, "complete": len(submitted) == len(rows) and bool(rows)}
+
+
+@app.post("/v1/gatherings/{gathering_id}/skeleton/merge")
+def merge_gathering_skeleton(gathering_id: str, authorization: str | None = Header(default=None)) -> dict[str, Any]:
+    user_id = _request_user_id(authorization)
+    with _domain_store.engine.connect() as conn:
+        owner = conn.execute(text("SELECT owner_id FROM gatherings WHERE id=:id"), {"id": gathering_id}).first()
+        rows = conn.execute(text("SELECT user_id,skeleton FROM gathering_members WHERE gathering_id=:id AND invite_status='accepted'"), {"id": gathering_id}).all()
+    if not owner or str(owner[0]) != user_id:
+        raise HTTPException(status_code=403, detail="Only the gathering owner can merge the night")
+    skeletons = [json.loads(row[1] or "{}") for row in rows if row[1] and row[1] != "{}"]
+    if len(skeletons) != len(rows) or not skeletons:
+        raise HTTPException(status_code=409, detail="Every active member must draw before the night can be merged")
+    numeric_keys = {key for skeleton in skeletons for key, value in skeleton.get("scores", {}).items() if isinstance(value, (int, float))}
+    merged_scores = {key: round(sum(float(skeleton.get("scores", {}).get(key, 50)) for skeleton in skeletons) / len(skeletons)) for key in numeric_keys}
+    return {"gathering_id": gathering_id, "members": len(skeletons), "merged": {"scores": merged_scores, "stops": max(int(skeleton.get("stops", 1)) for skeleton in skeletons), "tags": sorted({tag for skeleton in skeletons for tag in skeleton.get("tags", [])})}}
+
+
 @app.delete("/v1/account")
 def delete_account(authorization: str | None = Header(default=None)) -> dict[str, Any]:
     """Reset user-owned runtime state for the current MVP account."""
@@ -1472,8 +1679,9 @@ def delete_account(authorization: str | None = Header(default=None)) -> dict[str
 
 
 @app.post("/v1/assessment/answers")
-def answer(payload: Answer) -> dict[str, Any]:
-    record = {"id": new_id("answer"), **payload.model_dump(), "created_at": datetime.now(timezone.utc).isoformat()}
+def answer(payload: Answer, authorization: str | None = Header(default=None)) -> dict[str, Any]:
+    user_id = _request_user_id(authorization)
+    record = {"id": new_id("answer"), "user_id": user_id, **payload.model_dump(), "created_at": datetime.now(timezone.utc).isoformat()}
     _answers.append(record)
     return {"accepted": True, **record}
 
@@ -1661,7 +1869,12 @@ async def room_websocket(websocket: WebSocket, room_id: str):
     if room is None:
         await websocket.close(code=4404)
         return
-    user_id = (websocket.query_params.get("user_id") or "demo-user").strip()
+    token = websocket.query_params.get("access_token", "").strip()
+    user = _auth_user(f"Bearer {token}") if token else None
+    if not user:
+        await websocket.close(code=4401)
+        return
+    user_id = str(user["id"])
     if user_id not in room.get("members", []) and room.get("owner_id", "demo-user") != user_id:
         await websocket.close(code=4403)
         return
@@ -1680,7 +1893,8 @@ async def room_websocket(websocket: WebSocket, room_id: str):
 
 
 @app.get("/v1/discovery")
-def discovery() -> dict[str, Any]:
+def discovery(authorization: str | None = Header(default=None)) -> dict[str, Any]:
+    _request_user_id(authorization)
     items = store.public_venues(include_needs_review=True)
     if not items and os.getenv("SHUFFL_DEMO_MODE", "0") == "1":
         items = [{"name": venue["name"], "type": venue["type"], "area": venue["area"]} for venue in DEMO_VENUES]
@@ -1707,7 +1921,8 @@ def release_metadata() -> dict[str, Any]:
 
 
 @app.get("/v1/venues")
-def venues(query: str = "", city: str = "") -> dict[str, Any]:
+def venues(query: str = "", city: str = "", authorization: str | None = Header(default=None)) -> dict[str, Any]:
+    _request_user_id(authorization)
     items = store.public_venues(query, city, include_needs_review=True)
     if not items and os.getenv("SHUFFL_DEMO_MODE", "0") == "1":
         items = discovery()["items"]
@@ -1728,8 +1943,10 @@ def venue_stop_options(
     area: str = "",
     limit: int = Query(default=10, ge=1, le=20),
     include_live: bool = True,
+    authorization: str | None = Header(default=None),
 ) -> dict[str, Any]:
     """Return ranked published venues with optional request-scoped Google data."""
+    _request_user_id(authorization)
     target = {key: value for key, value in {"energy": energy, "crowd": crowd, "conversation": conversation, "food": food, "scene": scene, "live_music": live_music}.items() if value is not None}
     items = store.public_venues(city=city)
     if area:
@@ -1748,8 +1965,9 @@ def venue_stop_options(
 
 
 @app.get("/v1/venues/{venue_id}")
-def public_venue(venue_id: str) -> dict[str, Any]:
+def public_venue(venue_id: str, authorization: str | None = Header(default=None)) -> dict[str, Any]:
     """Return one published normalized venue; Google display fields stay live-only."""
+    _request_user_id(authorization)
     item = store.get_venue(venue_id)
     if not item or item.get("publication_status") not in {"PUBLISHED", "DRAFT"} or item.get("eligibility_status") not in {"AUTO_APPROVED", "PROVISIONAL", "NEEDS_REVIEW"} or item.get("verification_status") == "rejected":
         raise HTTPException(status_code=404, detail="Published venue not found")
@@ -1759,8 +1977,9 @@ def public_venue(venue_id: str) -> dict[str, Any]:
 
 
 @app.get("/v1/venues/{venue_id}/live")
-def public_live_venue(venue_id: str) -> dict[str, Any]:
+def public_live_venue(venue_id: str, authorization: str | None = Header(default=None)) -> dict[str, Any]:
     """Fetch current Google display fields without storing them."""
+    _request_user_id(authorization)
     item = store.get_venue(venue_id)
     if (
         not item
@@ -1790,7 +2009,8 @@ def _venue_fit(item: dict[str, Any], target: dict[str, float]) -> float:
 
 
 @app.get("/v1/search")
-def search(q: str, kind: str = "all") -> dict[str, Any]:
+def search(q: str, kind: str = "all", authorization: str | None = Header(default=None)) -> dict[str, Any]:
+    _request_user_id(authorization)
     items = venues(q)["items"]
     if kind == "rooms":
         if not _domain_store.available:
@@ -1814,7 +2034,8 @@ def create_room(payload: RoomRequest, authorization: str | None = Header(default
 
 
 @app.get("/v1/rooms")
-def rooms(status: str | None = None, visibility: str | None = None) -> dict[str, Any]:
+def rooms(status: str | None = None, visibility: str | None = None, authorization: str | None = Header(default=None)) -> dict[str, Any]:
+    _request_user_id(authorization)
     if not _domain_store.available:
         raise HTTPException(status_code=503, detail="Canonical MySQL domain storage is unavailable")
     with _domain_store.engine.connect() as conn:
@@ -1887,7 +2108,8 @@ def host_room(room_id: str, plan_id: str, authorization: str | None = Header(def
 
 
 @app.post("/v1/rooms/join-eligibility")
-def room_join_eligibility(payload: JoinEligibilityRequest) -> dict[str, Any]:
+def room_join_eligibility(payload: JoinEligibilityRequest, authorization: str | None = Header(default=None)) -> dict[str, Any]:
+    _request_user_id(authorization)
     room = _domain_store.get_room(payload.room_id) if _domain_store.available else None
     if room is None:
         raise HTTPException(status_code=404, detail="Room not found")
@@ -1908,8 +2130,7 @@ def join_room(payload: JoinRequest, authorization: str | None = Header(default=N
         raise HTTPException(status_code=404, detail="Room not found")
     if room["status"] != "hosted":
         raise HTTPException(status_code=409, detail="Room is not accepting requests")
-    authenticated_user = _auth_user(authorization)
-    member_id = str(authenticated_user["id"]) if authenticated_user else payload.member_id.strip()
+    member_id = _request_user_id(authorization)
     if not member_id:
         raise HTTPException(status_code=422, detail="member_id cannot be blank")
     if member_id in room["members"]:
@@ -1966,24 +2187,26 @@ def create_capsule(payload: CapsuleRequest, authorization: str | None = Header(d
     room = _domain_store.get_room(payload.room_id) if _domain_store.available else None
     if room is None:
         raise HTTPException(status_code=404, detail="Room not found")
-    authenticated_user = _auth_user(authorization)
     user_id = _request_user_id(authorization)
-    if authenticated_user and room.get("owner_id", "demo-user") != user_id and user_id not in room.get("members", []):
+    if room.get("owner_id", "demo-user") != user_id and user_id not in room.get("members", []):
         raise HTTPException(status_code=403, detail="Only room members can create a capsule")
     if not _flags.get("capsules", False):
         raise HTTPException(status_code=403, detail="Capsules are disabled")
-    members = list(dict.fromkeys(([user_id] if authenticated_user else []) + payload.member_ids))
-    if authenticated_user and any(member_id not in room.get("members", []) for member_id in members):
+    members = list(dict.fromkeys([user_id, *payload.member_ids]))
+    if any(member_id not in room.get("members", []) for member_id in members):
         raise HTTPException(status_code=422, detail="Every capsule member must belong to the room")
     capsule = {"id": new_id("capsule"), "room_id": payload.room_id, "created_by": user_id, "members": members, "approvals": {member_id: False for member_id in members}, "status": "awaiting_approval", "created_at": datetime.now(timezone.utc).isoformat()}
     return _domain_store.create_capsule(capsule)
 
 
 @app.get("/v1/capsules/{capsule_id}")
-def get_capsule(capsule_id: str) -> dict[str, Any]:
+def get_capsule(capsule_id: str, authorization: str | None = Header(default=None)) -> dict[str, Any]:
+    user_id = _request_user_id(authorization)
     capsule = _domain_store.get_capsule(capsule_id) if _domain_store.available else None
     if capsule is None:
         raise HTTPException(status_code=404, detail="Capsule not found")
+    if user_id not in capsule.get("members", []):
+        raise HTTPException(status_code=403, detail="You are not a member of this capsule")
     return capsule
 
 
@@ -2019,8 +2242,7 @@ def approve_capsule(capsule_id: str, payload: CapsuleApproval, authorization: st
     capsule = _domain_store.get_capsule(capsule_id) if _domain_store.available else None
     if capsule is None:
         raise HTTPException(status_code=404, detail="Capsule not found")
-    authenticated_user = _auth_user(authorization)
-    member_id = str(authenticated_user["id"]) if authenticated_user else payload.member_id
+    member_id = _request_user_id(authorization)
     if member_id not in capsule.get("approvals", {}):
         raise HTTPException(status_code=404, detail="Member is not in this capsule")
     capsule = _domain_store.approve_capsule(capsule_id, member_id, payload.approved) or capsule

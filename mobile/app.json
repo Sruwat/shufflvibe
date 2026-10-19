@@ -10,8 +10,8 @@
       "expo-secure-store",
       "expo-image-picker",
       "expo-font",
-      "expo-status-bar",
-      "expo-web-browser"
+      "expo-web-browser",
+      "expo-status-bar"
     ],
     "android": {
       "package": "com.shuffl.demo",

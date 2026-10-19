@@ -153,3 +153,50 @@ class FeatureFlag(Base):
     __tablename__ = 'feature_flags'
     name: Mapped[str] = mapped_column(String(80), primary_key=True)
     enabled: Mapped[bool] = mapped_column(Boolean, default=False)
+
+
+# Canonical MVP collaboration domain. These tables replace the old JSON-only
+# room/capsule metadata as the source of truth for the gathering flow.
+class Friendship(Base):
+    __tablename__ = 'friendships'
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uid)
+    requester_id: Mapped[str] = mapped_column(ForeignKey('users.id'))
+    addressee_id: Mapped[str] = mapped_column(ForeignKey('users.id'))
+    status: Mapped[str] = mapped_column(String(24), default='pending')
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+class Gathering(Base):
+    __tablename__ = 'gatherings'
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uid)
+    owner_id: Mapped[str] = mapped_column(ForeignKey('users.id'))
+    name: Mapped[str] = mapped_column(String(160))
+    status: Mapped[str] = mapped_column(String(32), default='gathering')
+    wheel_owner_id: Mapped[str | None] = mapped_column(ForeignKey('users.id'))
+    conversation_id: Mapped[str | None] = mapped_column(ForeignKey('conversations.id'))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+class GatheringMember(Base):
+    __tablename__ = 'gathering_members'
+    gathering_id: Mapped[str] = mapped_column(ForeignKey('gatherings.id'), primary_key=True)
+    user_id: Mapped[str] = mapped_column(ForeignKey('users.id'), primary_key=True)
+    role: Mapped[str] = mapped_column(String(24), default='member')
+    invite_status: Mapped[str] = mapped_column(String(24), default='pending')
+    skeleton: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+    joined_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+class WheelRequest(Base):
+    __tablename__ = 'wheel_requests'
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uid)
+    gathering_id: Mapped[str] = mapped_column(ForeignKey('gatherings.id'))
+    requester_id: Mapped[str] = mapped_column(ForeignKey('users.id'))
+    status: Mapped[str] = mapped_column(String(24), default='pending')
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+class GatheringProposal(Base):
+    __tablename__ = 'gathering_proposals'
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uid)
+    gathering_id: Mapped[str] = mapped_column(ForeignKey('gatherings.id'))
+    kind: Mapped[str] = mapped_column(String(32))
+    payload: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+    status: Mapped[str] = mapped_column(String(24), default='pending')
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

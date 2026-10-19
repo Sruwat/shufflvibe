@@ -742,6 +742,13 @@ const content: Record<
     next: "activePlan",
     icon: "sparkles-outline",
   },
+  gathering: {
+    eyebrow: "ADD FRIENDS",
+    title: "Give the night a name",
+    body: "Bring the right people into the same shape before choosing a room.",
+    action: "Start gathering",
+    icon: "people-outline",
+  },
   activePlan: {
     eyebrow: "PERSONAL PLAN",
     title: "Settle Then Roam",
@@ -915,7 +922,7 @@ function FeatureHeader({
 }) {
   const back = () => {
     const set = useApp.getState().set;
-    if (label === "HOST A ROOM") set({ screen: "playMenu" });
+    if (label === "HOST A ROOM") set({ screen: "feature", featureMode: "gathering" });
     else if (label === "PRIVACY & SAFETY")
       set({ screen: "feature", featureMode: "settings" });
     else if (label === "ACTIVE PLAN") set({ screen: "shuffl" });
@@ -1053,7 +1060,7 @@ function CustomOutingScreen() {
         <Text style={styles.title}>{plan.exists ? "Your night, shaped." : "Shape your night."}</Text>
         <Text style={styles.body}>One choice at a time. The plan stays yours until you lock it.</Text>
         <View style={customStyles.stepTrack}>
-          {["Distance", "Time", "Budget", "Purpose"].map((label, index) => (
+          {["Distance", "Time", "Budget", "Shape"].map((label, index) => (
             <Pressable key={label} onPress={() => index <= step && setStep(index)} style={[customStyles.step, { borderColor: index === step ? colors.pink : colors.line }]}>
               <Text style={[customStyles.stepText, index === step && { color: colors.text }]}>{index + 1}</Text>
               <Text style={customStyles.stepLabel}>{label}</Text>
@@ -1107,6 +1114,51 @@ function CustomOutingScreen() {
         {step === 3 && plan.exists && <FeatureButton label={busy ? "Please wait…" : plan.locked ? "Open active plan" : "Lock this plan"} onPress={() => plan.locked ? set({ screen: "feature", featureMode: "activePlan" }) : void lock()} />}
       </ScrollView>
     </SafeAreaView>
+  );
+}
+
+function GatheringScreen() {
+  const { set } = useApp();
+  const [name, setName] = useState("Tonight together");
+  const [people, setPeople] = useState<PersonRecord[]>([]);
+  const [selected, setSelected] = useState<string[]>([]);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    let active = true;
+    getService().listPeople().then((items) => { if (active) setPeople(items); }).catch(() => undefined);
+    return () => { active = false; };
+  }, []);
+  const create = async () => {
+    if (!name.trim() || busy) return;
+    setBusy(true);
+    setError("");
+    try {
+      const gathering = await getService().createGathering(name.trim(), selected);
+      set({ room: { ...useApp.getState().room, name: gathering.name, members: gathering.members.map((member) => member.user_id), cohosts: selected }, screen: "shuffl" });
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Could not start the gathering.");
+    } finally { setBusy(false); }
+  };
+  return (
+    <FeatureShell>
+      <SafeAreaView style={styles.safe}>
+        <FeatureHeader label="ADD FRIENDS" onBack={() => set({ screen: "shuffl" })} />
+        <ScrollView contentContainerStyle={styles.content}>
+          <Text style={styles.eyebrow}>ONE NIGHT · TOGETHER</Text>
+          <Text style={styles.title}>Give the night a name.</Text>
+          <Text style={styles.body}>Add the people who want your kind of night today. Everyone draws their own shape before the room comes together.</Text>
+          <TextInput accessibilityLabel="Gathering name" value={name} onChangeText={setName} style={styles.input} placeholder="Tonight together" placeholderTextColor={colors.muted} />
+          <Text style={styles.fieldLabel}>YOUR PEOPLE</Text>
+          {people.length ? people.map((person) => {
+            const isSelected = selected.includes(person.id);
+            return <Pressable key={person.id} accessibilityRole="checkbox" accessibilityState={{ checked: isSelected }} onPress={() => setSelected((current) => isSelected ? current.filter((id) => id !== person.id) : [...current, person.id])} style={[styles.route, isSelected && { borderColor: colors.pink, backgroundColor: colors.pink + "12" }]}><View style={{ flex: 1 }}><Text style={styles.routeText}>{person.name}</Text><Text style={styles.secondaryText}>{person.city ?? "Delhi NCR"}</Text></View><Ionicons name={isSelected ? "checkmark-circle" : "add-circle-outline"} size={23} color={isSelected ? colors.pink : colors.muted} /></Pressable>;
+          }) : <Text style={styles.secondaryText}>No discoverable friends yet. You can start your own night and add people later.</Text>}
+          {error ? <Text accessibilityRole="alert" style={styles.notice}>{error}</Text> : null}
+          <FeatureButton label={busy ? "Starting…" : "Start gathering"} onPress={() => void create()} />
+        </ScrollView>
+      </SafeAreaView>
+    </FeatureShell>
   );
 }
 const customStyles = StyleSheet.create({
@@ -1348,7 +1400,7 @@ function HostRoomScreen() {
   if (!room.id && !plan.exists && !room.public && !room.cohosts.length && hostIntent === "choose") {
     return (
       <SafeAreaView style={styles.safe}>
-        <FeatureHeader label="HOST" onBack={() => set({ screen: "playMenu" })} />
+        <FeatureHeader label="ADD FRIENDS" onBack={() => set({ screen: "shuffl" })} />
         <ScrollView contentContainerStyle={styles.content}>
           <Text style={styles.eyebrow}>MAKE THE FIRST MOVE</Text>
           <Text style={styles.title}>What would you like to host?</Text>
@@ -2945,7 +2997,7 @@ function FeatureShell({ children }: { children: React.ReactNode }) {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Play"
-          onPress={() => set({ screen: "playMenu" })}
+          onPress={() => set({ screen: "shuffl" })}
           style={navigationStyles.play}
         >
           <Ionicons name="play" size={22} color={colors.bg} />
@@ -3022,6 +3074,7 @@ function SupportScreen() {
 
 export function FeatureScreen({ mode }: { mode: FeatureMode }) {
   const { set } = useApp();
+  if (mode === "gathering") return <GatheringScreen />;
   if (mode === "inbox")
     return (
       <FeatureShell>

@@ -10,6 +10,7 @@ import {
 import * as SecureStore from "expo-secure-store";
 import { splitSecureStoreValue } from "./secureStoreChunks";
 import { Platform } from "react-native";
+import type { AuthUser } from "./services";
 export type FeatureMode =
   | "venue"
   | "customOuting"
@@ -30,7 +31,8 @@ export type FeatureMode =
   | "report"
   | "support"
   | "joinRoom"
-  | "music";
+  | "music"
+  | "gathering";
 export type DemoRoomState = {
   id?: string;
   name: string;
@@ -88,6 +90,9 @@ type Screen =
 type State = {
   screen: Screen;
   hydrated: boolean;
+  authHydrating: boolean;
+  isAuthenticated: boolean;
+  authUser: AuthUser | null;
   onboardingComplete: boolean;
   lastVibeDate: string;
   lastVibeName: string;
@@ -270,6 +275,9 @@ async function clearSavedState() {
 export const useApp = create<State>((set) => ({
   screen: "welcome",
   hydrated: false,
+  authHydrating: true,
+  isAuthenticated: false,
+  authUser: null,
   onboardingComplete: false,
   lastVibeDate: "",
   lastVibeName: "",
@@ -306,6 +314,9 @@ export const useApp = create<State>((set) => ({
     set({
       screen: "welcome",
       hydrated: true,
+      authHydrating: false,
+      isAuthenticated: false,
+      authUser: null,
       onboardingComplete: false,
       lastVibeDate: "",
       lastVibeName: "",
@@ -337,6 +348,8 @@ export const useApp = create<State>((set) => ({
 
 export async function hydrateDemoState() {
   try {
+    const { getService } = await import("./services");
+    const authUser = await getService().getAuthUser();
     const raw = await readSavedState();
     if (raw) {
       const saved = JSON.parse(raw) as Partial<SavedState>;
@@ -346,6 +359,9 @@ export async function hydrateDemoState() {
           .getState()
           .set({
             ...saved,
+            authHydrating: false,
+            isAuthenticated: true,
+            authUser,
             savedVenueNames: saved.savedVenueNames ?? [],
             skeleton: saved.skeleton ?? initialSkeleton(),
             screen: "discover",
@@ -355,13 +371,15 @@ export async function hydrateDemoState() {
         return;
       }
     }
+    useApp.getState().set({ authHydrating: false, isAuthenticated: true, authUser });
+    return;
   } catch (error) {
-    console.warn(
-      "SHUFFL demo state could not be restored; starting a fresh local session.",
-      error,
-    );
+    // A missing/expired token is a normal signed-out state, not a demo session.
+    if (error instanceof Error && !/401|authentication|required|unauthorized/i.test(error.message)) {
+      console.warn("SHUFFL session could not be restored.", error);
+    }
   }
-  useApp.getState().set({ hydrated: true });
+  useApp.getState().set({ hydrated: true, authHydrating: false, isAuthenticated: false, authUser: null, screen: "welcome" });
 }
 
 useApp.subscribe((state) => {

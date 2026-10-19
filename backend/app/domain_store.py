@@ -103,6 +103,57 @@ class DomainStore:
                 )
             """))
             conn.execute(text("""
+                CREATE TABLE IF NOT EXISTS friendships (
+                    id VARCHAR(64) PRIMARY KEY,
+                    requester_id VARCHAR(180) NOT NULL,
+                    addressee_id VARCHAR(180) NOT NULL,
+                    status VARCHAR(24) NOT NULL DEFAULT 'pending',
+                    created_at VARCHAR(40) NOT NULL,
+                    UNIQUE (requester_id, addressee_id)
+                )
+            """))
+            conn.execute(text("""
+                CREATE TABLE IF NOT EXISTS gatherings (
+                    id VARCHAR(64) PRIMARY KEY,
+                    owner_id VARCHAR(180) NOT NULL,
+                    name VARCHAR(160) NOT NULL,
+                    status VARCHAR(32) NOT NULL DEFAULT 'gathering',
+                    wheel_owner_id VARCHAR(180) NOT NULL,
+                    conversation_id VARCHAR(64),
+                    created_at VARCHAR(40) NOT NULL
+                )
+            """))
+            conn.execute(text("""
+                CREATE TABLE IF NOT EXISTS gathering_members (
+                    gathering_id VARCHAR(64) NOT NULL,
+                    user_id VARCHAR(180) NOT NULL,
+                    role VARCHAR(24) NOT NULL DEFAULT 'member',
+                    invite_status VARCHAR(24) NOT NULL DEFAULT 'pending',
+                    skeleton TEXT NOT NULL DEFAULT '{}',
+                    joined_at VARCHAR(40),
+                    PRIMARY KEY (gathering_id, user_id)
+                )
+            """))
+            conn.execute(text("""
+                CREATE TABLE IF NOT EXISTS wheel_requests (
+                    id VARCHAR(64) PRIMARY KEY,
+                    gathering_id VARCHAR(64) NOT NULL,
+                    requester_id VARCHAR(180) NOT NULL,
+                    status VARCHAR(24) NOT NULL DEFAULT 'pending',
+                    created_at VARCHAR(40) NOT NULL
+                )
+            """))
+            conn.execute(text("""
+                CREATE TABLE IF NOT EXISTS gathering_proposals (
+                    id VARCHAR(64) PRIMARY KEY,
+                    gathering_id VARCHAR(64) NOT NULL,
+                    kind VARCHAR(32) NOT NULL,
+                    payload TEXT NOT NULL DEFAULT '{}',
+                    status VARCHAR(24) NOT NULL DEFAULT 'pending',
+                    created_at VARCHAR(40) NOT NULL
+                )
+            """))
+            conn.execute(text("""
                 CREATE TABLE IF NOT EXISTS capsules_members (
                     capsule_id VARCHAR(64) NOT NULL,
                     user_id VARCHAR(180) NOT NULL,
@@ -472,14 +523,24 @@ class DomainStore:
 
     def conversation_ids(self, user_id: str) -> list[str]:
         with self.engine.connect() as conn:
-            rows = conn.execute(text("SELECT DISTINCT c.id FROM conversations c JOIN room_members rm ON rm.room_id=c.room_id WHERE rm.user_id=:user ORDER BY c.id"), {"user": user_id}).all()
+            rows = conn.execute(text("""
+                SELECT DISTINCT c.id FROM conversations c
+                LEFT JOIN room_members rm ON rm.room_id=c.room_id
+                LEFT JOIN gatherings g ON g.conversation_id=c.id
+                LEFT JOIN gathering_members gm ON gm.gathering_id=g.id
+                WHERE rm.user_id=:user OR gm.user_id=:user ORDER BY c.id
+            """), {"user": user_id}).all()
         return [str(row[0]) for row in rows]
 
     def conversation_member(self, conversation_id: str, user_id: str) -> bool:
         with self.engine.connect() as conn:
             return bool(conn.execute(text("""SELECT 1 FROM conversations c
                 JOIN room_members rm ON rm.room_id=c.room_id
-                WHERE c.id=:conversation AND rm.user_id=:user"""), {"conversation": conversation_id, "user": user_id}).first())
+                WHERE c.id=:conversation AND rm.user_id=:user
+                UNION SELECT 1 FROM conversations c
+                JOIN gatherings g ON g.conversation_id=c.id
+                JOIN gathering_members gm ON gm.gathering_id=g.id
+                WHERE c.id=:conversation AND gm.user_id=:user"""), {"conversation": conversation_id, "user": user_id}).first())
 
     def conversation_room_members(self, conversation_id: str) -> tuple[str | None, list[str]]:
         with self.engine.connect() as conn:

@@ -38,6 +38,8 @@ export type ConversationRecord = { id: string; kind: 'group' | 'direct'; title: 
 export type NotificationRecord = { id: string; kind: string; title: string; body?: string; read: boolean; room_id?: string; created_at?: string };
 export type ProfileRecord = { name: string; city: string; pronouns?: string; bio?: string; preferences: Record<string, number>; updated_at?: string };
 export type PersonRecord = { id: string; name: string; city?: string; bio?: string };
+export type FriendRecord = PersonRecord & { status: 'pending' | 'accepted' | 'declined'; request_id?: string };
+export type GatheringRecord = { id: string; name: string; status: string; wheel_owner_id: string; conversation_id?: string; members: Array<{ user_id: string; role: string; invite_status: string; skeleton?: Record<string, unknown> }> };
 export type VenueCard = (typeof venues)[number] & { id?: string; google_place_id?: string; google_lookup_url?: string; official_url?: string; hours_mode?: string; match_distance?: number; live?: Record<string, unknown> | null; address?: string; website_url?: string; menu_url?: string; social_urls?: string[]; tags?: string[]; rating?: number; review_count?: number; photos?: string[]; selectable?: boolean; admission_badge?: string; eligibility_status?: string };
 export type VenueDetail = { venue: VenueCard | Record<string, unknown>; normalized: Record<string, unknown>; google_place_id?: string; google_lookup_url?: string; live_fields: { source: string; persisted: boolean } };
 export type SkeletonPayload = { scores: Record<string, number>; stops: number; energy: number; crowd: number; tags: string[]; stop_durations: number[]; source?: string };
@@ -81,6 +83,17 @@ export type Service = {
   markNotificationRead: (notificationId: string) => Promise<NotificationRecord>;
   getProfile: () => Promise<ProfileRecord>;
   listPeople: (query?: string) => Promise<PersonRecord[]>;
+  listFriends: () => Promise<FriendRecord[]>;
+  createFriendRequest: (userId: string) => Promise<FriendRecord>;
+  createGathering: (name: string, memberIds?: string[]) => Promise<GatheringRecord>;
+  getGathering: (gatheringId: string) => Promise<GatheringRecord>;
+  addGatheringMember: (gatheringId: string, userId: string) => Promise<void>;
+  decideGatheringInvite: (gatheringId: string, userId: string, status: 'accepted' | 'declined') => Promise<Record<string, unknown>>;
+  requestWheel: (gatheringId: string) => Promise<Record<string, unknown>>;
+  decideWheel: (gatheringId: string, status: 'accepted' | 'declined') => Promise<Record<string, unknown>>;
+  saveGatheringSkeleton: (gatheringId: string, payload: SkeletonPayload) => Promise<Record<string, unknown>>;
+  getGatheringSkeleton: (gatheringId: string) => Promise<Record<string, unknown>>;
+  mergeGatheringSkeleton: (gatheringId: string) => Promise<Record<string, unknown>>;
   saveProfile: (profile: ProfileRecord) => Promise<ProfileRecord>;
   deleteAccount: () => Promise<{ deleted: boolean; message: string }>;
   lockPlan: (planId: string) => Promise<void>;
@@ -141,6 +154,17 @@ export const DemoService: Service = {
   markNotificationRead: async (notificationId) => ({ id: notificationId, kind: 'room_request', title: 'Notification', read: true }),
   getProfile: async () => ({ name: 'Aarav Mehta', city: 'New Delhi', preferences: { FOOD: 88, SCEN: 88, NOV: 62 } }),
   listPeople: async (query = '') => [{ id: 'demo-user-2', name: 'Bela Shah', city: 'New Delhi', bio: '' }, { id: 'demo-user-3', name: 'Chirag Mehta', city: 'New Delhi', bio: '' }, { id: 'demo-user-4', name: 'Maya Kapoor', city: 'New Delhi', bio: '' }, { id: 'demo-user-5', name: 'Dev Malhotra', city: 'New Delhi', bio: '' }].filter((person) => person.name.toLowerCase().includes(query.trim().toLowerCase())),
+  listFriends: async () => [],
+  createFriendRequest: async (userId) => ({ id: `friend-${userId}`, user_id: userId, name: userId, status: 'pending' }),
+  createGathering: async (name, memberIds = []) => ({ id: `gathering-${Date.now()}`, name, status: 'gathering', wheel_owner_id: 'demo-user', members: [{ user_id: 'demo-user', role: 'owner', invite_status: 'accepted' }, ...memberIds.map((user_id) => ({ user_id, role: 'member', invite_status: 'pending' }))] }),
+  getGathering: async (gatheringId) => ({ id: gatheringId, name: 'Tonight together', status: 'gathering', wheel_owner_id: 'demo-user', members: [{ user_id: 'demo-user', role: 'owner', invite_status: 'accepted' }] }),
+  addGatheringMember: async () => undefined,
+  decideGatheringInvite: async (gatheringId, userId, status) => ({ gathering_id: gatheringId, user_id: userId, invite_status: status }),
+  requestWheel: async (gatheringId) => ({ id: `wheel-${Date.now()}`, gathering_id: gatheringId, status: 'pending' }),
+  decideWheel: async (gatheringId, status) => ({ gathering_id: gatheringId, status }),
+  saveGatheringSkeleton: async (gatheringId, payload) => ({ gathering_id: gatheringId, skeleton: payload }),
+  getGatheringSkeleton: async () => ({ members: [], complete: false }),
+  mergeGatheringSkeleton: async (gatheringId) => ({ gathering_id: gatheringId, merged: {} }),
   saveProfile: async (profile) => profile,
   deleteAccount: async () => ({ deleted: true, message: 'Local account data reset.' }),
   lockPlan: async () => undefined,
@@ -177,7 +201,10 @@ export function createApiService(baseUrl: string): Service {
     if (!sessionPromise) {
       sessionPromise = fetch(`${baseUrl}/v1/sessions`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true",
+        },
         body: JSON.stringify({ client_id: `mobile-${Date.now().toString(36)}` }),
       }).then(async (response) => {
         if (!response.ok) throw new Error(`SHUFFL session ${response.status}`);
@@ -205,6 +232,7 @@ export function createApiService(baseUrl: string): Service {
       try {
         const headers = new Headers(init?.headers);
         headers.set('Content-Type', 'application/json');
+        headers.set('ngrok-skip-browser-warning', 'true');
         if (sessionId) headers.set('X-Session-Id', sessionId);
         if (authToken) headers.set('Authorization', `Bearer ${authToken}`);
         const response = await fetch(`${baseUrl}${path}`, {
@@ -256,7 +284,7 @@ export function createApiService(baseUrl: string): Service {
       area: String(item.area ?? item.city ?? 'Delhi NCR'),
       tag: String(item.manual_vibe ?? tags[0] ?? 'A place to make the night yours'),
       color: String(item.color ?? '#24E0FF'),
-      scores: { FOOD: readScore('FOOD', 'food'), LIVE: readScore('LIVE', 'live_music'), POL: readScore('POL', 'politics'), SCEN: readScore('SCEN', 'scene'), NOV: readScore('NOV', 'novelty'), HERIT: readScore('HERIT', 'heritage') },
+      scores: { FOOD: readScore('FOOD', 'food'), LIVE: readScore('LIVE', 'live_music'), POL: readScore('POL', 'politics'), SCEN: readScore('SCEN', 'scene'), NOV: readScore('NOV', 'novelty'), HERIT: readScore('HERIT', 'heritage'), GAMES: readScore('GAMES', 'games') },
     };
   };
   return {
@@ -372,6 +400,17 @@ export function createApiService(baseUrl: string): Service {
       const result = await request(`/v1/people?${new URLSearchParams({ q: query, limit: '24' }).toString()}`);
       return Array.isArray(result.items) ? result.items as PersonRecord[] : [];
     },
+    listFriends: async () => (await request('/v1/friends')).items as FriendRecord[],
+    createFriendRequest: async (userId) => await request('/v1/friends/requests', { method: 'POST', body: JSON.stringify({ user_id: userId }) }) as unknown as FriendRecord,
+    createGathering: async (name, memberIds = []) => await request('/v1/gatherings', { method: 'POST', body: JSON.stringify({ name, member_ids: memberIds }) }) as unknown as GatheringRecord,
+    getGathering: async (gatheringId) => await request(`/v1/gatherings/${encodeURIComponent(gatheringId)}`) as unknown as GatheringRecord,
+    addGatheringMember: async (gatheringId, userId) => { await request(`/v1/gatherings/${encodeURIComponent(gatheringId)}/members`, { method: 'POST', body: JSON.stringify({ user_id: userId }) }); },
+    decideGatheringInvite: async (gatheringId, userId, status) => await request(`/v1/gatherings/${encodeURIComponent(gatheringId)}/invites/${encodeURIComponent(userId)}/decision`, { method: 'POST', body: JSON.stringify({ status }) }),
+    requestWheel: async (gatheringId) => await request(`/v1/gatherings/${encodeURIComponent(gatheringId)}/wheel/request`, { method: 'POST' }),
+    decideWheel: async (gatheringId, status) => await request(`/v1/gatherings/${encodeURIComponent(gatheringId)}/wheel/decision`, { method: 'POST', body: JSON.stringify({ status }) }),
+    saveGatheringSkeleton: async (gatheringId, payload) => await request(`/v1/gatherings/${encodeURIComponent(gatheringId)}/skeletons`, { method: 'POST', body: JSON.stringify(payload) }),
+    getGatheringSkeleton: async (gatheringId) => await request(`/v1/gatherings/${encodeURIComponent(gatheringId)}/skeleton`),
+    mergeGatheringSkeleton: async (gatheringId) => await request(`/v1/gatherings/${encodeURIComponent(gatheringId)}/skeleton/merge`, { method: 'POST' }),
     saveProfile: async (profile) => await request('/v1/profiles/me', { method: 'PATCH', body: JSON.stringify(profile) }) as unknown as ProfileRecord,
     deleteAccount: async () => await request('/v1/account', { method: 'DELETE' }) as { deleted: boolean; message: string },
     lockPlan: async (planId) => {

@@ -19,8 +19,8 @@ def release_scope() -> dict[str, Any]:
             "google_reviews_persisted": False,
         },
         "features": {
-            "gold_campaign": False,
-            "messages_shuffl": False,
+            "gold_campaign": True,
+            "messages_shuffl": True,
             "group_insights": False,
             "reservations": False,
             "automatic_outing_plan": False,

@@ -10,10 +10,9 @@ for (const key of [
   'http_proxy', 'https_proxy', 'all_proxy',
 ]) delete env[key];
 
-// Use Expo's legacy ngrok tunnel for Expo Go QR links. Expo SDK 57's
-// account-signed on.expo.app tunnel can return a relative bundle URL that
-// Expo Go resolves incorrectly as http://host:8081 on remote iOS devices.
-delete env.EXPO_UNSTABLE_TUNNEL_V2;
+// Use Expo's current account-signed tunnel for Expo Go QR links. The legacy
+// bundled ngrok agent is no longer accepted by the ngrok service.
+env.EXPO_UNSTABLE_TUNNEL_V2 = '1';
 
 // @expo/ngrok returns an exp.direct URL without an explicit public port.
 // Expo Go then assumes Metro's local port (8081), producing:
