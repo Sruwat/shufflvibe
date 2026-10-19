@@ -359,108 +359,6 @@ function Nav() {
     </View>
   );
 }
-function PlayMenu() {
-  const { set, locked } = useApp();
-  const gated = (
-    screen: "shuffl" | "feature",
-    featureMode?: "hostRoom" | "joinRoom",
-  ) =>
-    set(
-      locked
-        ? { screen: "dailyCheckin" }
-        : screen === "feature"
-          ? { screen, featureMode: featureMode! }
-          : { screen },
-    );
-  return (
-    <SafeAreaView style={styles.safe}>
-      <Header label="Your night" onBack={() => set({ screen: "discover" })} />
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.kicker}>MAKE IT A SHUFFL</Text>
-        <Text style={styles.h1}>How are you going out?</Text>
-        <Text style={styles.body}>
-          Choose a way to find your people or build a plan around tonight’s
-          vibe.
-        </Text>
-        <Pressable
-          accessibilityRole="button"
-          onPress={() => set({ screen: "dailyCheckin" })}
-          style={[artworkStyles.playChoice, { borderColor: colors.pink }]}
-        >
-          <View style={artworkStyles.playChoiceIcon}>
-            <Ionicons name="sparkles" size={24} color={colors.pink} />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.cardTitle}>
-              {locked ? "Set today’s vibe" : "Today’s vibe is ready"}
-            </Text>
-            <Text style={styles.small}>
-              {locked
-                ? "Play today or reuse your most recent result."
-                : "Review your result or change tonight’s answers."}
-            </Text>
-          </View>
-          <Ionicons name="chevron-forward" size={20} color={colors.muted} />
-        </Pressable>
-        <Pressable
-          accessibilityRole="button"
-          onPress={() => gated("feature", "hostRoom")}
-          style={artworkStyles.playChoice}
-        >
-          <View style={artworkStyles.playChoiceIcon}>
-            <Ionicons name="people-outline" size={24} color={colors.pink} />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.cardTitle}>Host</Text>
-            <Text style={styles.small}>
-              {locked
-                ? "Set today’s vibe before opening a room."
-                : "Bring your people together and open a room."}
-            </Text>
-          </View>
-          <Ionicons name="chevron-forward" size={20} color={colors.muted} />
-        </Pressable>
-        <Pressable
-          accessibilityRole="button"
-          onPress={() => gated("feature", "joinRoom")}
-          style={artworkStyles.playChoice}
-        >
-          <View style={artworkStyles.playChoiceIcon}>
-            <Ionicons name="compass-outline" size={24} color={colors.pink} />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.cardTitle}>Join</Text>
-            <Text style={styles.small}>
-              {locked
-                ? "Set today’s vibe to find a matching room."
-                : "Find a hosted night that fits your vibe."}
-            </Text>
-          </View>
-          <Ionicons name="chevron-forward" size={20} color={colors.muted} />
-        </Pressable>
-        <Pressable
-          accessibilityRole="button"
-          onPress={() => gated("shuffl")}
-          style={artworkStyles.playChoice}
-        >
-          <View style={artworkStyles.playChoiceIcon}>
-            <Ionicons name="map-outline" size={24} color={colors.pink} />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.cardTitle}>SHUFFL</Text>
-            <Text style={styles.small}>
-              {locked
-                ? "Set today’s vibe to build your Delhi lineup."
-                : "Get a personal Delhi lineup for tonight."}
-            </Text>
-          </View>
-          <Ionicons name="chevron-forward" size={20} color={colors.muted} />
-        </Pressable>
-      </ScrollView>
-      <Nav />
-    </SafeAreaView>
-  );
-}
 function DailyCheckin() {
   const { set, lastVibeName, locked } = useApp();
   const panX = useRef(new Animated.Value(0)).current;
@@ -2834,7 +2732,9 @@ function AppContent() {
   if (screen === "assessment") return <AssessmentStrict />;
   if (screen === "reveal") return <Reveal />;
   if (screen === "discover") return <HomeDashboard />;
-  if (screen === "playMenu") return <PlayMenu />;
+  // The retired play menu is kept as a persisted-state migration target only;
+  // any old state now lands in the canonical SHUFFL flow.
+  if (screen === "playMenu") return <ShufflScreen />;
   if (screen === "shuffl") return <ShufflScreen />;
   if (screen === "search")
     return (

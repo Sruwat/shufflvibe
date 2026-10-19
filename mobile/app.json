@@ -18,6 +18,9 @@
       "adaptiveIcon": {
         "backgroundColor": "#070A11"
       }
+    },
+    "ios": {
+      "bundleIdentifier": "com.shuffl.demo"
     }
   }
 }

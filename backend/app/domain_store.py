@@ -129,7 +129,7 @@ class DomainStore:
                     user_id VARCHAR(180) NOT NULL,
                     role VARCHAR(24) NOT NULL DEFAULT 'member',
                     invite_status VARCHAR(24) NOT NULL DEFAULT 'pending',
-                    skeleton TEXT NOT NULL DEFAULT '{}',
+                    skeleton TEXT NOT NULL,
                     joined_at VARCHAR(40),
                     PRIMARY KEY (gathering_id, user_id)
                 )
@@ -148,7 +148,7 @@ class DomainStore:
                     id VARCHAR(64) PRIMARY KEY,
                     gathering_id VARCHAR(64) NOT NULL,
                     kind VARCHAR(32) NOT NULL,
-                    payload TEXT NOT NULL DEFAULT '{}',
+                    payload TEXT NOT NULL,
                     status VARCHAR(24) NOT NULL DEFAULT 'pending',
                     created_at VARCHAR(40) NOT NULL
                 )
@@ -325,8 +325,10 @@ class DomainStore:
     def feature_flags(self) -> dict[str, bool]:
         with self.engine.connect() as conn:
             rows = conn.execute(text("SELECT name,enabled FROM admin_feature_flags ORDER BY name")).all()
+        defaults = {"capsules": True, "heatmap": True, "live_chat": True}
         flags = {str(row[0]): bool(row[1]) for row in rows}
-        return flags or {"capsules": True, "heatmap": True, "live_chat": False}
+        defaults.update(flags)
+        return defaults
 
     def set_feature_flag(self, name: str, enabled: bool, actor: str = "system") -> dict[str, bool]:
         with self.engine.begin() as conn:
